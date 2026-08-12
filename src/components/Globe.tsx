@@ -80,12 +80,81 @@ interface Port2D {
   pulse: number;
 }
 
+interface RouteSegment {
+  from: { x: number; y: number };
+  to: { x: number; y: number };
+  h: number;
+}
+
 interface RouteShip {
   fromIndex: number;
   toIndex: number;
   progress: number; // 0 to 1
   speed: number;
 }
+
+// Helper functions declared outside component to avoid initialization order ReferenceError
+const getEllipsePoint = (
+  t: number,
+  p0: { x: number; y: number },
+  p1: { x: number; y: number },
+  hVal: number
+) => {
+  const dx = p1.x - p0.x;
+  const dy = p1.y - p0.y;
+  const d = Math.sqrt(dx * dx + dy * dy);
+  if (d === 0) return p0;
+
+  const theta = Math.atan2(dy, dx);
+  const mx = (p0.x + p1.x) / 2;
+  const my = (p0.y + p1.y) / 2;
+
+  const phi = Math.PI - t * Math.PI;
+  const xLocal = (d / 2) * Math.cos(phi);
+  const yLocal = hVal * Math.sin(phi);
+
+  return {
+    x: mx + xLocal * Math.cos(theta) - yLocal * Math.sin(theta),
+    y: my + xLocal * Math.sin(theta) + yLocal * Math.cos(theta),
+  };
+};
+
+const getSegmentLength = (
+  p0: { x: number; y: number },
+  p1: { x: number; y: number },
+  hVal: number
+) => {
+  let len = 0;
+  let prev = getEllipsePoint(0, p0, p1, hVal);
+  const steps = 15;
+  for (let i = 1; i <= steps; i++) {
+    const curr = getEllipsePoint(i / steps, p0, p1, hVal);
+    const dx = curr.x - prev.x;
+    const dy = curr.y - prev.y;
+    len += Math.sqrt(dx * dx + dy * dy);
+    prev = curr;
+  }
+  return len;
+};
+
+const mapCoords = (nx: number, ny: number, w: number, h: number) => {
+  // Scale from 1000x530 domain to canvas dimensions with 6% safe margins
+  const paddingX = Math.max(20, w * 0.06);
+  const paddingY = Math.max(20, h * 0.06);
+  const drawW = w - paddingX * 2;
+  const drawH = h - paddingY * 2;
+
+  return {
+    x: paddingX + (nx / 1000) * drawW,
+    y: paddingY + (ny / 530) * drawH,
+  };
+};
+
+const getScaledH = (hVal: number, h: number) => {
+  const paddingY = Math.max(20, h * 0.06);
+  const drawH = h - paddingY * 2;
+  return (hVal / 530) * drawH;
+};
 
 export default function Globe() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -121,23 +190,73 @@ export default function Globe() {
       { name: 'Singapore', normX: 690, normY: 350, pulse: (Math.PI * 2) / 3 },
       { name: 'Shanghai', normX: 760, normY: 220, pulse: Math.PI },
       { name: 'Cape Town', normX: 460, normY: 480, pulse: (Math.PI * 4) / 3 },
+      { name: 'Barranquilla', normX: 220, normY: 300, pulse: Math.PI / 6 },
     ];
 
-    // Shipping routes
-    const routes = [
-      { from: 0, to: 1, ctrlOffsetY: -40 }, // Houston -> Rotterdam
-      { from: 1, to: 4, ctrlOffsetY: 0 },   // Rotterdam -> Cape Town
-      { from: 4, to: 2, ctrlOffsetY: -20 },  // Cape Town -> Singapore
-      { from: 2, to: 3, ctrlOffsetY: 20 },   // Singapore -> Shanghai
-      { from: 3, to: 0, ctrlOffsetY: -120 }, // Shanghai -> Houston (transpacific)
+    // Shipping routes segments (1000x500 normalized coordinates)
+    const routeSegments: RouteSegment[][] = [
+      // Route 0: Houston -> Barranquilla (Caribbean)
+      [
+        { from: { x: 210, y: 220 }, to: { x: 220, y: 300 }, h: -20 } // Curves East to avoid Yucatan
+      ],
+      // Route 1: Barranquilla -> Rotterdam (Atlantic)
+      [
+        { from: { x: 220, y: 300 }, to: { x: 290, y: 260 }, h: 5 },
+        { from: { x: 290, y: 260 }, to: { x: 310, y: 250 }, h: 5 },
+        { from: { x: 310, y: 250 }, to: { x: 320, y: 110 }, h: 0 },
+        { from: { x: 320, y: 110 }, to: { x: 425, y: 155 }, h: -10 }
+      ],
+      // Route 2: Rotterdam -> Cape Town (Atlantic route)
+      [
+        { from: { x: 425, y: 155 }, to: { x: 320, y: 110 }, h: -10 },
+        { from: { x: 320, y: 110 }, to: { x: 280, y: 220 }, h: 0 },
+        { from: { x: 280, y: 220 }, to: { x: 290, y: 310 }, h: 0 },
+        { from: { x: 290, y: 310 }, to: { x: 330, y: 525 }, h: 0 },
+        { from: { x: 330, y: 525 }, to: { x: 470, y: 525 }, h: 0 },
+        { from: { x: 470, y: 525 }, to: { x: 460, y: 480 }, h: 0 }
+      ],
+      // Route 3: Cape Town -> Singapore (Indian Ocean)
+      [
+        { from: { x: 460, y: 480 }, to: { x: 690, y: 350 }, h: 80 }
+      ],
+      // Route 4: Singapore -> Shanghai (East Asia)
+      [
+        { from: { x: 690, y: 350 }, to: { x: 740, y: 360 }, h: 5 },
+        { from: { x: 740, y: 360 }, to: { x: 810, y: 280 }, h: 0 },
+        { from: { x: 810, y: 280 }, to: { x: 760, y: 220 }, h: -15 }
+      ],
+      // Route 5: Shanghai -> Houston (transpacific wrapped)
+      [
+        { from: { x: 760, y: 220 }, to: { x: 810, y: 235 }, h: 5 },
+        { from: { x: 810, y: 235 }, to: { x: 1000, y: 235 }, h: -10 },
+        { from: { x: 0, y: 235 }, to: { x: 140, y: 330 }, h: -10 },
+        { from: { x: 140, y: 330 }, to: { x: 170, y: 330 }, h: 0 },
+        { from: { x: 170, y: 330 }, to: { x: 250, y: 290 }, h: -10 },
+        { from: { x: 250, y: 290 }, to: { x: 210, y: 220 }, h: -20 }
+      ]
     ];
 
-    // Cargo ships animated positions
-    const ships: RouteShip[] = routes.map((_, idx) => ({
-      fromIndex: routes[idx].from,
-      toIndex: routes[idx].to,
+
+
+    // Compute cumulative segment lengths for uniform speed along each route
+    const routeLengths = routeSegments.map((segments) => {
+      const lengths: number[] = [];
+      let total = 0;
+      segments.forEach((seg) => {
+        // We use raw normalized coordinates to calculate relative segment lengths
+        const len = getSegmentLength(seg.from, seg.to, seg.h);
+        total += len;
+        lengths.push(total);
+      });
+      return { lengths, total };
+    });
+
+    // Cargo ships animated positions - reduced speed for smoother cinematic look
+    const ships: RouteShip[] = routeSegments.map((_, idx) => ({
+      fromIndex: idx,
+      toIndex: idx,
       progress: Math.random(),
-      speed: 0.0015 + Math.random() * 0.001,
+      speed: 0.0004 + Math.random() * 0.0003, // Shipped slowly and smoothly
     }));
 
     let dots: Dot2D[] = [];
@@ -154,9 +273,10 @@ export default function Globe() {
           );
 
           if (onLand) {
+            const pt = mapCoords(x, y, w, h);
             generated.push({
-              x: (x / 1000) * w,
-              y: (y / 500) * h,
+              x: pt.x,
+              y: pt.y,
               opacity: Math.random() * 0.4 + 0.5,
               pulseSpeed: 0.02 + Math.random() * 0.03,
             });
@@ -183,17 +303,7 @@ export default function Globe() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    const getBezierPoint = (
-      t: number,
-      p0: { x: number; y: number },
-      p1: { x: number; y: number },
-      p2: { x: number; y: number }
-    ) => {
-      return {
-        x: (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * p1.x + t * t * p2.x,
-        y: (1 - t) * (1 - t) * p0.y + 2 * (1 - t) * t * p1.y + t * t * p2.y,
-      };
-    };
+
 
     const render = () => {
       const w = canvas.width;
@@ -240,29 +350,56 @@ export default function Globe() {
       });
 
       // 3. Draw Shipping Routes & Ships
-      routes.forEach((route, routeIdx) => {
-        const fromPort = ports[route.from];
-        const toPort = ports[route.to];
+      const getRoutePt = (t: number, routeIdx: number) => {
+        const segments = routeSegments[routeIdx];
+        const { lengths, total } = routeLengths[routeIdx];
+        const targetLen = t * total;
 
-        const startPt = { x: (fromPort.normX / 1000) * w, y: (fromPort.normY / 500) * h };
-        const endPt = { x: (toPort.normX / 1000) * w, y: (toPort.normY / 500) * h };
+        let segIndex = 0;
+        while (segIndex < segments.length - 1 && lengths[segIndex] < targetLen) {
+          segIndex++;
+        }
 
-        // Midpoint and control offset to curve the routes
-        const midX = (startPt.x + endPt.x) / 2;
-        const midY = (startPt.y + endPt.y) / 2;
-        const ctrlPt = {
-          x: midX,
-          y: midY + (route.ctrlOffsetY / 500) * h,
-        };
+        const prevLen = segIndex === 0 ? 0 : lengths[segIndex - 1];
+        const segLen = lengths[segIndex] - prevLen;
+        const segT = segLen === 0 ? 0 : (targetLen - prevLen) / segLen;
 
-        // Draw curved route path
+        const segment = segments[segIndex];
+        const p0 = mapCoords(segment.from.x, segment.from.y, w, h);
+        const p1 = mapCoords(segment.to.x, segment.to.y, w, h);
+        const scaledH = getScaledH(segment.h, h);
+
+        return getEllipsePoint(segT, p0, p1, scaledH);
+      };
+
+      routeSegments.forEach((segments, routeIdx) => {
+        // Draw route path segment by segment
         ctx.strokeStyle = 'rgba(15, 76, 129, 0.25)';
         ctx.lineWidth = 1.2;
         ctx.setLineDash([4, 4]);
-        ctx.beginPath();
-        ctx.moveTo(startPt.x, startPt.y);
-        ctx.quadraticCurveTo(ctrlPt.x, ctrlPt.y, endPt.x, endPt.y);
-        ctx.stroke();
+
+        segments.forEach((segment) => {
+          const p0 = mapCoords(segment.from.x, segment.from.y, w, h);
+          const p1 = mapCoords(segment.to.x, segment.to.y, w, h);
+          const scaledH = getScaledH(segment.h, h);
+
+          ctx.beginPath();
+          // Draw with dynamic steps based on visual segment length
+          const dist = Math.sqrt((p1.x - p0.x)**2 + (p1.y - p0.y)**2);
+          const drawSteps = Math.max(10, Math.floor(dist / 8));
+          
+          for (let i = 0; i <= drawSteps; i++) {
+            const t = i / drawSteps;
+            const pt = getEllipsePoint(t, p0, p1, scaledH);
+            if (i === 0) {
+              ctx.moveTo(pt.x, pt.y);
+            } else {
+              ctx.lineTo(pt.x, pt.y);
+            }
+          }
+          ctx.stroke();
+        });
+
         ctx.setLineDash([]); // Reset dash
 
         // Animate ship position
@@ -272,29 +409,41 @@ export default function Globe() {
           ship.progress = 0;
         }
 
-        // Get coordinates of the cargo ship along the route
-        const shipPt = getBezierPoint(ship.progress, startPt, ctrlPt, endPt);
-
         // Draw glowing ship node
+        const shipPt = getRoutePt(ship.progress, routeIdx);
+
+        // Draw trailing dots for motion blur / glowing tail
+        const trailCount = 6;
+        for (let i = 1; i <= trailCount; i++) {
+          const trailProgress = ship.progress - (i * 0.0035);
+          const adjustedProgress = trailProgress < 0 ? trailProgress + 1 : trailProgress;
+          const trailPt = getRoutePt(adjustedProgress, routeIdx);
+
+          ctx.fillStyle = `rgba(27, 108, 168, ${0.7 - (i * 0.11)})`; // Ocean Blue glow color
+          ctx.beginPath();
+          ctx.arc(trailPt.x, trailPt.y, 4.5 - (i * 0.6), 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Draw main ship bulb
         ctx.fillStyle = '#FFFFFF';
         ctx.shadowColor = 'var(--primary-hover)';
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 10;
         ctx.beginPath();
         ctx.arc(shipPt.x, shipPt.y, 4, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0; // Reset shadow
 
-        ctx.strokeStyle = 'rgba(15, 76, 129, 0.8)';
+        ctx.strokeStyle = 'rgba(15, 76, 129, 0.9)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.arc(shipPt.x, shipPt.y, 7, 0, Math.PI * 2);
+        ctx.arc(shipPt.x, shipPt.y, 7.5, 0, Math.PI * 2);
         ctx.stroke();
       });
 
       // 4. Draw Port Markers
       ports.forEach((port) => {
-        const px = (port.normX / 1000) * w;
-        const py = (port.normY / 500) * h;
+        const { x: px, y: py } = mapCoords(port.normX, port.normY, w, h);
 
         // Animate pulse radius
         port.pulse += 0.04;
