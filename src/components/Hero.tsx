@@ -43,7 +43,7 @@ export default function Hero() {
             opacity: 0.35,
           }}
         >
-          <source src="https://assets.easesourcing.com/custom/video/banner2.mp4" type="video/mp4" />
+          <source src="/charger_boat.mp4" type="video/mp4" />
         </video>
         {/* Sleek Gradient Overlay for Readability */}
         <div
