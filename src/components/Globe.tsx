@@ -158,6 +158,8 @@ export default function Globe() {
   const [portsCount, setPortsCount] = useState(7);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [mapMode, setMapMode] = useState<'navigation' | 'draw'>('navigation');
+  const [iframeKey, setIframeKey] = useState(0);
 
   // Port nodes overlayed on the Caribbean centered MarineTraffic projection coordinates (zoom: 5)
   const portsRef = useRef<PortNode[]>([
@@ -591,19 +593,26 @@ export default function Globe() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            backgroundColor: 'rgba(0, 163, 255, 0.08)',
-            border: '1px solid rgba(0, 163, 255, 0.25)',
+            backgroundColor: mapMode === 'draw' ? 'rgba(0, 163, 255, 0.12)' : 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid ' + (mapMode === 'draw' ? 'rgba(0, 163, 255, 0.35)' : 'rgba(255, 255, 255, 0.08)'),
             borderRadius: '30px',
             padding: '8px 18px',
             fontSize: '13px',
             fontWeight: 600,
-            color: '#00a3ff',
+            color: mapMode === 'draw' ? '#00a3ff' : 'var(--text-gray)',
             marginBottom: '32px',
             boxShadow: '0 4px 12px rgba(0, 163, 255, 0.05)',
+            transition: 'all 0.3s ease',
           }}
         >
-          <span style={{ animation: 'float 2s ease-in-out infinite' }}>⚓</span>
-          <span>AIS Interactivo: Haz clic sobre el mapa en vivo de MarineTraffic para trazar rutas y tránsitos adicionales.</span>
+          <span style={{ animation: mapMode === 'draw' ? 'float 2s ease-in-out infinite' : 'none' }}>
+            {mapMode === 'draw' ? '⚓' : '🧭'}
+          </span>
+          <span>
+            {mapMode === 'draw' 
+              ? 'Modo Trazado Activo: Haz clic en el océano para situar tu puerto y trazar rutas.' 
+              : 'Modo Navegación: Interactúa con el mapa, arrastra y haz zoom usando los botones de MarineTraffic.'}
+          </span>
         </div>
 
         {/* Outer container holding both background iframe and transparent canvas overlay */}
@@ -621,6 +630,7 @@ export default function Globe() {
         >
           {/* Real-time MarineTraffic AIS Embed Map as dynamic background, centered on Barranquilla / Caribbean zone */}
           <iframe
+            key={iframeKey}
             src="https://www.marinetraffic.com/en/ais/embed/zoom:5/centery:12.0/centerx:-77.5/maptype:3/shownames:false/shownation:false/showmenu:false/trackvessel:999999999"
             width="100%"
             height="100%"
@@ -628,7 +638,7 @@ export default function Globe() {
               position: 'absolute',
               inset: 0,
               border: 0,
-              pointerEvents: 'none', // Allow mouse click to pass through to the interactive canvas
+              pointerEvents: mapMode === 'navigation' ? 'auto' : 'none', // Toggle input capture
             }}
             title="MarineTraffic Live AIS Map Background"
           />
@@ -642,8 +652,9 @@ export default function Globe() {
               inset: 0,
               zIndex: 5,
               display: 'block',
-              cursor: 'crosshair',
+              cursor: mapMode === 'draw' ? 'crosshair' : 'default',
               backgroundColor: 'transparent',
+              pointerEvents: mapMode === 'draw' ? 'auto' : 'none', // Pass clicks down to iframe in navigation mode
             }}
           />
 
@@ -690,6 +701,89 @@ export default function Globe() {
                 <span style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{item.label}</span>
               </div>
             ))}
+          </div>
+
+          {/* Map Controls Floating Bar */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '20px',
+              left: '20px',
+              display: 'flex',
+              gap: '8px',
+              backgroundColor: 'rgba(5, 8, 17, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '8px',
+              padding: '8px',
+              backdropFilter: 'blur(10px)',
+              zIndex: 10,
+              boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
+            }}
+          >
+            <button
+              onClick={() => setMapMode('navigation')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: 'none',
+                backgroundColor: mapMode === 'navigation' ? 'var(--primary-hover)' : 'transparent',
+                color: '#ffffff',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+              }}
+            >
+              🧭 Navegar
+            </button>
+            <button
+              onClick={() => setMapMode('draw')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: 'none',
+                backgroundColor: mapMode === 'draw' ? 'var(--primary-hover)' : 'transparent',
+                color: '#ffffff',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+              }}
+            >
+              ⚓ Trazar Puertos
+            </button>
+            <button
+              onClick={() => {
+                setIframeKey(prev => prev + 1);
+                setToastMessage('Vista y zoom restablecidos a la posición original.');
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3000);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                color: 'rgba(255,255,255,0.6)',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#ffffff'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+            >
+              🔄 Re-centrar
+            </button>
           </div>
 
           {/* Interactive Toast Notifications */}
