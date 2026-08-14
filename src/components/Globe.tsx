@@ -52,45 +52,22 @@ const LAND_POLYGONS: [number, number][][] = [
   ]
 ];
 
-// Ray casting algorithm for point-in-polygon check
-function isPointInPolygon(point: [number, number], polygon: [number, number][]) {
-  const [x, y] = point;
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i][0], yi = polygon[i][1];
-    const xj = polygon[j][0], yj = polygon[j][1];
-    const intersect = ((yi > y) !== (yj > y))
-        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-    if (intersect) inside = !inside;
-  }
-  return inside;
-}
-
-interface Dot2D {
-  x: number;
-  y: number;
-  opacity: number;
-  pulseSpeed: number;
-}
-
-interface Port2D {
+interface PortNode {
+  id: string;
   name: string;
   normX: number;
   normY: number;
+  connections: string[];
   pulse: number;
 }
 
-interface RouteSegment {
-  from: { x: number; y: number };
-  to: { x: number; y: number };
-  h: number;
-}
-
-interface RouteShip {
+interface SimulatedShip {
   fromIndex: number;
   toIndex: number;
-  progress: number; // 0 to 1
+  progress: number;
   speed: number;
+  type: 'cargo' | 'tanker' | 'tug' | 'passenger';
+  curveHeight: number;
 }
 
 interface Ripple {
@@ -100,6 +77,22 @@ interface Ripple {
   maxRadius: number;
   opacity: number;
 }
+
+const SHIP_COLORS = {
+  cargo: '#2ecc71',     // Green
+  tanker: '#e74c3c',    // Red
+  tug: '#3498db',       // Blue
+  passenger: '#f39c12', // Orange
+};
+
+const getCurveHeight = (fromId: string, toId: string) => {
+  let hash = 0;
+  const str = fromId < toId ? `${fromId}_${toId}` : `${toId}_${fromId}`;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return (Math.abs(hash) % 40) - 20; // Curved height between -20 and +20
+};
 
 const getEllipsePoint = (
   t: number,
@@ -126,24 +119,6 @@ const getEllipsePoint = (
   };
 };
 
-const getSegmentLength = (
-  p0: { x: number; y: number },
-  p1: { x: number; y: number },
-  hVal: number
-) => {
-  let len = 0;
-  let prev = getEllipsePoint(0, p0, p1, hVal);
-  const steps = 15;
-  for (let i = 1; i <= steps; i++) {
-    const curr = getEllipsePoint(i / steps, p0, p1, hVal);
-    const dx = curr.x - prev.x;
-    const dy = curr.y - prev.y;
-    len += Math.sqrt(dx * dx + dy * dy);
-    prev = curr;
-  }
-  return len;
-};
-
 const mapCoords = (nx: number, ny: number, w: number, h: number) => {
   const paddingX = Math.max(20, w * 0.06);
   const paddingY = Math.max(20, h * 0.06);
@@ -156,12 +131,6 @@ const mapCoords = (nx: number, ny: number, w: number, h: number) => {
   };
 };
 
-const getScaledH = (hVal: number, h: number) => {
-  const paddingY = Math.max(20, h * 0.06);
-  const drawH = h - paddingY * 2;
-  return (hVal / 530) * drawH;
-};
-
 export default function Globe() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -169,76 +138,50 @@ export default function Globe() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  // Use refs to persist routes, ports, ships and ripples across render ticks
-  const portsRef = useRef<Port2D[]>([
-    { name: 'Houston', normX: 210, normY: 220, pulse: 0 },
-    { name: 'Rotterdam', normX: 425, normY: 155, pulse: Math.PI / 3 },
-    { name: 'Singapore', normX: 690, normY: 350, pulse: (Math.PI * 2) / 3 },
-    { name: 'Shanghai', normX: 760, normY: 220, pulse: Math.PI },
-    { name: 'Cape Town', normX: 460, normY: 480, pulse: (Math.PI * 4) / 3 },
-    { name: 'Barranquilla', normX: 220, normY: 300, pulse: Math.PI / 6 },
+  // Port nodes with direct bidirectional connections representing routes
+  const portsRef = useRef<PortNode[]>([
+    { id: 'houston', name: 'Houston', normX: 210, normY: 220, connections: ['barranquilla', 'rotterdam'], pulse: 0 },
+    { id: 'rotterdam', name: 'Rotterdam', normX: 425, normY: 155, connections: ['barranquilla', 'cape_town', 'houston'], pulse: Math.PI / 3 },
+    { id: 'singapore', name: 'Singapore', normX: 690, normY: 350, connections: ['cape_town', 'shanghai'], pulse: (Math.PI * 2) / 3 },
+    { id: 'shanghai', name: 'Shanghai', normX: 760, normY: 220, connections: ['singapore', 'houston'], pulse: Math.PI },
+    { id: 'cape_town', name: 'Cape Town', normX: 460, normY: 480, connections: ['rotterdam', 'singapore'], pulse: (Math.PI * 4) / 3 },
+    { id: 'barranquilla', name: 'Barranquilla', normX: 220, normY: 300, connections: ['houston', 'rotterdam'], pulse: Math.PI / 6 },
   ]);
 
-  const routeSegmentsRef = useRef<RouteSegment[][]>([
-    [{ from: { x: 210, y: 220 }, to: { x: 220, y: 300 }, h: -20 }],
-    [
-      { from: { x: 220, y: 300 }, to: { x: 290, y: 260 }, h: 5 },
-      { from: { x: 290, y: 260 }, to: { x: 310, y: 250 }, h: 5 },
-      { from: { x: 310, y: 250 }, to: { x: 320, y: 110 }, h: 0 },
-      { from: { x: 320, y: 110 }, to: { x: 425, y: 155 }, h: -10 }
-    ],
-    [
-      { from: { x: 425, y: 155 }, to: { x: 320, y: 110 }, h: -10 },
-      { from: { x: 320, y: 110 }, to: { x: 280, y: 220 }, h: 0 },
-      { from: { x: 280, y: 220 }, to: { x: 290, y: 310 }, h: 0 },
-      { from: { x: 290, y: 310 }, to: { x: 330, y: 525 }, h: 0 },
-      { from: { x: 330, y: 525 }, to: { x: 470, y: 525 }, h: 0 },
-      { from: { x: 470, y: 525 }, to: { x: 460, y: 480 }, h: 0 }
-    ],
-    [{ from: { x: 460, y: 480 }, to: { x: 690, y: 350 }, h: 80 }],
-    [
-      { from: { x: 690, y: 350 }, to: { x: 740, y: 360 }, h: 5 },
-      { from: { x: 740, y: 360 }, to: { x: 810, y: 280 }, h: 0 },
-      { from: { x: 810, y: 280 }, to: { x: 760, y: 220 }, h: -15 }
-    ],
-    [
-      { from: { x: 760, y: 220 }, to: { x: 810, y: 235 }, h: 5 },
-      { from: { x: 810, y: 235 }, to: { x: 1000, y: 235 }, h: -10 },
-      { from: { x: 0, y: 235 }, to: { x: 140, y: 330 }, h: -10 },
-      { from: { x: 140, y: 330 }, to: { x: 170, y: 330 }, h: 0 },
-      { from: { x: 170, y: 330 }, to: { x: 250, y: 290 }, h: -10 },
-      { from: { x: 250, y: 290 }, to: { x: 210, y: 220 }, h: -20 }
-    ]
-  ]);
-
-  const routeLengthsRef = useRef<{ lengths: number[]; total: number }[]>([]);
-  const shipsRef = useRef<RouteShip[]>([]);
+  const shipsRef = useRef<SimulatedShip[]>([]);
   const ripplesRef = useRef<Ripple[]>([]);
 
-  // Initialize Route Lengths & Ships
+  // Initialize simulated vessels distributed along the starting routes
   useEffect(() => {
-    routeLengthsRef.current = routeSegmentsRef.current.map((segments) => {
-      const lengths: number[] = [];
-      let total = 0;
-      segments.forEach((seg) => {
-        const len = getSegmentLength(seg.from, seg.to, seg.h);
-        total += len;
-        lengths.push(total);
-      });
-      return { lengths, total };
-    });
-
-    shipsRef.current = routeSegmentsRef.current.map((_, idx) => ({
-      fromIndex: idx,
-      toIndex: idx,
-      progress: Math.random(),
-      speed: 0.0004 + Math.random() * 0.0003,
-    }));
+    const shipTypes: ('cargo' | 'tanker' | 'tug' | 'passenger')[] = ['cargo', 'tanker', 'tug', 'passenger'];
     
+    // Spawn 15 initial ships traveling between existing nodes
+    const initialShips: SimulatedShip[] = [];
+    for (let i = 0; i < 15; i++) {
+      const fromIdx = Math.floor(Math.random() * portsRef.current.length);
+      const fromPort = portsRef.current[fromIdx];
+      
+      if (fromPort.connections.length > 0) {
+        const destId = fromPort.connections[Math.floor(Math.random() * fromPort.connections.length)];
+        const toIdx = portsRef.current.findIndex(p => p.id === destId);
+        
+        if (toIdx !== -1) {
+          initialShips.push({
+            fromIndex: fromIdx,
+            toIndex: toIdx,
+            progress: Math.random(), // Distributed progress
+            speed: 0.0006 + Math.random() * 0.0006, // Smooth slow speed
+            type: shipTypes[i % shipTypes.length],
+            curveHeight: getCurveHeight(fromPort.id, destId),
+          });
+        }
+      }
+    }
+    shipsRef.current = initialShips;
     setPortsCount(portsRef.current.length);
   }, []);
 
-  // Handle Canvas Click: Toggles custom port addition and auto route integration
+  // Handle click on canvas: Creates custom ports and connects them bidirectionally
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -247,7 +190,6 @@ export default function Globe() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Convert mouse client coordinates to internal canvas coordinates
     const clickX = (x / rect.width) * canvas.width;
     const clickY = (y / rect.height) * canvas.height;
 
@@ -263,10 +205,9 @@ export default function Globe() {
     const nx = ((clickX - paddingX) / drawW) * 1000;
     const ny = ((clickY - paddingY) / drawH) * 530;
 
-    // Bounds safety checks
-    if (nx < 10 || nx > 990 || ny < 10 || ny > 520) return;
+    if (nx < 15 || nx > 985 || ny < 15 || ny > 515) return;
 
-    // Find nearest port in existing ports to connect to
+    // Find nearest port to connect with
     let nearestPort = portsRef.current[0];
     let minDist = Infinity;
 
@@ -280,61 +221,77 @@ export default function Globe() {
       }
     });
 
-    // Prevent placing port too close to another
-    if (minDist < 25) {
+    if (minDist < 30) {
       setToastMessage('Haz clic más lejos de un puerto existente para crear una nueva conexión.');
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       return;
     }
 
-    // Add port
-    const customIndex = portsRef.current.length - 5;
-    const portName = `Ruta GreyLion #${customIndex}`;
-    const newPort: Port2D = {
+    const newPortId = `custom_${portsRef.current.length}`;
+    const portName = `Ruta GreyLion #${portsRef.current.length - 5}`;
+    
+    // Create new port node
+    const newPort: PortNode = {
+      id: newPortId,
       name: portName,
       normX: Math.round(nx),
       normY: Math.round(ny),
+      connections: [nearestPort.id],
       pulse: Math.random() * Math.PI,
     };
+
+    // Add bidirectional link to the nearest port
+    nearestPort.connections.push(newPortId);
+
+    // Auto-connect to any other port that is relatively close (under 180px) to form a web
+    portsRef.current.forEach((p) => {
+      if (p.id !== nearestPort.id && p.id !== newPortId) {
+        const dx = p.normX - nx;
+        const dy = p.normY - ny;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 180) {
+          newPort.connections.push(p.id);
+          p.connections.push(newPortId);
+        }
+      }
+    });
+
     portsRef.current.push(newPort);
 
-    // Create segment to connect it to the closest port in the network
-    const newSegment: RouteSegment[] = [
-      {
-        from: { x: nearestPort.normX, y: nearestPort.normY },
-        to: { x: newPort.normX, y: newPort.normY },
-        h: (Math.random() - 0.5) * 35,
-      }
-    ];
-    routeSegmentsRef.current.push(newSegment);
-
-    // Recalculate lengths for new segments
-    const newLen = getSegmentLength(newSegment[0].from, newSegment[0].to, newSegment[0].h);
-    routeLengthsRef.current.push({
-      lengths: [newLen],
-      total: newLen,
-    });
-
-    // Spawn new ship on the new route segment
+    // Spawn 2 new active ships on these new connections (one entering, one leaving!)
+    const shipTypes: ('cargo' | 'tanker' | 'tug' | 'passenger')[] = ['cargo', 'tanker', 'tug', 'passenger'];
+    
+    // Ship leaving (from nearestPort to newPort)
     shipsRef.current.push({
-      fromIndex: routeSegmentsRef.current.length - 1,
-      toIndex: routeSegmentsRef.current.length - 1,
+      fromIndex: portsRef.current.findIndex(p => p.id === nearestPort.id),
+      toIndex: portsRef.current.length - 1,
       progress: 0,
-      speed: 0.002 + Math.random() * 0.0015, // Travel faster to give instant feedback
+      speed: 0.001 + Math.random() * 0.0008,
+      type: shipTypes[portsRef.current.length % shipTypes.length],
+      curveHeight: getCurveHeight(nearestPort.id, newPortId),
     });
 
-    // Push click ripple animation details
+    // Ship entering (from newPort to nearestPort)
+    shipsRef.current.push({
+      fromIndex: portsRef.current.length - 1,
+      toIndex: portsRef.current.findIndex(p => p.id === nearestPort.id),
+      progress: 0,
+      speed: 0.001 + Math.random() * 0.0008,
+      type: shipTypes[(portsRef.current.length + 1) % shipTypes.length],
+      curveHeight: getCurveHeight(newPortId, nearestPort.id),
+    });
+
+    // Trigger radar ripple animation
     ripplesRef.current.push({
       x: clickX,
       y: clickY,
       radius: 4,
-      maxRadius: 40,
+      maxRadius: 45,
       opacity: 1,
     });
 
-    // Show feedback toast
-    setToastMessage(`Conectado exitosamente con ${nearestPort.name}. Se trazó la '${portName}'.`);
+    setToastMessage(`Puerto '${portName}' incorporado con éxito. Rutas bidireccionales activadas.`);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
 
@@ -349,31 +306,6 @@ export default function Globe() {
     if (!ctx) return;
 
     let animationFrameId: number;
-    let dots: Dot2D[] = [];
-
-    const generateMapDots = (w: number, h: number) => {
-      const generated: Dot2D[] = [];
-      const spacing = 12; // grid spacing
-
-      for (let x = spacing / 2; x < 1000; x += spacing) {
-        for (let y = spacing / 2; y < 500; y += spacing) {
-          const onLand = LAND_POLYGONS.some((poly) =>
-            isPointInPolygon([x, y], poly)
-          );
-
-          if (onLand) {
-            const pt = mapCoords(x, y, w, h);
-            generated.push({
-              x: pt.x,
-              y: pt.y,
-              opacity: Math.random() * 0.4 + 0.5,
-              pulseSpeed: 0.02 + Math.random() * 0.03,
-            });
-          }
-        }
-      }
-      return generated;
-    };
 
     const resizeCanvas = () => {
       const container = containerRef.current;
@@ -382,7 +314,6 @@ export default function Globe() {
         const height = width / 2;
         canvas.width = width;
         canvas.height = height;
-        dots = generateMapDots(width, height);
       }
     };
 
@@ -394,184 +325,204 @@ export default function Globe() {
       const h = canvas.height;
       ctx.clearRect(0, 0, w, h);
 
-      // 1. Draw Land Mesh grid connections
-      ctx.strokeStyle = 'rgba(140, 150, 158, 0.05)';
+      // 1. Ocean Background Grid (MarineTraffic style)
+      ctx.fillStyle = '#060a14'; // Dark navy sea
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = 'rgba(0, 163, 255, 0.05)';
       ctx.lineWidth = 0.5;
-      const maxDistance = w * 0.022;
 
-      for (let i = 0; i < dots.length; i++) {
-        const d1 = dots[i];
-        let connections = 0;
-        for (let j = i + 1; j < dots.length; j++) {
-          const d2 = dots[j];
-          const dx = d1.x - d2.x;
-          const dy = d1.y - d2.y;
-          const distSq = dx * dx + dy * dy;
+      // Latitude lines (horizontal)
+      const latSpacing = h / 10;
+      for (let i = 1; i < 10; i++) {
+        const y = i * latSpacing;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
 
-          if (distSq < maxDistance * maxDistance) {
-            ctx.beginPath();
-            ctx.moveTo(d1.x, d1.y);
-            ctx.lineTo(d2.x, d2.y);
-            ctx.stroke();
-            connections++;
-            if (connections > 2) break;
-          }
-        }
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.font = '8px var(--font-space-grotesk)';
+        const degrees = Math.round(90 - (i * 18));
+        const labelText = degrees === 0 ? 'EQ' : `${Math.abs(degrees)}°${degrees > 0 ? 'N' : 'S'}`;
+        ctx.fillText(labelText, 8, y - 2);
       }
 
-      // 2. Draw Land Dots
-      dots.forEach((dot) => {
-        dot.opacity += dot.pulseSpeed;
-        if (dot.opacity > 0.95 || dot.opacity < 0.35) {
-          dot.pulseSpeed = -dot.pulseSpeed;
-        }
-
-        ctx.fillStyle = `rgba(140, 150, 158, ${dot.opacity})`;
+      // Longitude lines (vertical)
+      const lngSpacing = w / 12;
+      for (let i = 1; i < 12; i++) {
+        const x = i * lngSpacing;
         ctx.beginPath();
-        ctx.arc(dot.x, dot.y, w > 800 ? 1.6 : 1.2, 0, Math.PI * 2);
-        ctx.fill();
-      });
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
 
-      // 3. Draw Shipping Routes & Cargo Ships
-      const getRoutePt = (t: number, routeIdx: number) => {
-        const segments = routeSegmentsRef.current[routeIdx];
-        const lengthsObj = routeLengthsRef.current[routeIdx];
-        if (!segments || !lengthsObj) return { x: 0, y: 0 };
-        
-        const { lengths, total } = lengthsObj;
-        const targetLen = t * total;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.font = '8px var(--font-space-grotesk)';
+        const degrees = Math.round(-180 + (i * 30));
+        const labelText = degrees === 0 ? 'PM' : `${Math.abs(degrees)}°${degrees > 0 ? 'E' : 'W'}`;
+        ctx.fillText(labelText, x + 2, 10);
+      }
 
-        let segIndex = 0;
-        while (segIndex < segments.length - 1 && lengths[segIndex] < targetLen) {
-          segIndex++;
-        }
+      // 2. Draw Solid Landmasses with sleek neon borders
+      ctx.fillStyle = '#0f172a'; // Deep slate land
+      ctx.strokeStyle = '#1e293b'; // Slate borders
+      ctx.lineWidth = 1.2;
 
-        const prevLen = segIndex === 0 ? 0 : lengths[segIndex - 1];
-        const segLen = lengths[segIndex] - prevLen;
-        const segT = segLen === 0 ? 0 : (targetLen - prevLen) / segLen;
-
-        const segment = segments[segIndex];
-        const p0 = mapCoords(segment.from.x, segment.from.y, w, h);
-        const p1 = mapCoords(segment.to.x, segment.to.y, w, h);
-        const scaledH = getScaledH(segment.h, h);
-
-        return getEllipsePoint(segT, p0, p1, scaledH);
-      };
-
-      routeSegmentsRef.current.forEach((segments, routeIdx) => {
-        // Draw route path
-        ctx.strokeStyle = 'rgba(15, 76, 129, 0.25)';
-        ctx.lineWidth = 1.2;
-        ctx.setLineDash([4, 4]);
-
-        segments.forEach((segment) => {
-          const p0 = mapCoords(segment.from.x, segment.from.y, w, h);
-          const p1 = mapCoords(segment.to.x, segment.to.y, w, h);
-          const scaledH = getScaledH(segment.h, h);
-
-          ctx.beginPath();
-          const dist = Math.sqrt((p1.x - p0.x)**2 + (p1.y - p0.y)**2);
-          const drawSteps = Math.max(10, Math.floor(dist / 8));
-          
-          for (let i = 0; i <= drawSteps; i++) {
-            const t = i / drawSteps;
-            const pt = getEllipsePoint(t, p0, p1, scaledH);
-            if (i === 0) {
-              ctx.moveTo(pt.x, pt.y);
-            } else {
-              ctx.lineTo(pt.x, pt.y);
-            }
+      LAND_POLYGONS.forEach((poly) => {
+        ctx.beginPath();
+        poly.forEach((pt, idx) => {
+          const canvasPt = mapCoords(pt[0], pt[1], w, h);
+          if (idx === 0) {
+            ctx.moveTo(canvasPt.x, canvasPt.y);
+          } else {
+            ctx.lineTo(canvasPt.x, canvasPt.y);
           }
-          ctx.stroke();
         });
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      });
 
-        ctx.setLineDash([]);
+      // 3. Draw Shipping Lanes (Active connections)
+      ctx.strokeStyle = 'rgba(0, 163, 255, 0.15)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 6]);
 
-        // Animate ship position
-        const ship = shipsRef.current[routeIdx];
-        if (ship) {
-          ship.progress += ship.speed;
-          if (ship.progress > 1) {
-            ship.progress = 0;
-          }
+      portsRef.current.forEach((port) => {
+        const p0 = mapCoords(port.normX, port.normY, w, h);
+        port.connections.forEach((connId) => {
+          const dest = portsRef.current.find(p => p.id === connId);
+          if (dest && port.id < dest.id) { // Avoid double drawing
+            const p1 = mapCoords(dest.normX, dest.normY, w, h);
+            const curveH = getCurveHeight(port.id, dest.id);
 
-          const shipPt = getRoutePt(ship.progress, routeIdx);
-
-          // Glowing tail
-          const trailCount = 6;
-          for (let i = 1; i <= trailCount; i++) {
-            const trailProgress = ship.progress - (i * 0.0035);
-            const adjustedProgress = trailProgress < 0 ? trailProgress + 1 : trailProgress;
-            const trailPt = getRoutePt(adjustedProgress, routeIdx);
-
-            ctx.fillStyle = `rgba(27, 108, 168, ${0.7 - (i * 0.11)})`;
             ctx.beginPath();
-            ctx.arc(trailPt.x, trailPt.y, 4.5 - (i * 0.6), 0, Math.PI * 2);
-            ctx.fill();
+            const dist = Math.sqrt((p1.x - p0.x)**2 + (p1.y - p0.y)**2);
+            const steps = Math.max(10, Math.floor(dist / 8));
+            
+            for (let i = 0; i <= steps; i++) {
+              const t = i / steps;
+              const pt = getEllipsePoint(t, p0, p1, curveH);
+              if (i === 0) {
+                ctx.moveTo(pt.x, pt.y);
+              } else {
+                ctx.lineTo(pt.x, pt.y);
+              }
+            }
+            ctx.stroke();
           }
+        });
+      });
+      ctx.setLineDash([]); // Reset line dash
 
-          // Main ship bulb
-          ctx.fillStyle = '#FFFFFF';
-          ctx.shadowColor = 'var(--primary-hover)';
-          ctx.shadowBlur = 10;
+      // 4. Update and Draw Simulated Vessels (Triangular pointers moving smoothly)
+      shipsRef.current.forEach((ship) => {
+        // Increment progress along path
+        ship.progress += ship.speed;
+        
+        // Node arrival: Choose a new random connected path to navigate continuously (entering and leaving!)
+        if (ship.progress >= 1) {
+          const currentDestPort = portsRef.current[ship.toIndex];
+          if (currentDestPort && currentDestPort.connections.length > 0) {
+            const nextDestId = currentDestPort.connections[Math.floor(Math.random() * currentDestPort.connections.length)];
+            const nextIdx = portsRef.current.findIndex(p => p.id === nextDestId);
+            
+            if (nextIdx !== -1) {
+              ship.fromIndex = ship.toIndex;
+              ship.toIndex = nextIdx;
+              ship.progress = 0;
+              ship.curveHeight = getCurveHeight(currentDestPort.id, nextDestId);
+              // Slight speed variance
+              ship.speed = 0.0005 + Math.random() * 0.0006;
+            } else {
+              ship.progress = 0; // fallback reset
+            }
+          } else {
+            ship.progress = 0; // fallback reset
+          }
+        }
+
+        const p0 = portsRef.current[ship.fromIndex];
+        const p1 = portsRef.current[ship.toIndex];
+        if (p0 && p1) {
+          const pt0 = mapCoords(p0.normX, p0.normY, w, h);
+          const pt1 = mapCoords(p1.normX, p1.normY, w, h);
+
+          // Get current coordinates and small ahead coordinates to calculate tangent heading angle
+          const currentPt = getEllipsePoint(ship.progress, pt0, pt1, ship.curveHeight);
+          const nextPt = getEllipsePoint(Math.min(1, ship.progress + 0.005), pt0, pt1, ship.curveHeight);
+          const angle = Math.atan2(nextPt.y - currentPt.y, nextPt.x - currentPt.x);
+
+          // Render triangular MarineTraffic-style ship pointing in direction of movement
+          ctx.save();
+          ctx.translate(currentPt.x, currentPt.y);
+          ctx.rotate(angle);
+
+          const shipColor = SHIP_COLORS[ship.type] || SHIP_COLORS.cargo;
+          ctx.fillStyle = shipColor;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 0.7;
+          
+          ctx.shadowColor = shipColor;
+          ctx.shadowBlur = 4;
+
           ctx.beginPath();
-          ctx.arc(shipPt.x, shipPt.y, 4, 0, Math.PI * 2);
+          ctx.moveTo(5, 0);         // Bow (tip)
+          ctx.lineTo(-4, -4);       // Port stern corner
+          ctx.lineTo(-2, 0);        // Transom indentation
+          ctx.lineTo(-4, 4);        // Starboard stern corner
+          ctx.closePath();
           ctx.fill();
-          ctx.shadowBlur = 0;
-
-          // Glowing border circle
-          ctx.strokeStyle = 'rgba(15, 76, 129, 0.9)';
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.arc(shipPt.x, shipPt.y, 7.5, 0, Math.PI * 2);
           ctx.stroke();
+
+          ctx.restore();
         }
       });
 
-      // 4. Draw Port Markers
+      // 5. Draw Port Markers
       portsRef.current.forEach((port) => {
         const { x: px, y: py } = mapCoords(port.normX, port.normY, w, h);
 
         port.pulse += 0.04;
         const pulseRad = 5 + Math.sin(port.pulse) * 3.5;
 
-        // Pulse ring
-        ctx.strokeStyle = `rgba(15, 76, 129, ${0.8 - Math.sin(port.pulse) * 0.4})`;
+        // Radar circular pulse ring
+        ctx.strokeStyle = `rgba(0, 163, 255, ${0.7 - Math.sin(port.pulse) * 0.45})`;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.arc(px, py, pulseRad, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Inner circle
-        ctx.fillStyle = 'var(--primary-hover)';
+        // Inner anchor point
+        ctx.fillStyle = '#00a3ff';
         ctx.beginPath();
         ctx.arc(px, py, 3.5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Port Label Tag
-        ctx.fillStyle = 'rgba(18, 20, 23, 0.85)';
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        // Label tooltip card
+        ctx.fillStyle = 'rgba(7, 10, 18, 0.9)';
+        ctx.strokeStyle = 'rgba(0, 163, 255, 0.25)';
         ctx.lineWidth = 1;
         
         const textWidth = ctx.measureText(port.name).width;
         const paddingX = 6;
-        const paddingY = 3;
         
         ctx.beginPath();
         ctx.roundRect(px + 8, py - 9, textWidth + paddingX * 2, 16, 4);
         ctx.fill();
         ctx.stroke();
 
-        // Text
+        // Label text
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = '10px var(--font-space-grotesk)';
+        ctx.font = '9px var(--font-space-grotesk)';
         ctx.fillText(port.name, px + 8 + paddingX, py + 3);
       });
 
-      // 5. Draw Ripples from User Click
+      // 6. Draw Interactive Click Ripples
       ripplesRef.current = ripplesRef.current.filter((ripple) => {
-        ripple.radius += 1.5;
-        ripple.opacity -= 0.025;
+        ripple.radius += 1.2;
+        ripple.opacity -= 0.02;
 
         if (ripple.opacity <= 0) return false;
 
@@ -598,7 +549,7 @@ export default function Globe() {
   return (
     <div
       style={{
-        backgroundColor: 'var(--background-black)',
+        backgroundColor: '#050811',
         color: 'var(--text-white)',
         padding: '100px 0',
         width: '100%',
@@ -659,8 +610,8 @@ export default function Globe() {
             boxShadow: '0 4px 12px rgba(0, 163, 255, 0.05)',
           }}
         >
-          <span style={{ animation: 'float 2s ease-in-out infinite' }}>💡</span>
-          <span>¡Interactivo! Haz clic en cualquier parte del océano para trazar una nueva ruta y añadir tu puerto.</span>
+          <span style={{ animation: 'float 2s ease-in-out infinite' }}>⚓</span>
+          <span>AIS Interactivo: Haz clic en el océano para conectar puertos bidireccionales y ver los tránsitos.</span>
         </div>
 
         {/* Outer container */}
@@ -682,10 +633,57 @@ export default function Globe() {
             style={{
               maxWidth: '100%',
               display: 'block',
-              filter: 'drop-shadow(0 15px 50px rgba(15, 76, 129, 0.08))',
-              cursor: 'crosshair', // Show crosshair cursor to suggest interactivity
+              filter: 'drop-shadow(0 15px 50px rgba(0, 163, 255, 0.04))',
+              cursor: 'crosshair',
+              borderRadius: '16px',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
             }}
           />
+
+          {/* MarineTraffic-style Map Legend Card */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              backgroundColor: 'rgba(5, 8, 17, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              backdropFilter: 'blur(10px)',
+              pointerEvents: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
+              zIndex: 10,
+            }}
+          >
+            <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em', marginBottom: '2px' }}>
+              Leyenda AIS
+            </div>
+            {[
+              { label: 'Carga (Cargo)', color: SHIP_COLORS.cargo },
+              { label: 'Petrolero (Tanker)', color: SHIP_COLORS.tanker },
+              { label: 'Especial / Remolcador', color: SHIP_COLORS.tug },
+              { label: 'Pasajero / Pesca', color: SHIP_COLORS.passenger },
+            ].map((item, idx) => (
+              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span
+                  style={{
+                    width: '0',
+                    height: '0',
+                    borderLeft: '4px solid transparent',
+                    borderRight: '4px solid transparent',
+                    borderBottom: `8px solid ${item.color}`,
+                    display: 'inline-block',
+                    transform: 'rotate(45deg)',
+                  }}
+                />
+                <span style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{item.label}</span>
+              </div>
+            ))}
+          </div>
 
           {/* Interactive Toast Notifications */}
           {showToast && (
@@ -693,12 +691,14 @@ export default function Globe() {
               style={{
                 position: 'absolute',
                 top: '20px',
-                backgroundColor: 'rgba(13, 17, 24, 0.95)',
-                border: '1.5px solid rgba(0, 163, 255, 0.3)',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                backgroundColor: 'rgba(5, 8, 17, 0.95)',
+                border: '1px solid rgba(0, 163, 255, 0.3)',
                 borderRadius: '8px',
                 padding: '12px 20px',
                 color: '#ffffff',
-                fontSize: '13.5px',
+                fontSize: '13px',
                 fontWeight: 600,
                 boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
                 backdropFilter: 'blur(10px)',
@@ -754,7 +754,7 @@ export default function Globe() {
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-4px)';
                   e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
-                  e.currentTarget.style.borderColor = 'rgba(15, 76, 129, 0.25)';
+                  e.currentTarget.style.borderColor = 'rgba(0, 163, 255, 0.2)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
@@ -766,7 +766,7 @@ export default function Globe() {
                   style={{
                     fontSize: '24px',
                     fontWeight: 700,
-                    color: 'var(--primary-hover)',
+                    color: '#00a3ff',
                     fontFamily: 'var(--font-space-grotesk)',
                   }}
                 >
