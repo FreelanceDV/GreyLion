@@ -80,6 +80,13 @@ const latToY = (lat: number) => {
   return 0.5 - Math.log((1 + clamped) / (1 - clamped)) / (4 * Math.PI);
 };
 
+// Global ref for panning offsets to allow butter-smooth, 60fps drag mapping without iframe flickering
+const panOffsetGlobal = { x: 0, y: 0 };
+
+// Header and footer heights of the MarineTraffic iframe layout to align coordinate systems
+const MAP_HEADER_OFFSET = 38; // px
+const MAP_FOOTER_OFFSET = 20; // px
+
 const getCanvasPos = (
   lat: number,
   lng: number,
@@ -87,7 +94,8 @@ const getCanvasPos = (
   centerLat: number,
   centerLng: number,
   w: number,
-  h: number
+  h: number,
+  applyOffset: boolean = true
 ) => {
   const TILE_SIZE = 256;
   const scale = Math.pow(2, zoom);
@@ -98,9 +106,18 @@ const getCanvasPos = (
   const pointWorldX = lngToX(lng) * TILE_SIZE * scale;
   const pointWorldY = latToY(lat) * TILE_SIZE * scale;
 
-  // Projection centered on the canvas view
-  const x = w / 2 + (pointWorldX - centerWorldX);
-  const y = h / 2 + (pointWorldY - centerWorldY);
+  // Calibrate projection Y-center based on MarineTraffic's vertical visible map boundaries
+  const mapHeight = h - MAP_HEADER_OFFSET - MAP_FOOTER_OFFSET;
+  const centerYPos = mapHeight / 2 + MAP_HEADER_OFFSET;
+
+  let x = w / 2 + (pointWorldX - centerWorldX);
+  let y = centerYPos + (pointWorldY - centerWorldY);
+
+  // Apply real-time visual offset from drag panning
+  if (applyOffset) {
+    x += panOffsetGlobal.x;
+    y += panOffsetGlobal.y;
+  }
 
   return { x, y };
 };
@@ -120,8 +137,11 @@ const canvasToLatLng = (
   const centerWorldX = lngToX(centerLng) * TILE_SIZE * scale;
   const centerWorldY = latToY(centerLat) * TILE_SIZE * scale;
 
+  const mapHeight = h - MAP_HEADER_OFFSET - MAP_FOOTER_OFFSET;
+  const centerYPos = mapHeight / 2 + MAP_HEADER_OFFSET;
+
   const pointWorldX = centerWorldX + (screenX - w / 2);
-  const pointWorldY = centerWorldY + (screenY - h / 2);
+  const pointWorldY = centerWorldY + (screenY - centerYPos);
 
   const normX = pointWorldX / (TILE_SIZE * scale);
   const normY = pointWorldY / (TILE_SIZE * scale);
@@ -210,10 +230,10 @@ export default function Globe() {
   const [mapMode, setMapMode] = useState<'navigation' | 'draw'>('navigation');
   const [iframeKey, setIframeKey] = useState(0);
 
-  // Map state (centered at Caribbean/Barranquilla by default)
-  const [zoom, setZoom] = useState(5);
-  const [centerLat, setCenterLat] = useState(12.0);
-  const [centerLng, setCenterLng] = useState(-77.5);
+  // Map state (centered to fit Ecuador, Panama, Colombia, and Miami comfortably)
+  const [zoom, setZoom] = useState(4);
+  const [centerLat, setCenterLat] = useState(11.0);
+  const [centerLng, setCenterLng] = useState(-78.0);
 
   // Sync references for animation loop readouts without resetting useEffect
   const zoomRef = useRef(zoom);
@@ -225,6 +245,13 @@ export default function Globe() {
     centerLatRef.current = centerLat;
     centerLngRef.current = centerLng;
   }, [zoom, centerLat, centerLng]);
+
+  // Drag Panning variables
+  const isDraggingRef = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const hasDraggedRef = useRef(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const centerStartRef = useRef({ lat: 0, lng: 0 });
 
   // Initial geographic ports (all located in water)
   const portsRef = useRef<PortNode[]>([
@@ -269,8 +296,77 @@ export default function Globe() {
     setPortsCount(portsRef.current.length);
   }, []);
 
+  // Handle Drag Start
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    hasDraggedRef.current = false;
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+    centerStartRef.current = { lat: centerLat, lng: centerLng };
+    panOffsetGlobal.x = 0;
+    panOffsetGlobal.y = 0;
+  };
+
+  // Handle Dragging
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDraggingRef.current) return;
+
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      hasDraggedRef.current = true;
+    }
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const pixelScaleX = canvas.width / rect.width;
+    const pixelScaleY = canvas.height / rect.height;
+
+    // Set translation visually immediately for fluid 60fps movement
+    panOffsetGlobal.x = dx * pixelScaleX;
+    panOffsetGlobal.y = dy * pixelScaleY;
+  };
+
+  // Handle Drag End and commit translation changes to map coordinates
+  const handleMouseUpOrLeave = () => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    setIsDragging(false);
+
+    if (hasDraggedRef.current) {
+      const scale = Math.pow(2, zoom);
+      const TILE_SIZE = 256;
+
+      const degPerPixelLng = 360 / (TILE_SIZE * scale);
+      const degPerPixelLat = (180 / Math.PI) * (2 * Math.PI) / (TILE_SIZE * scale);
+
+      const deltaLng = panOffsetGlobal.x * degPerPixelLng;
+      const deltaLat = panOffsetGlobal.y * degPerPixelLat;
+
+      // Update actual states, committing position change
+      setCenterLng((prev) => prev - deltaLng);
+      setCenterLat((prev) => Math.max(-60, Math.min(80, prev + deltaLat)));
+    }
+
+    // Reset temporary canvas offset ref
+    panOffsetGlobal.x = 0;
+    panOffsetGlobal.y = 0;
+  };
+
   // Handle click on canvas overlay to create custom ports and link bidirectionally
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // Prevent adding a port if click was part of a drag action
+    if (hasDraggedRef.current) {
+      hasDraggedRef.current = false;
+      return;
+    }
+
+    // Only place ports in drawing mode
+    if (mapMode !== 'draw') return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -673,7 +769,7 @@ export default function Globe() {
           <span>
             {mapMode === 'draw' 
               ? 'Modo Trazado Activo: Haz clic en el océano para situar tu puerto y trazar rutas.' 
-              : 'Modo Navegación: Interactúa con el mapa, arrastra y haz zoom usando el Panel de Control.'}
+              : 'Modo Navegación: Arrastra el mapa con el mouse o usa el Panel de Control para explorar.'}
           </span>
         </div>
 
@@ -700,7 +796,7 @@ export default function Globe() {
               position: 'absolute',
               inset: 0,
               border: 0,
-              pointerEvents: mapMode === 'navigation' ? 'auto' : 'none', // Toggle input capture
+              pointerEvents: 'none', // Keep iframe non-interactive so dragging canvas works perfectly!
             }}
             title="MarineTraffic Live AIS Map Background"
           />
@@ -708,15 +804,19 @@ export default function Globe() {
           {/* Transparent Canvas overlay drawing simulated routes and rotated ship arrows */}
           <canvas
             ref={canvasRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUpOrLeave}
+            onMouseLeave={handleMouseUpOrLeave}
             onClick={handleCanvasClick}
             style={{
               position: 'absolute',
               inset: 0,
               zIndex: 5,
               display: 'block',
-              cursor: mapMode === 'draw' ? 'crosshair' : 'default',
+              cursor: mapMode === 'draw' ? 'crosshair' : (isDragging ? 'grabbing' : 'grab'),
               backgroundColor: 'transparent',
-              pointerEvents: mapMode === 'draw' ? 'auto' : 'none', // Pass clicks down to iframe in navigation mode
+              pointerEvents: 'auto', // Always capture mouse events to maintain drag and click sync!
             }}
           />
 
@@ -894,9 +994,9 @@ export default function Globe() {
                 <button
                   onClick={() => {
                     // Reset to initial settings
-                    setZoom(5);
-                    setCenterLat(12.0);
-                    setCenterLng(-77.5);
+                    setZoom(4);
+                    setCenterLat(11.0);
+                    setCenterLng(-78.0);
                     setIframeKey(prev => prev + 1);
                     setToastMessage('Posición y zoom restablecidos al valor de origen.');
                     setShowToast(true);
