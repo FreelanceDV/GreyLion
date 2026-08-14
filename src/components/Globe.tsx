@@ -2,31 +2,27 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-// Normalized 1000x530 coordinates for landmasses visible in the Caribbean/Latin American zoom-5 frame
-// Used to block users from creating ports on land and to keep routes over the sea
+// Simplified continent polygons defined in actual geographic coordinates (longitude, latitude)
 const LAND_POLYGONS: [number, number][][] = [
-  // Florida / Miami land area (Top center/left)
+  // Florida / USA
   [
-    [370, 0], [400, 70], [415, 105], [425, 105], [435, 70], [445, 0]
+    [-83, 30], [-80.5, 25.2], [-80, 25], [-80, 27], [-81.5, 30], [-84, 30]
   ],
-  // Cuba / Bahamas (Islands in the middle top)
+  // Cuba
   [
-    [420, 140], [480, 160], [530, 170], [550, 160], [450, 130]
+    [-84.9, 21.9], [-80.5, 21.5], [-74.2, 20.1], [-75.8, 19.8], [-82.5, 23.0]
   ],
-  // Central America (Nicaragua / Costa Rica / Panama)
+  // Central America
   [
-    [0, 150], [100, 170], [160, 200], [170, 220], [150, 240], [130, 250],
-    [140, 280], [160, 310], [210, 320], [260, 335], [290, 345], [300, 355],
-    [280, 365], [240, 360], [200, 350], [140, 330], [110, 310], [60, 300],
-    [0, 270]
+    [-90.0, 14.5], [-86.0, 12.0], [-83.5, 9.5], [-77.5, 7.5], [-77.2, 8.2],
+    [-80.0, 9.2], [-83.0, 10.0], [-85.5, 11.5], [-87.0, 13.0], [-88.5, 13.5]
   ],
-  // South America (Colombia / Ecuador / Venezuela)
+  // South America (Northern region)
   [
-    [290, 345], [320, 350], [350, 330], [380, 310], [430, 320], [460, 320],
-    [480, 320], [500, 315], [520, 315], [550, 310], [570, 300], [590, 295],
-    [630, 310], [680, 320], [750, 320], [1000, 320], [1000, 530], [200, 530],
-    [200, 500], [225, 470], [250, 460], [275, 440], [295, 420], [295, 390],
-    [290, 370]
+    [-77.5, 7.5], [-77.2, 8.2], [-76.8, 8.5], [-75.5, 10.5], [-74.8, 11.0],
+    [-73.0, 12.0], [-71.5, 12.2], [-70.0, 12.5], [-68.0, 10.5], [-60.0, 10.5],
+    [-60.0, -10.0], [-82.0, -10.0], [-81.0, -5.0], [-79.8, -2.2], [-77.5, 1.0],
+    [-77.0, 4.0], [-77.5, 7.0]
   ]
 ];
 
@@ -44,6 +40,7 @@ function isPointInPolygon(point: [number, number], polygon: [number, number][]) 
   return inside;
 }
 
+// Distance from point to line segment
 function getDistanceToSegment(p: [number, number], a: [number, number], b: [number, number]) {
   const [px, py] = p;
   const [ax, ay] = a;
@@ -62,6 +59,7 @@ function getDistanceToSegment(p: [number, number], a: [number, number], b: [numb
   return Math.sqrt((px - projX) ** 2 + (py - projY) ** 2);
 }
 
+// Distance from point to closest polygon border
 function getDistanceToPolygonBorder(point: [number, number], polygon: [number, number][]) {
   let minDist = Infinity;
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
@@ -73,11 +71,73 @@ function getDistanceToPolygonBorder(point: [number, number], polygon: [number, n
   return minDist;
 }
 
+// Mercator Projection formulas to map real-world Lat/Lng to pixel space dynamically
+const lngToX = (lng: number) => (lng + 180) / 360;
+
+const latToY = (lat: number) => {
+  const sinLatitude = Math.sin((lat * Math.PI) / 180);
+  const clamped = Math.max(-0.9999, Math.min(0.9999, sinLatitude));
+  return 0.5 - Math.log((1 + clamped) / (1 - clamped)) / (4 * Math.PI);
+};
+
+const getCanvasPos = (
+  lat: number,
+  lng: number,
+  zoom: number,
+  centerLat: number,
+  centerLng: number,
+  w: number,
+  h: number
+) => {
+  const TILE_SIZE = 256;
+  const scale = Math.pow(2, zoom);
+
+  const centerWorldX = lngToX(centerLng) * TILE_SIZE * scale;
+  const centerWorldY = latToY(centerLat) * TILE_SIZE * scale;
+
+  const pointWorldX = lngToX(lng) * TILE_SIZE * scale;
+  const pointWorldY = latToY(lat) * TILE_SIZE * scale;
+
+  // Projection centered on the canvas view
+  const x = w / 2 + (pointWorldX - centerWorldX);
+  const y = h / 2 + (pointWorldY - centerWorldY);
+
+  return { x, y };
+};
+
+const canvasToLatLng = (
+  screenX: number,
+  screenY: number,
+  zoom: number,
+  centerLat: number,
+  centerLng: number,
+  w: number,
+  h: number
+) => {
+  const TILE_SIZE = 256;
+  const scale = Math.pow(2, zoom);
+
+  const centerWorldX = lngToX(centerLng) * TILE_SIZE * scale;
+  const centerWorldY = latToY(centerLat) * TILE_SIZE * scale;
+
+  const pointWorldX = centerWorldX + (screenX - w / 2);
+  const pointWorldY = centerWorldY + (screenY - h / 2);
+
+  const normX = pointWorldX / (TILE_SIZE * scale);
+  const normY = pointWorldY / (TILE_SIZE * scale);
+
+  const lng = normX * 360 - 180;
+  const n = Math.PI - 2 * Math.PI * normY;
+  const lat = (180 / Math.PI) * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+
+  return { lat, lng };
+};
+
 interface PortNode {
   id: string;
   name: string;
-  normX: number;
-  normY: number;
+  lat: number;
+  lng: number;
   connections: string[];
   pulse: number;
 }
@@ -140,36 +200,41 @@ const getEllipsePoint = (
   };
 };
 
-const mapCoords = (nx: number, ny: number, w: number, h: number) => {
-  const paddingX = Math.max(20, w * 0.06);
-  const paddingY = Math.max(20, h * 0.06);
-  const drawW = w - paddingX * 2;
-  const drawH = h - paddingY * 2;
-
-  return {
-    x: paddingX + (nx / 1000) * drawW,
-    y: paddingY + (ny / 530) * drawH,
-  };
-};
-
 export default function Globe() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [portsCount, setPortsCount] = useState(7);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  
   const [mapMode, setMapMode] = useState<'navigation' | 'draw'>('navigation');
   const [iframeKey, setIframeKey] = useState(0);
 
-  // Port nodes overlayed on the Caribbean centered MarineTraffic projection coordinates (zoom: 5)
+  // Map state (centered at Caribbean/Barranquilla by default)
+  const [zoom, setZoom] = useState(5);
+  const [centerLat, setCenterLat] = useState(12.0);
+  const [centerLng, setCenterLng] = useState(-77.5);
+
+  // Sync references for animation loop readouts without resetting useEffect
+  const zoomRef = useRef(zoom);
+  const centerLatRef = useRef(centerLat);
+  const centerLngRef = useRef(centerLng);
+
+  useEffect(() => {
+    zoomRef.current = zoom;
+    centerLatRef.current = centerLat;
+    centerLngRef.current = centerLng;
+  }, [zoom, centerLat, centerLng]);
+
+  // Initial geographic ports (all located in water)
   const portsRef = useRef<PortNode[]>([
-    { id: 'miami', name: 'Miami (EE.UU.)', normX: 435, normY: 120, connections: ['barranquilla', 'nicaragua'], pulse: 0 },
-    { id: 'nicaragua', name: 'Nicaragua', normX: 190, normY: 230, connections: ['miami', 'panama'], pulse: Math.PI / 4 },
-    { id: 'panama', name: 'Canal de Panamá', normX: 310, normY: 330, connections: ['nicaragua', 'ecuador', 'barranquilla'], pulse: Math.PI / 2 },
-    { id: 'barranquilla', name: 'Barranquilla (Col)', normX: 520, normY: 295, connections: ['miami', 'panama', 'cartagena', 'santa_marta'], pulse: Math.PI / 6 },
-    { id: 'ecuador', name: 'Ecuador', normX: 210, normY: 485, connections: ['panama'], pulse: (Math.PI * 3) / 4 },
-    { id: 'cartagena', name: 'Cartagena (Col)', normX: 485, normY: 308, connections: ['barranquilla', 'santa_marta'], pulse: Math.PI / 3 },
-    { id: 'santa_marta', name: 'Santa Marta (Col)', normX: 550, normY: 285, connections: ['barranquilla', 'cartagena'], pulse: Math.PI / 8 },
+    { id: 'miami', name: 'Miami (EE.UU.)', lat: 25.7617, lng: -80.1918, connections: ['barranquilla', 'nicaragua'], pulse: 0 },
+    { id: 'nicaragua', name: 'Nicaragua', lat: 12.1364, lng: -86.2513, connections: ['miami', 'panama'], pulse: Math.PI / 4 },
+    { id: 'panama', name: 'Canal de Panamá', lat: 8.9824, lng: -79.5199, connections: ['nicaragua', 'ecuador', 'barranquilla'], pulse: Math.PI / 2 },
+    { id: 'barranquilla', name: 'Barranquilla (Col)', lat: 10.9639, lng: -74.7964, connections: ['miami', 'panama', 'cartagena', 'santa_marta'], pulse: Math.PI / 6 },
+    { id: 'ecuador', name: 'Ecuador', lat: -2.1894, lng: -79.8890, connections: ['panama'], pulse: (Math.PI * 3) / 4 },
+    { id: 'cartagena', name: 'Cartagena (Col)', lat: 10.3910, lng: -75.4794, connections: ['barranquilla', 'santa_marta'], pulse: Math.PI / 3 },
+    { id: 'santa_marta', name: 'Santa Marta (Col)', lat: 11.2404, lng: -74.1990, connections: ['barranquilla', 'cartagena'], pulse: Math.PI / 8 },
   ]);
 
   const shipsRef = useRef<SimulatedShip[]>([]);
@@ -179,7 +244,6 @@ export default function Globe() {
   useEffect(() => {
     const shipTypes: ('cargo' | 'tanker' | 'tug' | 'passenger')[] = ['cargo', 'tanker', 'tug', 'passenger'];
     
-    // Spawn initial ships traveling between nodes
     const initialShips: SimulatedShip[] = [];
     for (let i = 0; i < 15; i++) {
       const fromIdx = Math.floor(Math.random() * portsRef.current.length);
@@ -217,36 +281,25 @@ export default function Globe() {
     const clickX = (x / rect.width) * canvas.width;
     const clickY = (y / rect.height) * canvas.height;
 
-    const w = canvas.width;
-    const h = canvas.height;
-
-    // Convert to normalized 1000x530 domain
-    const paddingX = Math.max(20, w * 0.06);
-    const paddingY = Math.max(20, h * 0.06);
-    const drawW = w - paddingX * 2;
-    const drawH = h - paddingY * 2;
-
-    const nx = ((clickX - paddingX) / drawW) * 1000;
-    const ny = ((clickY - paddingY) / drawH) * 530;
-
-    if (nx < 15 || nx > 985 || ny < 15 || ny > 515) return;
+    // Convert pixel coordinates directly to real Lat/Lng
+    const { lat, lng } = canvasToLatLng(clickX, clickY, zoom, centerLat, centerLng, canvas.width, canvas.height);
 
     // COLLISION CHECK: Enforce that ports are in water OR very close to the coast (coastlines allowed, deep land blocked)
     const onLand = LAND_POLYGONS.some((poly) =>
-      isPointInPolygon([nx, ny], poly)
+      isPointInPolygon([lng, lat], poly)
     );
 
     if (onLand) {
       let minDistanceToCoast = Infinity;
       LAND_POLYGONS.forEach((poly) => {
-        const dist = getDistanceToPolygonBorder([nx, ny], poly);
+        const dist = getDistanceToPolygonBorder([lng, lat], poly);
         if (dist < minDistanceToCoast) {
           minDistanceToCoast = dist;
         }
       });
 
-      // 15 units threshold in our normalized domain is coastal
-      const COAST_THRESHOLD = 15;
+      // 1.2 degrees is coastal margin
+      const COAST_THRESHOLD = 1.2;
       if (minDistanceToCoast > COAST_THRESHOLD) {
         setToastMessage('⚓ Error: Los puertos costeros deben ubicarse cerca de la costa, no en el interior del continente.');
         setShowToast(true);
@@ -260,8 +313,8 @@ export default function Globe() {
     let minDist = Infinity;
 
     portsRef.current.forEach((port) => {
-      const dx = port.normX - nx;
-      const dy = port.normY - ny;
+      const dx = port.lng - lng;
+      const dy = port.lat - lat;
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist < minDist) {
         minDist = dist;
@@ -269,7 +322,7 @@ export default function Globe() {
       }
     });
 
-    if (minDist < 35) {
+    if (minDist < 1.0) { // Keep ports at least 1 degree of distance apart
       setToastMessage('Haz clic más lejos de un puerto existente para crear una nueva conexión.');
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
@@ -279,12 +332,11 @@ export default function Globe() {
     const newPortId = `custom_${portsRef.current.length}`;
     const portName = `Ruta GreyLion #${portsRef.current.length - 6}`;
     
-    // Create new port node
     const newPort: PortNode = {
       id: newPortId,
       name: portName,
-      normX: Math.round(nx),
-      normY: Math.round(ny),
+      lat: Number(lat.toFixed(4)),
+      lng: Number(lng.toFixed(4)),
       connections: [nearestPort.id],
       pulse: Math.random() * Math.PI,
     };
@@ -292,17 +344,16 @@ export default function Globe() {
     // Add bidirectional link to the nearest port
     nearestPort.connections.push(newPortId);
 
-    // Auto-connect to other nearby ports (under 180px) to form a web, as long as the straight line does not cross land
+    // Auto-connect to other nearby ports (under 12 degrees) to form a web, as long as it doesn't cross land
     portsRef.current.forEach((p) => {
       if (p.id !== nearestPort.id && p.id !== newPortId) {
-        const dx = p.normX - nx;
-        const dy = p.normY - ny;
+        const dx = p.lng - lng;
+        const dy = p.lat - lat;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 180) {
-          // Double check: check middle points of the path to avoid land crossing
-          const midX = (p.normX + nx) / 2;
-          const midY = (p.normY + ny) / 2;
-          const midOnLand = LAND_POLYGONS.some((poly) => isPointInPolygon([midX, midY], poly));
+        if (dist < 12) {
+          const midLng = (p.lng + lng) / 2;
+          const midLat = (p.lat + lat) / 2;
+          const midOnLand = LAND_POLYGONS.some((poly) => isPointInPolygon([midLng, midLat], poly));
 
           if (!midOnLand) {
             newPort.connections.push(p.id);
@@ -314,10 +365,9 @@ export default function Globe() {
 
     portsRef.current.push(newPort);
 
-    // Spawn 2 new active ships on these new connections (one entering, one leaving!)
+    // Spawn 2 new active ships on these new connections
     const shipTypes: ('cargo' | 'tanker' | 'tug' | 'passenger')[] = ['cargo', 'tanker', 'tug', 'passenger'];
     
-    // Ship leaving (from nearestPort to newPort)
     shipsRef.current.push({
       fromIndex: portsRef.current.findIndex(p => p.id === nearestPort.id),
       toIndex: portsRef.current.length - 1,
@@ -327,7 +377,6 @@ export default function Globe() {
       curveHeight: getCurveHeight(nearestPort.id, newPortId),
     });
 
-    // Ship entering (from newPort to nearestPort)
     shipsRef.current.push({
       fromIndex: portsRef.current.length - 1,
       toIndex: portsRef.current.findIndex(p => p.id === nearestPort.id),
@@ -353,6 +402,21 @@ export default function Globe() {
     setPortsCount(portsRef.current.length);
   };
 
+  const handleZoom = (direction: 'in' | 'out') => {
+    setZoom((prev) => {
+      const next = direction === 'in' ? prev + 1 : prev - 1;
+      return Math.max(3, Math.min(10, next));
+    });
+  };
+
+  const handlePan = (dir: 'up' | 'down' | 'left' | 'right') => {
+    const step = 60 / Math.pow(2, zoom);
+    if (dir === 'up') setCenterLat((prev) => Math.min(80, prev + step * 0.45));
+    if (dir === 'down') setCenterLat((prev) => Math.max(-60, prev - step * 0.45));
+    if (dir === 'left') setCenterLng((prev) => prev - step * 0.8);
+    if (dir === 'right') setCenterLng((prev) => prev + step * 0.8);
+  };
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -365,10 +429,8 @@ export default function Globe() {
     const resizeCanvas = () => {
       const container = containerRef.current;
       if (container && canvas) {
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
       }
     };
 
@@ -381,17 +443,17 @@ export default function Globe() {
       
       ctx.clearRect(0, 0, w, h);
 
-      // 1. Draw Shipping Lanes (Dashed overlay lines linking nodes)
+      // 1. Draw Shipping Lanes (Dashed overlay lines linking nodes projected to Mercator coordinates)
       ctx.strokeStyle = 'rgba(0, 163, 255, 0.25)';
       ctx.lineWidth = 1.2;
       ctx.setLineDash([4, 6]);
 
       portsRef.current.forEach((port) => {
-        const p0 = mapCoords(port.normX, port.normY, w, h);
+        const p0 = getCanvasPos(port.lat, port.lng, zoomRef.current, centerLatRef.current, centerLngRef.current, w, h);
         port.connections.forEach((connId) => {
           const dest = portsRef.current.find(p => p.id === connId);
           if (dest && port.id < dest.id) { // Avoid double drawing
-            const p1 = mapCoords(dest.normX, dest.normY, w, h);
+            const p1 = getCanvasPos(dest.lat, dest.lng, zoomRef.current, centerLatRef.current, centerLngRef.current, w, h);
             const curveH = getCurveHeight(port.id, dest.id);
 
             ctx.beginPath();
@@ -441,8 +503,8 @@ export default function Globe() {
         const p0 = portsRef.current[ship.fromIndex];
         const p1 = portsRef.current[ship.toIndex];
         if (p0 && p1) {
-          const pt0 = mapCoords(p0.normX, p0.normY, w, h);
-          const pt1 = mapCoords(p1.normX, p1.normY, w, h);
+          const pt0 = getCanvasPos(p0.lat, p0.lng, zoomRef.current, centerLatRef.current, centerLngRef.current, w, h);
+          const pt1 = getCanvasPos(p1.lat, p1.lng, zoomRef.current, centerLatRef.current, centerLngRef.current, w, h);
 
           const currentPt = getEllipsePoint(ship.progress, pt0, pt1, ship.curveHeight);
           const nextPt = getEllipsePoint(Math.min(1, ship.progress + 0.005), pt0, pt1, ship.curveHeight);
@@ -476,7 +538,7 @@ export default function Globe() {
 
       // 3. Draw Port Markers
       portsRef.current.forEach((port) => {
-        const { x: px, y: py } = mapCoords(port.normX, port.normY, w, h);
+        const { x: px, y: py } = getCanvasPos(port.lat, port.lng, zoomRef.current, centerLatRef.current, centerLngRef.current, w, h);
 
         port.pulse += 0.04;
         const pulseRad = 5 + Math.sin(port.pulse) * 3.5;
@@ -611,7 +673,7 @@ export default function Globe() {
           <span>
             {mapMode === 'draw' 
               ? 'Modo Trazado Activo: Haz clic en el océano para situar tu puerto y trazar rutas.' 
-              : 'Modo Navegación: Interactúa con el mapa, arrastra y haz zoom usando los botones de MarineTraffic.'}
+              : 'Modo Navegación: Interactúa con el mapa, arrastra y haz zoom usando el Panel de Control.'}
           </span>
         </div>
 
@@ -631,7 +693,7 @@ export default function Globe() {
           {/* Real-time MarineTraffic AIS Embed Map as dynamic background, centered on Barranquilla / Caribbean zone */}
           <iframe
             key={iframeKey}
-            src="https://www.marinetraffic.com/en/ais/embed/zoom:5/centery:12.0/centerx:-77.5/maptype:3/shownames:false/shownation:false/showmenu:false/trackvessel:999999999"
+            src={`https://www.marinetraffic.com/en/ais/embed/zoom:${zoom}/centery:${centerLat}/centerx:${centerLng}/maptype:3/shownames:false/shownation:false/showmenu:false/fleet:dummy@nonexistent.com/fleet_id:999999/trackvessel:999999999`}
             width="100%"
             height="100%"
             style={{
@@ -710,80 +772,159 @@ export default function Globe() {
               bottom: '20px',
               left: '20px',
               display: 'flex',
-              gap: '8px',
+              flexDirection: 'column',
+              gap: '10px',
               backgroundColor: 'rgba(5, 8, 17, 0.85)',
               border: '1px solid rgba(255, 255, 255, 0.08)',
               borderRadius: '8px',
-              padding: '8px',
+              padding: '10px',
               backdropFilter: 'blur(10px)',
               zIndex: 10,
               boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
             }}
           >
-            <button
-              onClick={() => setMapMode('navigation')}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => setMapMode('navigation')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  backgroundColor: mapMode === 'navigation' ? 'var(--primary-hover)' : 'transparent',
+                  color: '#ffffff',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                🧭 Navegar
+              </button>
+              <button
+                onClick={() => setMapMode('draw')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  backgroundColor: mapMode === 'draw' ? 'var(--primary-hover)' : 'transparent',
+                  color: '#ffffff',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                ⚓ Trazar Puertos
+              </button>
+            </div>
+
+            {/* Custom Control Pad for perfect Lat/Lng synchronized panning and zooming */}
+            <div
               style={{
+                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                paddingTop: '8px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '4px',
-                border: 'none',
-                backgroundColor: mapMode === 'navigation' ? 'var(--primary-hover)' : 'transparent',
-                color: '#ffffff',
-                fontSize: '11px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
+                justifyContent: 'space-between',
+                gap: '12px',
               }}
             >
-              🧭 Navegar
-            </button>
-            <button
-              onClick={() => setMapMode('draw')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '4px',
-                border: 'none',
-                backgroundColor: mapMode === 'draw' ? 'var(--primary-hover)' : 'transparent',
-                color: '#ffffff',
-                fontSize: '11px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-              }}
-            >
-              ⚓ Trazar Puertos
-            </button>
-            <button
-              onClick={() => {
-                setIframeKey(prev => prev + 1);
-                setToastMessage('Vista y zoom restablecidos a la posición original.');
-                setShowToast(true);
-                setTimeout(() => setShowToast(false), 3000);
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '4px',
-                border: 'none',
-                backgroundColor: 'transparent',
-                color: 'rgba(255,255,255,0.6)',
-                fontSize: '11px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#ffffff'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-            >
-              🔄 Re-centrar
-            </button>
+              {/* Zoom Buttons */}
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button
+                  onClick={() => handleZoom('in')}
+                  title="Acercar mapa"
+                  style={{
+                    width: '26px',
+                    height: '26px',
+                    backgroundColor: 'rgba(255,255,255,0.06)',
+                    color: '#ffffff',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '4px',
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  +
+                </button>
+                <button
+                  onClick={() => handleZoom('out')}
+                  title="Alejar mapa"
+                  style={{
+                    width: '26px',
+                    height: '26px',
+                    backgroundColor: 'rgba(255,255,255,0.06)',
+                    color: '#ffffff',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '4px',
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  -
+                </button>
+              </div>
+
+              {/* D-Pad Pan Directions */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 22px)', gap: '2px' }}>
+                <span />
+                <button
+                  onClick={() => handlePan('up')}
+                  title="Desplazar arriba"
+                  style={{ height: '20px', backgroundColor: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
+                >
+                  ▲
+                </button>
+                <span />
+                <button
+                  onClick={() => handlePan('left')}
+                  title="Desplazar izquierda"
+                  style={{ height: '20px', backgroundColor: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
+                >
+                  ◀
+                </button>
+                <button
+                  onClick={() => {
+                    // Reset to initial settings
+                    setZoom(5);
+                    setCenterLat(12.0);
+                    setCenterLng(-77.5);
+                    setIframeKey(prev => prev + 1);
+                    setToastMessage('Posición y zoom restablecidos al valor de origen.');
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 3000);
+                  }}
+                  title="Centrar mapa"
+                  style={{ height: '20px', backgroundColor: 'rgba(0,163,255,0.2)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
+                >
+                  ●
+                </button>
+                <button
+                  onClick={() => handlePan('right')}
+                  title="Desplazar derecha"
+                  style={{ height: '20px', backgroundColor: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
+                >
+                  ▶
+                </button>
+                <span />
+                <button
+                  onClick={() => handlePan('down')}
+                  title="Desplazar abajo"
+                  style={{ height: '20px', backgroundColor: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
+                >
+                  ▼
+                </button>
+                <span />
+              </div>
+            </div>
           </div>
 
           {/* Interactive Toast Notifications */}
