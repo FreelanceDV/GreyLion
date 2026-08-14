@@ -16,13 +16,16 @@ export default function SectionIndicator() {
   useEffect(() => {
     const handleScroll = () => {
       let currentActive = 'inicio';
-      const scrollPosition = window.scrollY + window.innerHeight / 3;
+      // Use middle of viewport as the scroll pointer
+      const scrollPosition = window.scrollY + window.innerHeight / 2.5;
 
       for (const section of SECTIONS) {
         const el = document.getElementById(section.id);
         if (el) {
-          const top = el.offsetTop;
-          const height = el.offsetHeight;
+          const rect = el.getBoundingClientRect();
+          const top = rect.top + window.scrollY;
+          const height = rect.height;
+          
           if (scrollPosition >= top && scrollPosition < top + height) {
             currentActive = section.id;
           }
@@ -41,7 +44,12 @@ export default function SectionIndicator() {
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      const rect = el.getBoundingClientRect();
+      const top = rect.top + window.scrollY - 90; // Subtract 90px to prevent fixed navbar overlay
+      window.scrollTo({
+        top: Math.max(0, top),
+        behavior: 'smooth',
+      });
     }
   };
 

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import DynamicMedia from './DynamicMedia';
 
 const SERVICES = [
   {
@@ -48,7 +49,7 @@ export default function Comparison() {
         overflow: 'hidden',
       }}
     >
-      {/* Background Video */}
+      {/* Background Video/Image */}
       <div
         style={{
           position: 'absolute',
@@ -57,21 +58,7 @@ export default function Comparison() {
           overflow: 'hidden',
         }}
       >
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            opacity: 0.15,
-          }}
-        >
-          <source src="/charger_boat.mp4" type="video/mp4" />
-        </video>
+        <DynamicMedia assetId="background_video" fallbackSrc="/charger_boat.mp4" style={{ opacity: 0.15 }} />
         {/* Sleek Dark Gradient Overlay */}
         <div
           style={{
@@ -147,11 +134,12 @@ export default function Comparison() {
                   <div className="expand-indicator-plus">+</div>
                 </div>
 
-                {/* Card Background Image (Visible when collapsed) */}
-                <div
-                  className="card-bg"
-                  style={{ backgroundImage: `url(${service.image})` }}
-                >
+                {/* Card Background Image/Video (Visible when collapsed) */}
+                <div className="card-bg">
+                  <DynamicMedia
+                    assetId={service.id === 'maritimo' ? 'maritime_transport' : 'integral_logistics'}
+                    fallbackSrc={service.image}
+                  />
                   <div className="card-bg-overlay" />
                 </div>
 
@@ -186,10 +174,11 @@ export default function Comparison() {
                   </div>
 
                   {/* Right Column: Visual Showcase */}
-                  <div
-                    className="content-right"
-                    style={{ backgroundImage: `url(${service.image})` }}
-                  >
+                  <div className="content-right" style={{ position: 'relative', overflow: 'hidden' }}>
+                    <DynamicMedia
+                      assetId={service.id === 'maritimo' ? 'maritime_transport' : 'integral_logistics'}
+                      fallbackSrc={service.image}
+                    />
                     <div className="right-overlay" />
                   </div>
                 </div>
@@ -234,15 +223,14 @@ export default function Comparison() {
           flex: 1;
         }
 
-        /* Background image container & overlay */
+        /* Background image/video container & overlay */
         .card-bg {
           position: absolute;
           inset: 0;
-          background-size: cover;
-          background-position: center;
           z-index: 1;
           opacity: 0.6;
           transition: opacity 0.5s ease, transform 0.8s ease;
+          overflow: hidden;
         }
 
         .service-expand-card.expanded .card-bg {
@@ -422,10 +410,9 @@ export default function Comparison() {
         /* Right column (Visual photo) */
         .content-right {
           flex: 1;
-          background-size: cover;
-          background-position: center;
           position: relative;
           border-radius: 0 20px 20px 0;
+          overflow: hidden;
         }
 
         .right-overlay {

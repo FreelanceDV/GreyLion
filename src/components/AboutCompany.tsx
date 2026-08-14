@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import DynamicMedia from './DynamicMedia';
 
 export default function AboutCompany() {
   const phone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE || '573000000000';
@@ -25,21 +26,7 @@ export default function AboutCompany() {
           overflow: 'hidden',
         }}
       >
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            opacity: 0.12,
-          }}
-        >
-          <source src="/charger_boat.mp4" type="video/mp4" />
-        </video>
+        <DynamicMedia assetId="background_video" fallbackSrc="/charger_boat.mp4" style={{ opacity: 0.12 }} />
         <div
           style={{
             position: 'absolute',

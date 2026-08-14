@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import DynamicMedia from './DynamicMedia';
 
 export default function Hero() {
   const phone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE || '573000000000';
@@ -8,6 +9,7 @@ export default function Hero() {
 
   return (
     <div
+      id="inicio"
       style={{
         position: 'relative',
         width: '100%',
@@ -28,17 +30,17 @@ export default function Hero() {
           bottom: 0,
           width: '55%',
           zIndex: 0,
-          backgroundImage: 'url("/hero_ship_oceanis.jpg")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
           opacity: 0.95,
+          overflow: 'hidden',
         }}
       >
+        <DynamicMedia assetId="hero_ship" fallbackSrc="/hero_ship_oceanis.jpg" />
         {/* Soft Radial and Linear Gradients to blend image to background */}
         <div
           style={{
             position: 'absolute',
             inset: 0,
+            zIndex: 1,
             background: 'linear-gradient(to right, #070b12 0%, rgba(7, 11, 18, 0.8) 25%, rgba(7, 11, 18, 0.2) 70%, transparent 100%)',
           }}
         />
@@ -46,6 +48,7 @@ export default function Hero() {
           style={{
             position: 'absolute',
             inset: 0,
+            zIndex: 1,
             background: 'linear-gradient(to top, #070b12 0%, transparent 20%, transparent 80%, rgba(7, 11, 18, 0.4) 100%)',
           }}
         />
@@ -123,7 +126,6 @@ export default function Hero() {
 
           {/* Large Stacked Title */}
           <h1
-            id="inicio"
             style={{
               fontFamily: 'var(--font-space-grotesk)',
               fontSize: 'clamp(44px, 6.5vw, 84px)',
@@ -220,7 +222,7 @@ export default function Hero() {
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             width: '100%',
-            padding: '24px 0',
+            padding: '24px 0 54px 0',
           }}
         >
           <div

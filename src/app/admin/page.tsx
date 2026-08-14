@@ -15,35 +15,35 @@ interface MediaAsset {
 const MEDIA_ASSETS: MediaAsset[] = [
   {
     id: 'hero_ship',
-    name: 'Imagen del Hero (Barco)',
+    name: 'Imagen o Video del Hero (Barco)',
     description: 'Se utiliza como fondo en el costado derecho de la sección de presentación principal.',
-    path: '/hero_ship_oceanis.jpg',
+    path: '/hero_ship_oceanis.[ext]',
     type: 'image',
-    recommendedSize: '1920x1080 (16:9) .jpg'
+    recommendedSize: 'Cualquier Foto, GIF o Video (Límite 4.5MB)'
   },
   {
     id: 'maritime_transport',
-    name: 'Imagen: Transporte Marítimo',
+    name: 'Multimedia: Transporte Marítimo',
     description: 'Se utiliza de fondo y en el costado derecho de la tarjeta expandida de Transporte Marítimo.',
-    path: '/maritime_transport_card.jpg',
+    path: '/maritime_transport_card.[ext]',
     type: 'image',
-    recommendedSize: '800x600 (4:3) o similar .jpg'
+    recommendedSize: 'Cualquier Foto, GIF o Video (Límite 4.5MB)'
   },
   {
     id: 'integral_logistics',
-    name: 'Imagen: Logística Integral',
+    name: 'Multimedia: Logística Integral',
     description: 'Se utiliza de fondo y en el costado derecho de la tarjeta expandida de Logística Integral.',
-    path: '/integral_logistics_card.jpg',
+    path: '/integral_logistics_card.[ext]',
     type: 'image',
-    recommendedSize: '800x600 (4:3) o similar .jpg'
+    recommendedSize: 'Cualquier Foto, GIF o Video (Límite 4.5MB)'
   },
   {
     id: 'background_video',
-    name: 'Video de Fondo Principal',
+    name: 'Video o Imagen de Fondo Principal',
     description: 'Se reproduce en bucle en el fondo del Hero, en la sección de Servicios y en la sección CTA.',
-    path: '/charger_boat.mp4',
+    path: '/charger_boat.[ext]',
     type: 'video',
-    recommendedSize: 'Formato .mp4 de bajo peso (< 10MB)'
+    recommendedSize: 'Cualquier Foto, GIF o Video (Límite 4.5MB)'
   }
 ];
 
@@ -60,6 +60,10 @@ export default function AdminPage() {
   const [logMessages, setLogMessages] = useState<string[]>([]);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Link upload / URL states
+  const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file');
+  const [mediaUrlInput, setMediaUrlInput] = useState('');
 
   // Authenticate locally using sessionStorage
   useEffect(() => {
@@ -101,6 +105,7 @@ export default function AdminPage() {
   const resetUpload = () => {
     setUploadFile(null);
     setPreviewUrl(null);
+    setMediaUrlInput('');
     setUploadSuccess(false);
     setLogMessages([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -110,13 +115,16 @@ export default function AdminPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file types
-    if (selectedAsset?.type === 'image' && !file.type.startsWith('image/')) {
-      alert('Por favor seleccione un archivo de imagen válido.');
+    // Accept any image or video file type globally
+    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+      alert('Por favor seleccione un archivo multimedia válido (imagen, gif o video).');
       return;
     }
-    if (selectedAsset?.type === 'video' && !file.type.startsWith('video/')) {
-      alert('Por favor seleccione un archivo de video válido.');
+
+    // Check file size (Vercel payload limit is 4.5MB)
+    const MAX_SIZE = 4.5 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      alert(`El archivo es demasiado grande (${(file.size / 1024 / 1024).toFixed(2)}MB). El límite de carga es de 4.5MB para evitar errores del servidor (Payload Too Large).`);
       return;
     }
 
@@ -126,34 +134,54 @@ export default function AdminPage() {
   };
 
   const handleSave = async () => {
-    if (!selectedAsset || !uploadFile) return;
+    if (!selectedAsset) return;
+    if (uploadMode === 'file' && !uploadFile) return;
+    if (uploadMode === 'url' && !mediaUrlInput) return;
 
     setIsUploading(true);
     setUploadSuccess(false);
-    setLogMessages(['[1/3] Iniciando carga de archivo...', `Recurso: ${selectedAsset.name}`, `Nombre archivo: ${uploadFile.name}`]);
+    
+    if (uploadMode === 'file' && uploadFile) {
+      setLogMessages(['[1/3] Iniciando carga de archivo...', `Recurso: ${selectedAsset.name}`, `Nombre archivo: ${uploadFile.name}`]);
+    } else {
+      setLogMessages(['[1/3] Registrando enlace externo...', `Recurso: ${selectedAsset.name}`, `Enlace: ${mediaUrlInput}`]);
+    }
 
     const formData = new FormData();
     formData.append('password', password || 'greylion2026');
     formData.append('assetId', selectedAsset.id);
-    formData.append('file', uploadFile);
+    
+    if (uploadMode === 'file' && uploadFile) {
+      formData.append('file', uploadFile);
+    } else {
+      formData.append('url', mediaUrlInput);
+    }
 
     try {
-      setLogMessages(prev => [...prev, '[2/3] Subiendo y procesando archivo en servidor...']);
+      setLogMessages(prev => [...prev, '[2/3] Procesando y guardando en servidor...']);
       
       const response = await fetch('/api/admin/media', {
         method: 'POST',
         body: formData,
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseErr) {
+        throw new Error(responseText || `Error ${response.status}: ${response.statusText}`);
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || 'Ocurrió un error al subir el recurso.');
+        throw new Error(data.error || 'Ocurrió un error al guardar el recurso.');
       }
 
       setLogMessages(prev => [
         ...prev,
-        '[3/3] Archivo guardado localmente con éxito.',
+        uploadMode === 'file' 
+          ? '[3/3] Archivo cargado y configurado con éxito.'
+          : '[3/3] Enlace externo guardado con éxito en la configuración.',
         `Sincronización Git: ${data.syncStatus || 'Completado.'}`,
         '¡Proceso finalizado! Los cambios se verán reflejados en breve.'
       ]);
@@ -370,43 +398,132 @@ export default function AdminPage() {
 
                 {/* Upload Action Area */}
                 <div className="upload-section">
-                  <div className="file-dropzone" onClick={() => fileInputRef.current?.click()}>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      style={{ display: 'none' }}
-                      accept={selectedAsset.type === 'image' ? 'image/*' : 'video/*'}
-                      onChange={handleFileChange}
-                    />
-                    
-                    {previewUrl ? (
-                      <div className="preview-container" onClick={(e) => e.stopPropagation()}>
-                        {selectedAsset.type === 'image' ? (
-                          <img src={previewUrl} alt="Vista previa" className="media-preview" />
-                        ) : (
-                          <video src={previewUrl} controls className="media-preview" />
-                        )}
-                        <button onClick={resetUpload} className="change-file-btn">Cambiar Archivo</button>
-                      </div>
-                    ) : (
-                      <div className="dropzone-prompt">
-                        <span className="upload-arrow">⬆</span>
-                        <p className="title">Haga clic para subir un archivo nuevo</p>
-                        <p className="subtitle">
-                          {selectedAsset.type === 'image' ? 'Imágenes (.jpg, .png, .webp)' : 'Video (.mp4)'}
-                        </p>
-                      </div>
-                    )}
+                  {/* Mode selector */}
+                  <div className="upload-mode-selector" style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+                    <button
+                      onClick={() => { setUploadMode('file'); resetUpload(); }}
+                      style={{
+                        padding: '10px 18px',
+                        borderRadius: '8px',
+                        border: '1px solid ' + (uploadMode === 'file' ? 'var(--primary-hover)' : 'rgba(255,255,255,0.08)'),
+                        backgroundColor: uploadMode === 'file' ? 'rgba(0,163,255,0.08)' : 'transparent',
+                        color: uploadMode === 'file' ? '#00a3ff' : 'var(--text-gray)',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                      }}
+                    >
+                      📁 Archivo Local
+                    </button>
+                    <button
+                      onClick={() => { setUploadMode('url'); resetUpload(); }}
+                      style={{
+                        padding: '10px 18px',
+                        borderRadius: '8px',
+                        border: '1px solid ' + (uploadMode === 'url' ? 'var(--primary-hover)' : 'rgba(255,255,255,0.08)'),
+                        backgroundColor: uploadMode === 'url' ? 'rgba(0,163,255,0.08)' : 'transparent',
+                        color: uploadMode === 'url' ? '#00a3ff' : 'var(--text-gray)',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                      }}
+                    >
+                      🔗 Enlace / URL
+                    </button>
                   </div>
 
-                  {uploadFile && (
-                    <div className="upload-actions">
+                  {uploadMode === 'file' ? (
+                    <div className="file-dropzone" onClick={() => fileInputRef.current?.click()}>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        style={{ display: 'none' }}
+                        accept="image/*,video/*"
+                        onChange={handleFileChange}
+                      />
+                      
+                      {previewUrl && uploadFile ? (
+                        <div className="preview-container" onClick={(e) => e.stopPropagation()}>
+                          {uploadFile.type.startsWith('video/') ? (
+                            <video src={previewUrl} controls className="media-preview" />
+                          ) : (
+                            <img src={previewUrl} alt="Vista previa" className="media-preview" />
+                          )}
+                          <button onClick={resetUpload} className="change-file-btn">Cambiar Archivo</button>
+                        </div>
+                      ) : (
+                        <div className="dropzone-prompt">
+                          <span className="upload-arrow">⬆</span>
+                          <p className="title">Haga clic para subir un archivo nuevo</p>
+                          <p className="subtitle">
+                            Cualquier imagen, GIF o video (.jpg, .png, .webp, .gif, .mp4)
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+                      {previewUrl ? (
+                        <div className="preview-container" style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          {(previewUrl.toLowerCase().split('?')[0].endsWith('.mp4') ||
+                            previewUrl.toLowerCase().split('?')[0].endsWith('.mov') ||
+                            previewUrl.toLowerCase().split('?')[0].endsWith('.webm')) ? (
+                            <video src={previewUrl} controls className="media-preview" style={{ maxWidth: '100%', maxHeight: '240px', borderRadius: '8px' }} />
+                          ) : (
+                            <img src={previewUrl} alt="Vista previa" className="media-preview" style={{ maxWidth: '100%', maxHeight: '240px', borderRadius: '8px', objectFit: 'contain' }} />
+                          )}
+                          <button onClick={resetUpload} className="change-file-btn" style={{ marginTop: '12px' }}>Limpiar Enlace</button>
+                        </div>
+                      ) : (
+                        <div style={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                          border: '1px dashed rgba(255, 255, 255, 0.15)',
+                          borderRadius: '16px',
+                          padding: '40px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '16px',
+                          width: '100%',
+                        }}>
+                          <label style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-white)' }}>
+                            Pegue el enlace directo de la imagen, gif o video:
+                          </label>
+                          <input
+                            type="url"
+                            placeholder="https://ejemplo.com/mi-video-pesado.mp4"
+                            value={mediaUrlInput}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setMediaUrlInput(val);
+                              setPreviewUrl(val || null);
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '14px 16px',
+                              borderRadius: '8px',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              backgroundColor: '#0a0b0d',
+                              color: '#ffffff',
+                              fontSize: '14px',
+                              outline: 'none',
+                            }}
+                          />
+                          <p style={{ fontSize: '12px', color: 'var(--text-gray)', margin: 0 }}>
+                            Nota: Asegúrese de usar enlaces directos que terminen en la extensión correspondiente para que la página los procese correctamente.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {((uploadMode === 'file' && uploadFile) || (uploadMode === 'url' && mediaUrlInput)) && (
+                    <div className="upload-actions" style={{ marginTop: '20px' }}>
                       <button
                         onClick={handleSave}
                         disabled={isUploading}
                         className="save-btn"
                       >
-                        {isUploading ? 'Procesando y Desplegando...' : 'Guardar y Desplegar Cambios'}
+                        {isUploading ? 'Guardando...' : 'Guardar Cambios'}
                       </button>
                       <button onClick={resetUpload} disabled={isUploading} className="cancel-btn">
                         Cancelar
@@ -419,7 +536,7 @@ export default function AdminPage() {
                 {(logMessages.length > 0 || isUploading) && (
                   <div className="terminal-logs">
                     <div className="terminal-header">
-                      <span className="terminal-title">Terminal de Despliegue</span>
+                      <span className="terminal-title">Terminal de Estado</span>
                       <span className="terminal-status">{isUploading ? 'PROCESANDO' : uploadSuccess ? 'COMPLETADO' : 'ERROR'}</span>
                     </div>
                     <div className="terminal-body">
