@@ -26,15 +26,49 @@ export default function CTA() {
             boxShadow: '0 30px 60px rgba(15, 76, 129, 0.25)',
           }}
         >
+          {/* Background Video */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 0,
+              overflow: 'hidden',
+            }}
+          >
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                opacity: 0.25,
+              }}
+            >
+              <source src="/charger_boat.mp4" type="video/mp4" />
+            </video>
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'linear-gradient(90deg, var(--primary) 0%, rgba(15, 76, 129, 0.75) 50%, rgba(10, 11, 13, 0.95) 100%)',
+              }}
+            />
+          </div>
+
           {/* Subtle grid pattern background overlay in CSS */}
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              opacity: 0.1,
+              opacity: 0.08,
               backgroundImage: 'linear-gradient(rgba(0,0,0,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.15) 1px, transparent 1px)',
               backgroundSize: '24px 24px',
               pointerEvents: 'none',
+              zIndex: 1,
             }}
           />
 
