@@ -68,29 +68,41 @@ export default function AdminPage() {
   // Authenticate locally using sessionStorage
   useEffect(() => {
     const token = sessionStorage.getItem('greylion_admin_token');
+    const pass = sessionStorage.getItem('greylion_admin_pass');
     if (token === 'authenticated') {
       setIsAuthenticated(true);
+      if (pass) setPassword(pass);
     }
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!password) return;
     
-    // Send a dummy test upload or just verify locally against standard
-    // In production we send requests with password to ensure api validation.
-    // For client-side route protection, we use a simple sessionStorage save.
-    if (password === 'greylion2026') {
-      sessionStorage.setItem('greylion_admin_token', 'authenticated');
-      setIsAuthenticated(true);
-      setLoginError('');
-    } else {
-      setLoginError('Contraseña incorrecta. Por favor, intente de nuevo.');
+    try {
+      const res = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.authenticated) {
+        sessionStorage.setItem('greylion_admin_token', 'authenticated');
+        sessionStorage.setItem('greylion_admin_pass', password);
+        setIsAuthenticated(true);
+        setLoginError('');
+      } else {
+        setLoginError(data.error || 'Contraseña incorrecta. Por favor, intente de nuevo.');
+      }
+    } catch (err) {
+      setLoginError('Error de conexión con el servidor de autenticación.');
     }
   };
 
   const handleLogout = () => {
     sessionStorage.removeItem('greylion_admin_token');
+    sessionStorage.removeItem('greylion_admin_pass');
     setIsAuthenticated(false);
     setPassword('');
     setSelectedAsset(null);
@@ -148,7 +160,7 @@ export default function AdminPage() {
     }
 
     const formData = new FormData();
-    formData.append('password', password || 'greylion2026');
+    formData.append('password', password);
     formData.append('assetId', selectedAsset.id);
     
     if (uploadMode === 'file' && uploadFile) {

@@ -2,55 +2,47 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-// Normalized 1000x500 coordinates for simplified landmasses
+// Normalized 1000x530 coordinates for landmasses visible in the Caribbean/Latin American zoom-5 frame
+// Used to block users from creating ports on land and to keep routes over the sea
 const LAND_POLYGONS: [number, number][][] = [
-  // North America
+  // Florida / Miami land area (Top center/left)
   [
-    [40, 90], [70, 70], [100, 60], [130, 75], [160, 55], [210, 55], [240, 70], [250, 95], [275, 105], [250, 125], 
-    [240, 155], [265, 185], [275, 215], [250, 245], [240, 280], [215, 290], [195, 290], [180, 315], [175, 335], 
-    [165, 335], [160, 305], [170, 275], [150, 255], [135, 255], [120, 235], [105, 235], [85, 215], [75, 175], 
-    [55, 165], [45, 145]
+    [370, 0], [400, 70], [415, 105], [425, 105], [435, 70], [445, 0]
   ],
-  // Greenland
+  // Cuba / Bahamas (Islands in the middle top)
   [
-    [260, 45], [315, 30], [330, 65], [290, 100], [255, 75]
+    [420, 140], [480, 160], [530, 170], [550, 160], [450, 130]
   ],
-  // South America
+  // Central America (Nicaragua / Costa Rica / Panama)
   [
-    [175, 335], [200, 345], [230, 365], [260, 395], [275, 415], [255, 455], [230, 495], [205, 545], [195, 545], 
-    [195, 505], [180, 475], [165, 435], [155, 385], [160, 355]
+    [0, 150], [100, 170], [160, 200], [170, 220], [150, 240], [130, 250],
+    [140, 280], [160, 310], [210, 320], [260, 335], [290, 345], [300, 355],
+    [280, 365], [240, 360], [200, 350], [140, 330], [110, 310], [60, 300],
+    [0, 270]
   ],
-  // Africa
+  // South America (Colombia / Ecuador / Venezuela)
   [
-    [360, 255], [415, 245], [465, 255], [480, 275], [510, 275], [525, 325], [515, 365], [490, 415], [465, 485], 
-    [455, 515], [445, 515], [435, 485], [415, 435], [405, 415], [365, 375], [345, 355], [320, 325], [315, 285], 
-    [335, 265]
-  ],
-  // Eurasia (Europe & Asia)
-  [
-    [360, 245], [375, 215], [365, 175], [355, 155], [370, 135], [380, 145], [385, 115], [400, 95], [425, 85], 
-    [455, 75], [505, 65], [555, 55], [605, 55], [655, 65], [705, 55], [755, 65], [805, 75], [855, 95], 
-    [875, 115], [845, 145], [865, 185], [835, 235], [805, 235], [785, 275], [755, 315], [715, 335], [685, 355], 
-    [675, 355], [665, 335], [645, 335], [625, 355], [595, 355], [575, 325], [555, 325], [515, 315], [485, 335], 
-    [465, 335], [455, 275], [415, 265], [395, 265]
-  ],
-  // Australia
-  [
-    [715, 445], [755, 425], [785, 435], [805, 475], [775, 525], [745, 525], [700, 485]
-  ],
-  // Madagascar
-  [
-    [495, 425], [505, 455], [485, 465], [475, 435]
-  ],
-  // Japan
-  [
-    [825, 175], [845, 195], [835, 225], [815, 205]
-  ],
-  // United Kingdom & Ireland
-  [
-    [335, 155], [355, 145], [365, 175], [345, 205], [330, 185]
+    [290, 345], [320, 350], [350, 330], [380, 310], [430, 320], [460, 320],
+    [480, 320], [500, 315], [520, 315], [550, 310], [570, 300], [590, 295],
+    [630, 310], [680, 320], [750, 320], [1000, 320], [1000, 530], [200, 530],
+    [200, 500], [225, 470], [250, 460], [275, 440], [295, 420], [295, 390],
+    [290, 370]
   ]
 ];
+
+// Ray casting algorithm for point-in-polygon check
+function isPointInPolygon(point: [number, number], polygon: [number, number][]) {
+  const [x, y] = point;
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i][0], yi = polygon[i][1];
+    const xj = polygon[j][0], yj = polygon[j][1];
+    const intersect = ((yi > y) !== (yj > y))
+        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
 
 interface PortNode {
   id: string;
@@ -134,18 +126,19 @@ const mapCoords = (nx: number, ny: number, w: number, h: number) => {
 export default function Globe() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [portsCount, setPortsCount] = useState(6);
+  const [portsCount, setPortsCount] = useState(7);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  // Port nodes with direct bidirectional connections representing routes
+  // Port nodes overlayed on the Caribbean centered MarineTraffic projection coordinates (zoom: 5)
   const portsRef = useRef<PortNode[]>([
-    { id: 'houston', name: 'Houston', normX: 210, normY: 220, connections: ['barranquilla', 'rotterdam'], pulse: 0 },
-    { id: 'rotterdam', name: 'Rotterdam', normX: 425, normY: 155, connections: ['barranquilla', 'cape_town', 'houston'], pulse: Math.PI / 3 },
-    { id: 'singapore', name: 'Singapore', normX: 690, normY: 350, connections: ['cape_town', 'shanghai'], pulse: (Math.PI * 2) / 3 },
-    { id: 'shanghai', name: 'Shanghai', normX: 760, normY: 220, connections: ['singapore', 'houston'], pulse: Math.PI },
-    { id: 'cape_town', name: 'Cape Town', normX: 460, normY: 480, connections: ['rotterdam', 'singapore'], pulse: (Math.PI * 4) / 3 },
-    { id: 'barranquilla', name: 'Barranquilla', normX: 220, normY: 300, connections: ['houston', 'rotterdam'], pulse: Math.PI / 6 },
+    { id: 'miami', name: 'Miami (EE.UU.)', normX: 435, normY: 120, connections: ['barranquilla', 'nicaragua'], pulse: 0 },
+    { id: 'nicaragua', name: 'Nicaragua', normX: 190, normY: 230, connections: ['miami', 'panama'], pulse: Math.PI / 4 },
+    { id: 'panama', name: 'Canal de Panamá', normX: 310, normY: 330, connections: ['nicaragua', 'ecuador', 'barranquilla'], pulse: Math.PI / 2 },
+    { id: 'barranquilla', name: 'Barranquilla (Col)', normX: 520, normY: 295, connections: ['miami', 'panama', 'cartagena', 'santa_marta'], pulse: Math.PI / 6 },
+    { id: 'ecuador', name: 'Ecuador', normX: 210, normY: 485, connections: ['panama'], pulse: (Math.PI * 3) / 4 },
+    { id: 'cartagena', name: 'Cartagena (Col)', normX: 485, normY: 308, connections: ['barranquilla', 'santa_marta'], pulse: Math.PI / 3 },
+    { id: 'santa_marta', name: 'Santa Marta (Col)', normX: 550, normY: 285, connections: ['barranquilla', 'cartagena'], pulse: Math.PI / 8 },
   ]);
 
   const shipsRef = useRef<SimulatedShip[]>([]);
@@ -155,7 +148,7 @@ export default function Globe() {
   useEffect(() => {
     const shipTypes: ('cargo' | 'tanker' | 'tug' | 'passenger')[] = ['cargo', 'tanker', 'tug', 'passenger'];
     
-    // Spawn 15 initial ships traveling between existing nodes
+    // Spawn initial ships traveling between nodes
     const initialShips: SimulatedShip[] = [];
     for (let i = 0; i < 15; i++) {
       const fromIdx = Math.floor(Math.random() * portsRef.current.length);
@@ -169,8 +162,8 @@ export default function Globe() {
           initialShips.push({
             fromIndex: fromIdx,
             toIndex: toIdx,
-            progress: Math.random(), // Distributed progress
-            speed: 0.0006 + Math.random() * 0.0006, // Smooth slow speed
+            progress: Math.random(),
+            speed: 0.0006 + Math.random() * 0.0008,
             type: shipTypes[i % shipTypes.length],
             curveHeight: getCurveHeight(fromPort.id, destId),
           });
@@ -181,7 +174,7 @@ export default function Globe() {
     setPortsCount(portsRef.current.length);
   }, []);
 
-  // Handle click on canvas: Creates custom ports and connects them bidirectionally
+  // Handle click on canvas overlay to create custom ports and link bidirectionally
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -207,6 +200,18 @@ export default function Globe() {
 
     if (nx < 15 || nx > 985 || ny < 15 || ny > 515) return;
 
+    // COLLISION CHECK: Enforce that ships and ports are placed only in water, not on land!
+    const onLand = LAND_POLYGONS.some((poly) =>
+      isPointInPolygon([nx, ny], poly)
+    );
+
+    if (onLand) {
+      setToastMessage('⚓ Error: No se puede establecer un puerto en tierra firme. Selecciona un punto en el océano.');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3200);
+      return;
+    }
+
     // Find nearest port to connect with
     let nearestPort = portsRef.current[0];
     let minDist = Infinity;
@@ -221,7 +226,7 @@ export default function Globe() {
       }
     });
 
-    if (minDist < 30) {
+    if (minDist < 35) {
       setToastMessage('Haz clic más lejos de un puerto existente para crear una nueva conexión.');
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
@@ -229,7 +234,7 @@ export default function Globe() {
     }
 
     const newPortId = `custom_${portsRef.current.length}`;
-    const portName = `Ruta GreyLion #${portsRef.current.length - 5}`;
+    const portName = `Ruta GreyLion #${portsRef.current.length - 6}`;
     
     // Create new port node
     const newPort: PortNode = {
@@ -244,15 +249,22 @@ export default function Globe() {
     // Add bidirectional link to the nearest port
     nearestPort.connections.push(newPortId);
 
-    // Auto-connect to any other port that is relatively close (under 180px) to form a web
+    // Auto-connect to other nearby ports (under 180px) to form a web, as long as the straight line does not cross land
     portsRef.current.forEach((p) => {
       if (p.id !== nearestPort.id && p.id !== newPortId) {
         const dx = p.normX - nx;
         const dy = p.normY - ny;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < 180) {
-          newPort.connections.push(p.id);
-          p.connections.push(newPortId);
+          // Double check: check middle points of the path to avoid land crossing
+          const midX = (p.normX + nx) / 2;
+          const midY = (p.normY + ny) / 2;
+          const midOnLand = LAND_POLYGONS.some((poly) => isPointInPolygon([midX, midY], poly));
+
+          if (!midOnLand) {
+            newPort.connections.push(p.id);
+            p.connections.push(newPortId);
+          }
         }
       }
     });
@@ -291,7 +303,7 @@ export default function Globe() {
       opacity: 1,
     });
 
-    setToastMessage(`Puerto '${portName}' incorporado con éxito. Rutas bidireccionales activadas.`);
+    setToastMessage(`Puerto '${portName}' incorporado en el océano.`);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
 
@@ -311,7 +323,7 @@ export default function Globe() {
       const container = containerRef.current;
       if (container && canvas) {
         const width = container.clientWidth;
-        const height = width / 2;
+        const height = container.clientHeight;
         canvas.width = width;
         canvas.height = height;
       }
@@ -323,70 +335,12 @@ export default function Globe() {
     const render = () => {
       const w = canvas.width;
       const h = canvas.height;
+      
       ctx.clearRect(0, 0, w, h);
 
-      // 1. Ocean Background Grid (MarineTraffic style)
-      ctx.fillStyle = '#060a14'; // Dark navy sea
-      ctx.fillRect(0, 0, w, h);
-
-      ctx.strokeStyle = 'rgba(0, 163, 255, 0.05)';
-      ctx.lineWidth = 0.5;
-
-      // Latitude lines (horizontal)
-      const latSpacing = h / 10;
-      for (let i = 1; i < 10; i++) {
-        const y = i * latSpacing;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
-        ctx.stroke();
-
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-        ctx.font = '8px var(--font-space-grotesk)';
-        const degrees = Math.round(90 - (i * 18));
-        const labelText = degrees === 0 ? 'EQ' : `${Math.abs(degrees)}°${degrees > 0 ? 'N' : 'S'}`;
-        ctx.fillText(labelText, 8, y - 2);
-      }
-
-      // Longitude lines (vertical)
-      const lngSpacing = w / 12;
-      for (let i = 1; i < 12; i++) {
-        const x = i * lngSpacing;
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, h);
-        ctx.stroke();
-
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-        ctx.font = '8px var(--font-space-grotesk)';
-        const degrees = Math.round(-180 + (i * 30));
-        const labelText = degrees === 0 ? 'PM' : `${Math.abs(degrees)}°${degrees > 0 ? 'E' : 'W'}`;
-        ctx.fillText(labelText, x + 2, 10);
-      }
-
-      // 2. Draw Solid Landmasses with sleek neon borders
-      ctx.fillStyle = '#0f172a'; // Deep slate land
-      ctx.strokeStyle = '#1e293b'; // Slate borders
+      // 1. Draw Shipping Lanes (Dashed overlay lines linking nodes)
+      ctx.strokeStyle = 'rgba(0, 163, 255, 0.25)';
       ctx.lineWidth = 1.2;
-
-      LAND_POLYGONS.forEach((poly) => {
-        ctx.beginPath();
-        poly.forEach((pt, idx) => {
-          const canvasPt = mapCoords(pt[0], pt[1], w, h);
-          if (idx === 0) {
-            ctx.moveTo(canvasPt.x, canvasPt.y);
-          } else {
-            ctx.lineTo(canvasPt.x, canvasPt.y);
-          }
-        });
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-      });
-
-      // 3. Draw Shipping Lanes (Active connections)
-      ctx.strokeStyle = 'rgba(0, 163, 255, 0.15)';
-      ctx.lineWidth = 1;
       ctx.setLineDash([4, 6]);
 
       portsRef.current.forEach((port) => {
@@ -414,14 +368,13 @@ export default function Globe() {
           }
         });
       });
-      ctx.setLineDash([]); // Reset line dash
+      ctx.setLineDash([]); // Reset
 
-      // 4. Update and Draw Simulated Vessels (Triangular pointers moving smoothly)
+      // 2. Update and Draw Simulated Vessels (Triangular pointers moving smoothly)
       shipsRef.current.forEach((ship) => {
-        // Increment progress along path
         ship.progress += ship.speed;
         
-        // Node arrival: Choose a new random connected path to navigate continuously (entering and leaving!)
+        // Node arrival: Choose new destination among connections
         if (ship.progress >= 1) {
           const currentDestPort = portsRef.current[ship.toIndex];
           if (currentDestPort && currentDestPort.connections.length > 0) {
@@ -433,13 +386,12 @@ export default function Globe() {
               ship.toIndex = nextIdx;
               ship.progress = 0;
               ship.curveHeight = getCurveHeight(currentDestPort.id, nextDestId);
-              // Slight speed variance
               ship.speed = 0.0005 + Math.random() * 0.0006;
             } else {
-              ship.progress = 0; // fallback reset
+              ship.progress = 0;
             }
           } else {
-            ship.progress = 0; // fallback reset
+            ship.progress = 0;
           }
         }
 
@@ -449,12 +401,11 @@ export default function Globe() {
           const pt0 = mapCoords(p0.normX, p0.normY, w, h);
           const pt1 = mapCoords(p1.normX, p1.normY, w, h);
 
-          // Get current coordinates and small ahead coordinates to calculate tangent heading angle
           const currentPt = getEllipsePoint(ship.progress, pt0, pt1, ship.curveHeight);
           const nextPt = getEllipsePoint(Math.min(1, ship.progress + 0.005), pt0, pt1, ship.curveHeight);
           const angle = Math.atan2(nextPt.y - currentPt.y, nextPt.x - currentPt.x);
 
-          // Render triangular MarineTraffic-style ship pointing in direction of movement
+          // Render triangular vessel
           ctx.save();
           ctx.translate(currentPt.x, currentPt.y);
           ctx.rotate(angle);
@@ -462,16 +413,16 @@ export default function Globe() {
           const shipColor = SHIP_COLORS[ship.type] || SHIP_COLORS.cargo;
           ctx.fillStyle = shipColor;
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 0.7;
+          ctx.lineWidth = 0.8;
           
           ctx.shadowColor = shipColor;
           ctx.shadowBlur = 4;
 
           ctx.beginPath();
-          ctx.moveTo(5, 0);         // Bow (tip)
-          ctx.lineTo(-4, -4);       // Port stern corner
+          ctx.moveTo(5, 0);         // Bow
+          ctx.lineTo(-4, -4);       // Port stern
           ctx.lineTo(-2, 0);        // Transom indentation
-          ctx.lineTo(-4, 4);        // Starboard stern corner
+          ctx.lineTo(-4, 4);        // Starboard stern
           ctx.closePath();
           ctx.fill();
           ctx.stroke();
@@ -480,27 +431,27 @@ export default function Globe() {
         }
       });
 
-      // 5. Draw Port Markers
+      // 3. Draw Port Markers
       portsRef.current.forEach((port) => {
         const { x: px, y: py } = mapCoords(port.normX, port.normY, w, h);
 
         port.pulse += 0.04;
         const pulseRad = 5 + Math.sin(port.pulse) * 3.5;
 
-        // Radar circular pulse ring
+        // Radar pulses
         ctx.strokeStyle = `rgba(0, 163, 255, ${0.7 - Math.sin(port.pulse) * 0.45})`;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.arc(px, py, pulseRad, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Inner anchor point
+        // Inner dot
         ctx.fillStyle = '#00a3ff';
         ctx.beginPath();
         ctx.arc(px, py, 3.5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Label tooltip card
+        // Port Label card
         ctx.fillStyle = 'rgba(7, 10, 18, 0.9)';
         ctx.strokeStyle = 'rgba(0, 163, 255, 0.25)';
         ctx.lineWidth = 1;
@@ -513,13 +464,13 @@ export default function Globe() {
         ctx.fill();
         ctx.stroke();
 
-        // Label text
+        // Port Text
         ctx.fillStyle = '#FFFFFF';
         ctx.font = '9px var(--font-space-grotesk)';
         ctx.fillText(port.name, px + 8 + paddingX, py + 3);
       });
 
-      // 6. Draw Interactive Click Ripples
+      // 4. Draw Click Ripples
       ripplesRef.current = ripplesRef.current.filter((ripple) => {
         ripple.radius += 1.2;
         ripple.opacity -= 0.02;
@@ -611,36 +562,51 @@ export default function Globe() {
           }}
         >
           <span style={{ animation: 'float 2s ease-in-out infinite' }}>⚓</span>
-          <span>AIS Interactivo: Haz clic en el océano para conectar puertos bidireccionales y ver los tránsitos.</span>
+          <span>AIS Interactivo: Haz clic sobre el mapa en vivo de MarineTraffic para trazar rutas y tránsitos adicionales.</span>
         </div>
 
-        {/* Outer container */}
+        {/* Outer container holding both background iframe and transparent canvas overlay */}
         <div
           ref={containerRef}
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
             position: 'relative',
+            width: '100%',
+            aspectRatio: '2/1', // Keep aspect ratio locked to fit overlays accurately
+            borderRadius: '16px',
+            overflow: 'hidden',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.6)',
           }}
         >
-          {/* Flat World Map Canvas */}
+          {/* Real-time MarineTraffic AIS Embed Map as dynamic background, centered on Barranquilla / Caribbean zone */}
+          <iframe
+            src="https://www.marinetraffic.com/en/ais/embed/zoom:5/centery:12.0/centerx:-77.5/maptype:3/shownames:false/shownation:false/showmenu:false"
+            width="100%"
+            height="100%"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              border: 0,
+              pointerEvents: 'none', // Allow mouse click to pass through to the interactive canvas
+            }}
+            title="MarineTraffic Live AIS Map Background"
+          />
+
+          {/* Transparent Canvas overlay drawing simulated routes and rotated ship arrows */}
           <canvas
             ref={canvasRef}
             onClick={handleCanvasClick}
             style={{
-              maxWidth: '100%',
+              position: 'absolute',
+              inset: 0,
+              zIndex: 5,
               display: 'block',
-              filter: 'drop-shadow(0 15px 50px rgba(0, 163, 255, 0.04))',
               cursor: 'crosshair',
-              borderRadius: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.05)',
+              backgroundColor: 'transparent',
             }}
           />
 
-          {/* MarineTraffic-style Map Legend Card */}
+          {/* MarineTraffic Map Legend Card */}
           <div
             style={{
               position: 'absolute',
@@ -709,81 +675,6 @@ export default function Globe() {
               {toastMessage}
             </div>
           )}
-
-          {/* Stats Cards Grid */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '24px',
-              width: '100%',
-              marginTop: '60px',
-            }}
-          >
-            {[
-              {
-                title: `${portsCount} Puertos Activos`,
-                desc: 'Operación y presencia aduanera activa ampliable en tiempo real.',
-              },
-              {
-                title: '50+ Navieras',
-                desc: 'Acuerdos comerciales directos con los operadores líderes del comercio internacional.',
-              },
-              {
-                title: 'Operación 24/7',
-                desc: 'Acompañamiento permanente de principio a fin, liberándolo de complejidades.',
-              },
-              {
-                title: 'Trazabilidad Total',
-                desc: 'Tecnología integrada para el seguimiento y verificación en tiempo real de su carga.',
-              },
-            ].map((stat, i) => (
-              <div
-                key={i}
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.01)',
-                  borderRadius: '16px',
-                  padding: '28px',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                  transition: 'all 0.3s ease',
-                }}
-                className="glow-card"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
-                  e.currentTarget.style.borderColor = 'rgba(0, 163, 255, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.01)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
-                }}
-              >
-                <h3
-                  style={{
-                    fontSize: '24px',
-                    fontWeight: 700,
-                    color: '#00a3ff',
-                    fontFamily: 'var(--font-space-grotesk)',
-                  }}
-                >
-                  {stat.title}
-                </h3>
-                <p
-                  style={{
-                    fontSize: '13.5px',
-                    lineHeight: 1.5,
-                    color: 'var(--text-gray)',
-                  }}
-                >
-                  {stat.desc}
-                </p>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </div>
