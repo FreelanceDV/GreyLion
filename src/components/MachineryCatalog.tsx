@@ -64,6 +64,16 @@ export default function MachineryCatalog() {
 
   const activeCategory = CATEGORIES.find((cat) => cat.id === activeTab) || CATEGORIES[0];
 
+  // Mousemove handler for card spotlight effect
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    card.style.setProperty('--mouse-x', `${x}px`);
+    card.style.setProperty('--mouse-y', `${y}px`);
+  };
+
   return (
     <section
       id="maquinaria"
@@ -91,7 +101,7 @@ export default function MachineryCatalog() {
             style={{
               fontSize: '13px',
               fontWeight: 600,
-              color: 'var(--primary)',
+              color: '#00a3ff',
               textTransform: 'uppercase',
               letterSpacing: '0.05em',
             }}
@@ -139,12 +149,12 @@ export default function MachineryCatalog() {
               key={cat.id}
               onClick={() => setActiveTab(cat.id)}
               style={{
-                backgroundColor: activeTab === cat.id ? 'rgba(15, 76, 129, 0.12)' : 'rgba(255, 255, 255, 0.02)',
+                backgroundColor: activeTab === cat.id ? 'rgba(0, 163, 255, 0.12)' : 'rgba(255, 255, 255, 0.02)',
                 border: '1px solid',
-                borderColor: activeTab === cat.id ? 'var(--primary)' : 'rgba(255, 255, 255, 0.08)',
+                borderColor: activeTab === cat.id ? '#00a3ff' : 'rgba(255, 255, 255, 0.08)',
                 borderRadius: '30px',
                 padding: '10px 24px',
-                color: activeTab === cat.id ? 'var(--primary-hover)' : 'rgba(255, 255, 255, 0.65)',
+                color: activeTab === cat.id ? '#00a3ff' : 'rgba(255, 255, 255, 0.65)',
                 fontSize: '14px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -157,12 +167,23 @@ export default function MachineryCatalog() {
           ))}
         </div>
 
-        {/* Items Grid */}
-        <div className="equipment-grid">
+        {/* Items Grid with Active Tab key to trigger animations */}
+        <div className="equipment-grid" key={activeTab}>
           {activeCategory.items.map((item, idx) => (
-            <article key={idx} className="equipment-card">
-              <div className="equipment-meta"><span>Equipo {String(idx + 1).padStart(2, '0')}</span><span>{activeCategory.id}</span></div>
-              <div className="equipment-copy"><h3>{item.name}</h3><p>{item.desc}</p></div>
+            <article
+              key={idx}
+              className="equipment-card"
+              onMouseMove={handleMouseMove}
+              style={{ '--index': idx } as React.CSSProperties}
+            >
+              <div className="equipment-meta">
+                <span>Equipo {String(idx + 1).padStart(2, '0')}</span>
+                <span>{activeCategory.id}</span>
+              </div>
+              <div className="equipment-copy">
+                <h3>{item.name}</h3>
+                <p>{item.desc}</p>
+              </div>
 
               <a
                 href={`https://wa.me/${phone}?text=Hola%20GreyLion,%20quiero%20cotizar%20el%20envio%20de%20${encodeURIComponent(item.name)}`}
@@ -181,20 +202,162 @@ export default function MachineryCatalog() {
         </div>
       </div>
       <style jsx>{`
-        .equipment-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-        .equipment-card { position: relative; display: flex; min-height: 200px; flex-direction: column; overflow: hidden; padding: 24px; border: 1px solid rgba(140,150,158,.15); border-radius: 18px; background: linear-gradient(145deg, rgba(255,255,255,.04), rgba(255,255,255,.012)); transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease; }
-        .equipment-card::before { position: absolute; top: 0; right: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--primary), transparent 70%); content: ''; opacity: .9; }
-        .equipment-card:hover { border-color: rgba(65,137,192,.7); box-shadow: 0 18px 42px rgba(0,0,0,.24); transform: translateY(-5px); }
-        .equipment-meta { display: flex; justify-content: space-between; color: #8ed0ff; font-size: 10px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
-        .equipment-meta span:last-child { color: rgba(140,150,158,.6); }
-        .equipment-copy { margin-top: 25px; }
-        .equipment-copy h3 { margin: 0 0 9px; color: var(--text-white); font-family: var(--font-space-grotesk); font-size: 19px; line-height: 1.2; }
-        .equipment-copy p { margin: 0; color: var(--text-gray); font-size: 13px; line-height: 1.58; }
-        .equipment-link { display: inline-flex; gap: 7px; align-items: center; width: fit-content; margin-top: auto; padding-top: 19px; color: #8ed0ff; font-size: 12px; font-weight: 800; text-decoration: none; transition: color .2s ease, gap .2s ease; }
-        .equipment-link:hover { gap: 11px; color: #fff; }
-        @media (max-width: 900px) { .equipment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-        @media (max-width: 560px) { .equipment-grid { grid-template-columns: 1fr; } .equipment-card { min-height: 245px; } }
-        @media (prefers-reduced-motion: reduce) { .equipment-card, .equipment-link { transition: none; } }
+        .equipment-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 20px;
+        }
+        
+        .equipment-card {
+          position: relative;
+          display: flex;
+          min-height: 200px;
+          flex-direction: column;
+          overflow: hidden;
+          padding: 24px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 18px;
+          background: linear-gradient(145deg, #0f131a, #0a0b0d);
+          transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+          
+          /* Entrance slide-up animation */
+          opacity: 0;
+          animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation-delay: calc(var(--index) * 0.06s);
+        }
+
+        .equipment-card::before {
+          position: absolute;
+          top: 0;
+          right: 0;
+          left: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #00a3ff, transparent 70%);
+          content: '';
+          opacity: 0.8;
+          z-index: 2;
+        }
+
+        /* Cursor follow glow element */
+        .equipment-card::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(
+            220px circle at var(--mouse-x, 0px) var(--mouse-y, 0px),
+            rgba(0, 163, 255, 0.08),
+            transparent 80%
+          );
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .equipment-card:hover {
+          border-color: rgba(0, 163, 255, 0.35);
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+          transform: translateY(-5px);
+        }
+
+        .equipment-card:hover::after {
+          opacity: 1;
+        }
+
+        .equipment-meta {
+          position: relative;
+          z-index: 3;
+          display: flex;
+          justify-content: space-between;
+          color: #00a3ff;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: .11em;
+          text-transform: uppercase;
+        }
+        
+        .equipment-meta span:last-child {
+          color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .equipment-copy {
+          position: relative;
+          z-index: 3;
+          margin-top: 25px;
+        }
+        
+        .equipment-copy h3 {
+          margin: 0 0 9px;
+          color: var(--text-white);
+          font-family: var(--font-space-grotesk);
+          font-size: 19px;
+          line-height: 1.2;
+        }
+        
+        .equipment-copy p {
+          margin: 0;
+          color: var(--text-gray);
+          font-size: 13px;
+          line-height: 1.58;
+        }
+        
+        .equipment-link {
+          position: relative;
+          z-index: 3;
+          display: inline-flex;
+          gap: 7px;
+          align-items: center;
+          width: fit-content;
+          margin-top: auto;
+          padding-top: 19px;
+          color: #00a3ff;
+          font-size: 12px;
+          font-weight: 800;
+          text-decoration: none;
+          transition: color 0.2s ease, gap 0.2s ease;
+        }
+        
+        .equipment-link:hover {
+          gap: 11px;
+          color: #ffffff;
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(16px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @media (max-width: 900px) {
+          .equipment-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+        
+        @media (max-width: 560px) {
+          .equipment-grid {
+            grid-template-columns: 1fr;
+          }
+          .equipment-card {
+            min-height: 245px;
+          }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+          .equipment-card {
+            animation: none;
+            opacity: 1;
+            transition: none;
+          }
+          .equipment-link {
+            transition: none;
+          }
+        }
       `}</style>
     </section>
   );

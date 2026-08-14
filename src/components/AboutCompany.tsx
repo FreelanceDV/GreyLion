@@ -16,6 +16,39 @@ export default function AboutCompany() {
         padding: '80px 0',
       }}
     >
+      {/* Background Video */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 0,
+          overflow: 'hidden',
+        }}
+      >
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: 0.12,
+          }}
+        >
+          <source src="/charger_boat.mp4" type="video/mp4" />
+        </video>
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(180deg, var(--background-dark) 0%, rgba(18, 20, 23, 0.85) 50%, var(--background-dark) 100%)',
+          }}
+        />
+      </div>
+
       {/* Decorative Radial Glow */}
       <div
         style={{
@@ -28,7 +61,7 @@ export default function AboutCompany() {
           background: 'radial-gradient(circle, rgba(15, 76, 129, 0.08) 0%, transparent 70%)',
           filter: 'blur(100px)',
           pointerEvents: 'none',
-          zIndex: 0,
+          zIndex: 1,
         }}
       />
 

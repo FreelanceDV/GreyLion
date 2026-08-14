@@ -32,7 +32,8 @@ const SERVICES = [
 ];
 
 export default function Comparison() {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  // Default to first card expanded
+  const [activeIndex, setActiveIndex] = useState(0);
   const phone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE || '573000000000';
   const whatsappUrl = `https://wa.me/${phone}?text=Hola%20GreyLion,%20quiero%20cotizar%20el%20servicio%20de%20`;
 
@@ -66,12 +67,12 @@ export default function Comparison() {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            opacity: 0.15, // Subtle background video presence
+            opacity: 0.15,
           }}
         >
           <source src="/charger_boat.mp4" type="video/mp4" />
         </video>
-        {/* Sleek Dark Gradient Overlay for optimal readability */}
+        {/* Sleek Dark Gradient Overlay */}
         <div
           style={{
             position: 'absolute',
@@ -131,28 +132,22 @@ export default function Comparison() {
         {/* Expanding Cards Container */}
         <div className="expanding-cards-wrapper">
           {SERVICES.map((service, index) => {
-            const isHovered = hoveredIndex === index;
-            const isAnyHovered = hoveredIndex !== null;
-            
-            // Layout classes will handle width transitions
-            let cardClass = "service-expand-card";
-            if (isHovered) cardClass += " expanded";
-            else if (isAnyHovered) cardClass += " collapsed";
+            const isExpanded = activeIndex === index;
+            const cardClass = `service-expand-card ${isExpanded ? 'expanded' : 'collapsed'}`;
 
             return (
               <div
                 key={service.id}
                 className={cardClass}
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
+                onMouseEnter={() => setActiveIndex(index)}
               >
-                {/* Collapsed State Title Overlay (Vertical text when collapsed) */}
+                {/* Collapsed State Title Overlay (Vertical text, hidden when expanded) */}
                 <div className="collapsed-title-overlay">
                   <h3 className="collapsed-title">{service.title}</h3>
                   <div className="expand-indicator-plus">+</div>
                 </div>
 
-                {/* Card Background Image with dark overlay */}
+                {/* Card Background Image (Visible when collapsed) */}
                 <div
                   className="card-bg"
                   style={{ backgroundImage: `url(${service.image})` }}
@@ -160,7 +155,7 @@ export default function Comparison() {
                   <div className="card-bg-overlay" />
                 </div>
 
-                {/* Expanded State Content Wrapper */}
+                {/* Expanded State Content Wrapper (Visible when expanded) */}
                 <div className="expanded-content">
                   {/* Left Column: Text Content */}
                   <div className="content-left">
@@ -215,7 +210,6 @@ export default function Comparison() {
         
         .service-expand-card {
           position: relative;
-          flex: 1;
           border-radius: 20px;
           overflow: hidden;
           background-color: #121417;
@@ -237,7 +231,7 @@ export default function Comparison() {
         }
 
         .service-expand-card.collapsed {
-          flex: 0.8;
+          flex: 1;
         }
 
         /* Background image container & overlay */
@@ -271,7 +265,7 @@ export default function Comparison() {
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: space-between;
+          justifyContent: space-between;
           padding: 40px 20px;
           opacity: 1;
           pointer-events: none;
@@ -339,7 +333,7 @@ export default function Comparison() {
           padding: 48px;
           display: flex;
           flex-direction: column;
-          justify-content: center;
+          justifyContent: center;
           z-index: 5;
           background-color: #0d1118;
           border-radius: 20px 0 0 20px;
