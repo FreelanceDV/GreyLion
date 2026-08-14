@@ -44,6 +44,35 @@ function isPointInPolygon(point: [number, number], polygon: [number, number][]) 
   return inside;
 }
 
+function getDistanceToSegment(p: [number, number], a: [number, number], b: [number, number]) {
+  const [px, py] = p;
+  const [ax, ay] = a;
+  const [bx, by] = b;
+  
+  const dx = bx - ax;
+  const dy = by - ay;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return Math.sqrt((px - ax) ** 2 + (py - ay) ** 2);
+  
+  let t = ((px - ax) * dx + (py - ay) * dy) / lenSq;
+  t = Math.max(0, Math.min(1, t));
+  
+  const projX = ax + t * dx;
+  const projY = ay + t * dy;
+  return Math.sqrt((px - projX) ** 2 + (py - projY) ** 2);
+}
+
+function getDistanceToPolygonBorder(point: [number, number], polygon: [number, number][]) {
+  let minDist = Infinity;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const dist = getDistanceToSegment(point, polygon[i], polygon[j]);
+    if (dist < minDist) {
+      minDist = dist;
+    }
+  }
+  return minDist;
+}
+
 interface PortNode {
   id: string;
   name: string;
@@ -200,16 +229,28 @@ export default function Globe() {
 
     if (nx < 15 || nx > 985 || ny < 15 || ny > 515) return;
 
-    // COLLISION CHECK: Enforce that ships and ports are placed only in water, not on land!
+    // COLLISION CHECK: Enforce that ports are in water OR very close to the coast (coastlines allowed, deep land blocked)
     const onLand = LAND_POLYGONS.some((poly) =>
       isPointInPolygon([nx, ny], poly)
     );
 
     if (onLand) {
-      setToastMessage('⚓ Error: No se puede establecer un puerto en tierra firme. Selecciona un punto en el océano.');
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3200);
-      return;
+      let minDistanceToCoast = Infinity;
+      LAND_POLYGONS.forEach((poly) => {
+        const dist = getDistanceToPolygonBorder([nx, ny], poly);
+        if (dist < minDistanceToCoast) {
+          minDistanceToCoast = dist;
+        }
+      });
+
+      // 15 units threshold in our normalized domain is coastal
+      const COAST_THRESHOLD = 15;
+      if (minDistanceToCoast > COAST_THRESHOLD) {
+        setToastMessage('⚓ Error: Los puertos costeros deben ubicarse cerca de la costa, no en el interior del continente.');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3200);
+        return;
+      }
     }
 
     // Find nearest port to connect with
@@ -580,7 +621,7 @@ export default function Globe() {
         >
           {/* Real-time MarineTraffic AIS Embed Map as dynamic background, centered on Barranquilla / Caribbean zone */}
           <iframe
-            src="https://www.marinetraffic.com/en/ais/embed/zoom:5/centery:12.0/centerx:-77.5/maptype:3/shownames:false/shownation:false/showmenu:false"
+            src="https://www.marinetraffic.com/en/ais/embed/zoom:5/centery:12.0/centerx:-77.5/maptype:3/shownames:false/shownation:false/showmenu:false/trackvessel:999999999"
             width="100%"
             height="100%"
             style={{
