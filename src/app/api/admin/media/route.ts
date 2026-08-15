@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { put, del } from '@vercel/blob';
 
 const execPromise = promisify(exec);
 
@@ -134,15 +135,44 @@ export async function POST(req: NextRequest) {
       console.error('Failed to write config locally:', err.message);
     }
 
-    // 5. Git Synchronization
+    // 5. Git/Vercel Blob Synchronization
     const isDev = process.env.NODE_ENV === 'development';
+    const isBlobActive = !!process.env.BLOB_READ_WRITE_TOKEN;
     const ghToken = process.env.GITHUB_TOKEN;
     const ghRepo = process.env.GITHUB_REPOSITORY; // owner/repo
     const ghBranch = process.env.GITHUB_BRANCH || 'master';
 
-    let syncStatus = 'No git sync triggered';
+    let syncStatus = 'No sync triggered';
 
-    if (isDev) {
+    if (isBlobActive) {
+      // Vercel Blob Instant Sync (No Git commits, no Vercel rebuilds!)
+      try {
+        // A. Delete the old Vercel Blob file if it has changed (e.g. extension changed or overwritten)
+        if (oldUrl && oldUrl.startsWith('http') && oldUrl !== finalPathValue) {
+          if (oldUrl.includes('public.blob.vercel-storage.com')) {
+            try {
+              const oldUrlClean = oldUrl.split('?')[0];
+              await del(oldUrlClean);
+              console.log(`Deleted old Vercel Blob file: ${oldUrlClean}`);
+            } catch (delErr: any) {
+              console.error('Failed to delete old Vercel Blob file:', delErr.message);
+            }
+          }
+        }
+
+        // B. Upload updated media_config.json
+        await put('media_config.json', updatedConfigContent, {
+          access: 'public',
+          addRandomSuffix: false,
+          contentType: 'application/json',
+          cacheControlMaxAge: 0,
+        });
+        syncStatus = 'Actualizado instantáneamente en la nube Vercel Blob (sin redespliegue).';
+      } catch (blobErr: any) {
+        console.error('Vercel Blob config upload failed:', blobErr.message);
+        syncStatus = `Error al guardar configuración en Vercel Blob: ${blobErr.message}`;
+      }
+    } else if (isDev) {
       // Local Git Flow
       try {
         const gitStatus = await execPromise('git rev-parse --is-inside-work-tree');

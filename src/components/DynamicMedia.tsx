@@ -17,17 +17,29 @@ const fetchConfig = (): Promise<Record<string, string>> => {
   if (globalConfig) return Promise.resolve(globalConfig);
   if (globalConfigPromise) return globalConfigPromise;
 
-  globalConfigPromise = fetch('/media_config.json')
+  // Primary: Fetch configuration file from Vercel Blob with cache-busting to bypass CDN caching
+  const blobConfigUrl = 'https://77ydstadplufv4mf.public.blob.vercel-storage.com/media_config.json?t=' + Date.now();
+
+  globalConfigPromise = fetch(blobConfigUrl, { cache: 'no-store' })
     .then((res) => {
-      if (!res.ok) throw new Error('Failed to load media config');
+      if (!res.ok) throw new Error('Blob configuration not found');
       return res.json();
+    })
+    .catch((err) => {
+      console.warn('Vercel Blob config failed, falling back to local bundle:', err.message);
+      // Secondary: Fallback to locally bundled file for offline/dev configurations
+      return fetch('/media_config.json')
+        .then((res) => {
+          if (!res.ok) throw new Error('Local configuration not found');
+          return res.json();
+        });
     })
     .then((config) => {
       globalConfig = config;
       return config;
     })
     .catch((err) => {
-      console.warn('Media config fetch failed, using default fallbacks:', err.message);
+      console.warn('All configurations failed, using defaults:', err.message);
       globalConfig = DEFAULT_FALLBACKS;
       return DEFAULT_FALLBACKS;
     });
@@ -69,7 +81,16 @@ export default function DynamicMedia({
 
     if (assetId) {
       fetchConfig().then((config) => {
-        setResolvedSrc(config[assetId] || fallbackSrc || DEFAULT_FALLBACKS[assetId] || '');
+        const rawSrc = config[assetId] || fallbackSrc || DEFAULT_FALLBACKS[assetId] || '';
+        
+        if (rawSrc && rawSrc.startsWith('http')) {
+          // Add hourly cache-buster for cloud resources to ensure updates roll out while preserving CDN caching
+          const hourlyBuster = Math.floor(Date.now() / (1000 * 60 * 60));
+          const connector = rawSrc.includes('?') ? '&' : '?';
+          setResolvedSrc(`${rawSrc}${connector}v=${hourlyBuster}`);
+        } else {
+          setResolvedSrc(rawSrc);
+        }
       });
     }
   }, [assetId, directSrc, fallbackSrc]);

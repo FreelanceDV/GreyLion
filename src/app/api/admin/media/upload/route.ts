@@ -30,6 +30,7 @@ export async function POST(request: Request): Promise<NextResponse> {
             'image/jpeg', 'image/png', 'image/gif', 'image/webp',
             'video/mp4', 'video/quicktime', 'video/webm', 'video/ogg'
           ],
+          addRandomSuffix: false, // Prevent adding random hash suffix to filename
           tokenPayload: JSON.stringify({
             authorized: true,
           }),

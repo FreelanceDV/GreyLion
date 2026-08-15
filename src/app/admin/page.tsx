@@ -172,7 +172,10 @@ export default function AdminPage() {
       if (uploadMode === 'file' && uploadFile && uploadFile.size > 4.5 * 1024 * 1024) {
         setLogMessages(prev => [...prev, '[2/3] Archivo > 4.5MB detectado. Subiendo directamente a Vercel Blob Storage...']);
         try {
-          const blob = await upload(uploadFile.name, uploadFile, {
+          const fileExtension = uploadFile.name.substring(uploadFile.name.lastIndexOf('.'));
+          const fixedFileName = `${selectedAsset.id}${fileExtension}`;
+
+          const blob = await upload(fixedFileName, uploadFile, {
             access: 'public',
             handleUploadUrl: '/api/admin/media/upload',
             clientPayload: JSON.stringify({ password }),
