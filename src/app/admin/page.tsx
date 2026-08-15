@@ -197,7 +197,7 @@ export default function AdminPage() {
         // If uploaded to Vercel Blob, save the URL reference
         formData.append('url', uploadUrl);
       } else if (uploadMode === 'file' && uploadFile) {
-        formData.append('file', uploadFile);
+        formData.append('file', uploadFile); 
       } else {
         formData.append('url', mediaUrlInput);
       }
