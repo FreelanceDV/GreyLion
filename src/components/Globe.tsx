@@ -789,7 +789,7 @@ export default function Globe() {
           {/* Real-time MarineTraffic AIS Embed Map as dynamic background, centered on Barranquilla / Caribbean zone */}
           <iframe
             key={iframeKey}
-            src={`https://www.marinetraffic.com/en/ais/embed/centerx:${centerLng}/centery:${centerLat}/zoom:${zoom}/maptype:3/shownames:false/shownation:false/showmenu:false/fleet:dummy@nonexistent.com/fleet_id:999999/trackvessel:999999999`}
+            src={`https://www.marinetraffic.com/en/ais/embed/centerx:${centerLng}/centery:${centerLat}/zoom:${zoom}/maptype:3/shownames:false/shownation:false/showmenu:false/fleet:0/fleet_id:0/trackvessel:0`}
             width="100%"
             height="100%"
             style={{
