@@ -248,6 +248,66 @@ export default function AdminPage() {
     setTimeout(() => setCopiedError(false), 4000);
   };
 
+  const handleResetToDefault = async () => {
+    if (!selectedAsset) return;
+    
+    const defaultPaths: Record<string, string> = {
+      hero_ship: '/hero_ship_oceanis.jpg',
+      maritime_transport: '/maritime_transport_card.jpg',
+      integral_logistics: '/integral_logistics_card.jpg',
+      background_video: '/charger_boat.mp4',
+    };
+    
+    const defaultPath = defaultPaths[selectedAsset.id];
+    if (!defaultPath) return;
+    
+    const confirmReset = window.confirm(`¿Está seguro de que desea restablecer el recurso "${selectedAsset.name}" a su archivo por defecto?`);
+    if (!confirmReset) return;
+    
+    setIsUploading(true);
+    setUploadSuccess(false);
+    setLogMessages(['[1/3] Solicitando restablecer recurso...', `Recurso: ${selectedAsset.name}`, `Archivo por defecto: ${defaultPath}`]);
+    
+    const formData = new FormData();
+    formData.append('password', password);
+    formData.append('assetId', selectedAsset.id);
+    formData.append('url', defaultPath);
+    
+    try {
+      setLogMessages(prev => [...prev, '[2/3] Sincronizando cambios en el servidor...']);
+      
+      const response = await fetch('/api/admin/media', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const responseText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseErr) {
+        throw new Error(responseText || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Ocurrió un error al guardar el recurso.');
+      }
+
+      setLogMessages(prev => [
+        ...prev,
+        '[3/3] ¡Recurso restablecido con éxito!',
+        `Estado: ${data.syncStatus || 'Completado.'}`,
+        'Los cambios ya están visibles en la página web principal.'
+      ]);
+      setUploadSuccess(true);
+      
+    } catch (err: any) {
+      setLogMessages(prev => [...prev, `❌ ERROR: ${err.message || 'Error de conexión'}`]);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // ---------------- RENDER LOGIN SCREEN ----------------
   if (!isAuthenticated) {
     return (
@@ -441,13 +501,38 @@ export default function AdminPage() {
           <div className="editor-panel">
             {selectedAsset ? (
               <div className="editor-card">
-                <div className="editor-header">
-                  <span className="editor-kicker">Editor de Recurso</span>
-                  <h2 className="editor-title">{selectedAsset.name}</h2>
-                  <p className="editor-desc">{selectedAsset.description}</p>
-                  <p className="recommended-size">
-                    <strong>Recomendación:</strong> {selectedAsset.recommendedSize}
-                  </p>
+                <div className="editor-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '20px' }}>
+                  <div style={{ flex: 1 }}>
+                    <span className="editor-kicker">Editor de Recurso</span>
+                    <h2 className="editor-title">{selectedAsset.name}</h2>
+                    <p className="editor-desc">{selectedAsset.description}</p>
+                    <p className="recommended-size" style={{ marginTop: '6px', margin: 0 }}>
+                      <strong>Recomendación:</strong> {selectedAsset.recommendedSize}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleResetToDefault}
+                    disabled={isUploading}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255, 68, 68, 0.25)',
+                      backgroundColor: 'rgba(255, 68, 68, 0.05)',
+                      color: '#ff6b6b',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'all 0.3s ease',
+                      flexShrink: 0,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 68, 68, 0.12)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 68, 68, 0.05)'; }}
+                  >
+                    🔄 Restablecer por defecto
+                  </button>
                 </div>
 
                 {/* Upload Action Area */}
