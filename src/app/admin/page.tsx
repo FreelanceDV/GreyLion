@@ -39,12 +39,28 @@ const MEDIA_ASSETS: MediaAsset[] = [
     recommendedSize: 'Cualquier Foto, GIF o Video (Límite 4.5MB)'
   },
   {
-    id: 'background_video',
-    name: 'Video o Imagen de Fondo Principal',
-    description: 'Se reproduce en bucle en el fondo del Hero, en la sección de Servicios y en la sección CTA.',
-    path: '/charger_boat.[ext]',
+    id: 'bg_about',
+    name: 'Fondo Sección: Sobre la Empresa',
+    description: 'Fondo opcional (video o imagen) para la sección "Quiénes Somos / Sobre la Empresa".',
+    path: '/bg_about.[ext]',
     type: 'video',
-    recommendedSize: 'Cualquier Foto, GIF o Video (Límite 4.5MB)'
+    recommendedSize: 'Foto, GIF o Video (Límite 4.5MB)'
+  },
+  {
+    id: 'bg_comparison',
+    name: 'Fondo Sección: Comparativa de Servicios',
+    description: 'Fondo opcional (video o imagen) para la sección de tabla comparativa y logística.',
+    path: '/bg_comparison.[ext]',
+    type: 'video',
+    recommendedSize: 'Foto, GIF o Video (Límite 4.5MB)'
+  },
+  {
+    id: 'bg_cta',
+    name: 'Fondo Sección: Llamado a la Acción (CTA)',
+    description: 'Fondo opcional (video o imagen) para el banner de contacto inferior.',
+    path: '/bg_cta.[ext]',
+    type: 'video',
+    recommendedSize: 'Foto, GIF o Video (Límite 4.5MB)'
   }
 ];
 
@@ -280,7 +296,9 @@ export default function AdminPage() {
       hero_ship: '/hero_ship_oceanis.jpg',
       maritime_transport: '/maritime_transport_card.jpg',
       integral_logistics: '/integral_logistics_card.jpg',
-      background_video: '/charger_boat.mp4',
+      bg_about: '/charger_boat.mp4',
+      bg_comparison: '/charger_boat.mp4',
+      bg_cta: '/charger_boat.mp4',
     };
     
     const defaultPath = defaultPaths[selectedAsset.id];

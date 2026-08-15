@@ -58,7 +58,7 @@ export default function Comparison() {
           overflow: 'hidden',
         }}
       >
-        <DynamicMedia assetId="background_video" fallbackSrc="/charger_boat.mp4" style={{ opacity: 0.15 }} />
+        <DynamicMedia assetId="bg_comparison" fallbackSrc="/charger_boat.mp4" style={{ opacity: 0.15 }} />
         {/* Sleek Dark Gradient Overlay */}
         <div
           style={{

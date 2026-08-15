@@ -11,7 +11,9 @@ const BASE_NAMES: Record<string, string> = {
   hero_ship: 'hero_ship_oceanis',
   maritime_transport: 'maritime_transport_card',
   integral_logistics: 'integral_logistics_card',
-  background_video: 'charger_boat',
+  bg_about: 'bg_about',
+  bg_comparison: 'bg_comparison',
+  bg_cta: 'bg_cta',
 };
 
 const MIME_MAP: Record<string, string> = {
@@ -85,7 +87,9 @@ export async function POST(req: NextRequest) {
           hero_ship: '/hero_ship_oceanis.jpg',
           maritime_transport: '/maritime_transport_card.jpg',
           integral_logistics: '/integral_logistics_card.jpg',
-          background_video: '/charger_boat.mp4',
+          bg_about: '/charger_boat.mp4',
+          bg_comparison: '/charger_boat.mp4',
+          bg_cta: '/charger_boat.mp4',
         };
         console.log('Using default media config fallbacks');
       }

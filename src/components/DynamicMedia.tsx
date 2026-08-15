@@ -10,7 +10,9 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   hero_ship: '/hero_ship_oceanis.jpg',
   maritime_transport: '/maritime_transport_card.jpg',
   integral_logistics: '/integral_logistics_card.jpg',
-  background_video: '/charger_boat.mp4',
+  bg_about: '/charger_boat.mp4',
+  bg_comparison: '/charger_boat.mp4',
+  bg_cta: '/charger_boat.mp4',
 };
 
 const fetchConfig = (): Promise<Record<string, string>> => {
@@ -182,8 +184,8 @@ export default function DynamicMedia({
               style={{
                 width: '100%',
                 height: '100%',
-                objectFit: 'cover',
-                objectPosition: 'center',
+                objectFit: style?.objectFit || 'cover',
+                objectPosition: style?.objectPosition || 'center',
                 display: 'block',
               }}
               autoPlay={autoPlay}
@@ -199,8 +201,8 @@ export default function DynamicMedia({
               style={{
                 width: '100%',
                 height: '100%',
-                objectFit: 'cover',
-                objectPosition: 'center',
+                objectFit: style?.objectFit || 'cover',
+                objectPosition: style?.objectPosition || 'center',
                 display: 'block',
               }}
               loading="eager"
@@ -225,8 +227,8 @@ export default function DynamicMedia({
             style={{
               width: '100%',
               height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'center',
+              objectFit: style?.objectFit || 'cover',
+              objectPosition: style?.objectPosition || 'center',
               display: 'block',
             }}
             autoPlay={autoPlay}
@@ -245,8 +247,8 @@ export default function DynamicMedia({
             style={{
               width: '100%',
               height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'center',
+              objectFit: style?.objectFit || 'cover',
+              objectPosition: style?.objectPosition || 'center',
               display: 'block',
             }}
             onLoad={() => setIsCloudLoaded(true)}

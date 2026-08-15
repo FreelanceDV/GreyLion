@@ -26,7 +26,7 @@ export default function AboutCompany() {
           overflow: 'hidden',
         }}
       >
-        <DynamicMedia assetId="background_video" fallbackSrc="/charger_boat.mp4" style={{ opacity: 0.12 }} />
+        <DynamicMedia assetId="bg_about" fallbackSrc="/charger_boat.mp4" style={{ opacity: 0.12 }} />
         <div
           style={{
             position: 'absolute',

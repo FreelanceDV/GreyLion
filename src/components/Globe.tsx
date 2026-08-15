@@ -229,9 +229,17 @@ export default function Globe() {
   
   const [mapMode, setMapMode] = useState<'navigation' | 'draw'>('navigation');
   const [iframeKey, setIframeKey] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Map state (centered to fit Ecuador, Panama, Colombia, and Miami comfortably)
-  const [zoom, setZoom] = useState(4);
+  const [zoom, setZoom] = useState(3);
   const [centerLat, setCenterLat] = useState(11.0);
   const [centerLng, setCenterLng] = useState(-78.0);
 
@@ -270,9 +278,11 @@ export default function Globe() {
   // Initialize simulated vessels distributed along the starting routes
   useEffect(() => {
     const shipTypes: ('cargo' | 'tanker' | 'tug' | 'passenger')[] = ['cargo', 'tanker', 'tug', 'passenger'];
+    const isMob = window.innerWidth < 768;
+    const maxShips = isMob ? 5 : 15;
     
     const initialShips: SimulatedShip[] = [];
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < maxShips; i++) {
       const fromIdx = Math.floor(Math.random() * portsRef.current.length);
       const fromPort = portsRef.current[fromIdx];
       
@@ -298,6 +308,7 @@ export default function Globe() {
 
   // Handle Drag Start
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (window.innerWidth < 768) return; // Disable drag panning on mobile to prevent scroll hijacking
     isDraggingRef.current = true;
     setIsDragging(true);
     hasDraggedRef.current = false;
@@ -337,18 +348,26 @@ export default function Globe() {
     setIsDragging(false);
 
     if (hasDraggedRef.current) {
-      const scale = Math.pow(2, zoom);
-      const TILE_SIZE = 256;
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const mapHeight = h - MAP_HEADER_OFFSET - MAP_FOOTER_OFFSET;
+        const centerYPos = mapHeight / 2 + MAP_HEADER_OFFSET;
 
-      const degPerPixelLng = 360 / (TILE_SIZE * scale);
-      const degPerPixelLat = (180 / Math.PI) * (2 * Math.PI) / (TILE_SIZE * scale);
+        const newCenter = canvasToLatLng(
+          w / 2 - panOffsetGlobal.x,
+          centerYPos - panOffsetGlobal.y,
+          zoom,
+          centerStartRef.current.lat,
+          centerStartRef.current.lng,
+          w,
+          h
+        );
 
-      const deltaLng = panOffsetGlobal.x * degPerPixelLng;
-      const deltaLat = panOffsetGlobal.y * degPerPixelLat;
-
-      // Update actual states, committing position change
-      setCenterLng((prev) => prev - deltaLng);
-      setCenterLat((prev) => Math.max(-60, Math.min(80, prev + deltaLat)));
+        setCenterLng(newCenter.lng);
+        setCenterLat(Math.max(-60, Math.min(80, newCenter.lat)));
+      }
     }
 
     // Reset temporary canvas offset ref
@@ -533,15 +552,16 @@ export default function Globe() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    const render = () => {
+     const render = () => {
       const w = canvas.width;
       const h = canvas.height;
+      const isMob = window.innerWidth < 768;
       
       ctx.clearRect(0, 0, w, h);
 
       // 1. Draw Shipping Lanes (Dashed overlay lines linking nodes projected to Mercator coordinates)
       ctx.strokeStyle = 'rgba(0, 163, 255, 0.25)';
-      ctx.lineWidth = 1.2;
+      ctx.lineWidth = isMob ? 0.7 : 1.2;
       ctx.setLineDash([4, 6]);
 
       portsRef.current.forEach((port) => {
@@ -614,16 +634,17 @@ export default function Globe() {
           const shipColor = SHIP_COLORS[ship.type] || SHIP_COLORS.cargo;
           ctx.fillStyle = shipColor;
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 0.8;
+          ctx.lineWidth = isMob ? 0.5 : 0.8;
           
           ctx.shadowColor = shipColor;
-          ctx.shadowBlur = 4;
+          ctx.shadowBlur = isMob ? 1.5 : 4;
 
+          const vScale = isMob ? 0.65 : 1.0;
           ctx.beginPath();
-          ctx.moveTo(5, 0);         // Bow
-          ctx.lineTo(-4, -4);       // Port stern
-          ctx.lineTo(-2, 0);        // Transom indentation
-          ctx.lineTo(-4, 4);        // Starboard stern
+          ctx.moveTo(5 * vScale, 0);         // Bow
+          ctx.lineTo(-4 * vScale, -4 * vScale);       // Port stern
+          ctx.lineTo(-2 * vScale, 0);        // Transom indentation
+          ctx.lineTo(-4 * vScale, 4 * vScale);        // Starboard stern
           ctx.closePath();
           ctx.fill();
           ctx.stroke();
@@ -637,11 +658,11 @@ export default function Globe() {
         const { x: px, y: py } = getCanvasPos(port.lat, port.lng, zoomRef.current, centerLatRef.current, centerLngRef.current, w, h);
 
         port.pulse += 0.04;
-        const pulseRad = 5 + Math.sin(port.pulse) * 3.5;
+        const pulseRad = (isMob ? 3 : 5) + Math.sin(port.pulse) * (isMob ? 1.8 : 3.5);
 
         // Radar pulses
         ctx.strokeStyle = `rgba(0, 163, 255, ${0.7 - Math.sin(port.pulse) * 0.45})`;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = isMob ? 0.8 : 1.5;
         ctx.beginPath();
         ctx.arc(px, py, pulseRad, 0, Math.PI * 2);
         ctx.stroke();
@@ -649,26 +670,29 @@ export default function Globe() {
         // Inner dot
         ctx.fillStyle = '#00a3ff';
         ctx.beginPath();
-        ctx.arc(px, py, 3.5, 0, Math.PI * 2);
+        ctx.arc(px, py, isMob ? 2.2 : 3.5, 0, Math.PI * 2);
         ctx.fill();
 
         // Port Label card
         ctx.fillStyle = 'rgba(7, 10, 18, 0.9)';
         ctx.strokeStyle = 'rgba(0, 163, 255, 0.25)';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = isMob ? 0.6 : 1;
         
+        ctx.font = isMob ? '7.5px var(--font-space-grotesk)' : '9px var(--font-space-grotesk)';
         const textWidth = ctx.measureText(port.name).width;
-        const paddingX = 6;
+        const paddingX = isMob ? 4 : 6;
+        const cardH = isMob ? 12 : 16;
+        const cardOffset = isMob ? 5 : 8;
+        const cardYOffset = isMob ? 6 : 9;
         
         ctx.beginPath();
-        ctx.roundRect(px + 8, py - 9, textWidth + paddingX * 2, 16, 4);
+        ctx.roundRect(px + cardOffset, py - cardYOffset, textWidth + paddingX * 2, cardH, isMob ? 3 : 4);
         ctx.fill();
         ctx.stroke();
 
         // Port Text
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = '9px var(--font-space-grotesk)';
-        ctx.fillText(port.name, px + 8 + paddingX, py + 3);
+        ctx.fillText(port.name, px + cardOffset + paddingX, py + (isMob ? 2 : 3));
       });
 
       // 4. Draw Click Ripples
@@ -779,8 +803,8 @@ export default function Globe() {
           style={{
             position: 'relative',
             width: '100%',
-            aspectRatio: '2/1', // Keep aspect ratio locked to fit overlays accurately
-            borderRadius: '16px',
+            aspectRatio: isMobile ? '4/3' : '2/1', // Keep aspect ratio locked to fit overlays accurately
+            borderRadius: isMobile ? '12px' : '16px',
             overflow: 'hidden',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             boxShadow: '0 25px 50px rgba(0, 0, 0, 0.6)',
@@ -817,215 +841,220 @@ export default function Globe() {
               cursor: mapMode === 'draw' ? 'crosshair' : (isDragging ? 'grabbing' : 'grab'),
               backgroundColor: 'transparent',
               pointerEvents: 'auto', // Always capture mouse events to maintain drag and click sync!
+              touchAction: 'pan-y',   // Allow native vertical page scrolling on mobile swipe
             }}
           />
 
           {/* MarineTraffic Map Legend Card */}
-          <div
-            style={{
-              position: 'absolute',
-              top: '20px',
-              right: '20px',
-              backgroundColor: 'rgba(5, 8, 17, 0.85)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              borderRadius: '8px',
-              padding: '12px 16px',
-              backdropFilter: 'blur(10px)',
-              pointerEvents: 'none',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
-              zIndex: 10,
-            }}
-          >
-            <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em', marginBottom: '2px' }}>
-              Leyenda AIS
-            </div>
-            {[
-              { label: 'Carga (Cargo)', color: SHIP_COLORS.cargo },
-              { label: 'Petrolero (Tanker)', color: SHIP_COLORS.tanker },
-              { label: 'Especial / Remolcador', color: SHIP_COLORS.tug },
-              { label: 'Pasajero / Pesca', color: SHIP_COLORS.passenger },
-            ].map((item, idx) => (
-              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span
-                  style={{
-                    width: '0',
-                    height: '0',
-                    borderLeft: '4px solid transparent',
-                    borderRight: '4px solid transparent',
-                    borderBottom: `8px solid ${item.color}`,
-                    display: 'inline-block',
-                    transform: 'rotate(45deg)',
-                  }}
-                />
-                <span style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{item.label}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Map Controls Floating Bar */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '20px',
-              left: '20px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-              backgroundColor: 'rgba(5, 8, 17, 0.85)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              borderRadius: '8px',
-              padding: '10px',
-              backdropFilter: 'blur(10px)',
-              zIndex: 10,
-              boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
-            }}
-          >
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                onClick={() => setMapMode('navigation')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  border: 'none',
-                  backgroundColor: mapMode === 'navigation' ? 'var(--primary-hover)' : 'transparent',
-                  color: '#ffffff',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                🧭 Navegar
-              </button>
-              <button
-                onClick={() => setMapMode('draw')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  border: 'none',
-                  backgroundColor: mapMode === 'draw' ? 'var(--primary-hover)' : 'transparent',
-                  color: '#ffffff',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                ⚓ Trazar Puertos
-              </button>
-            </div>
-
-            {/* Custom Control Pad for perfect Lat/Lng synchronized panning and zooming */}
+          {!isMobile && (
             <div
               style={{
-                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-                paddingTop: '8px',
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                backgroundColor: 'rgba(5, 8, 17, 0.85)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                backdropFilter: 'blur(10px)',
+                pointerEvents: 'none',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '12px',
+                flexDirection: 'column',
+                gap: '8px',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
+                zIndex: 10,
               }}
             >
-              {/* Zoom Buttons */}
-              <div style={{ display: 'flex', gap: '4px' }}>
+              <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em', marginBottom: '2px' }}>
+                Leyenda AIS
+              </div>
+              {[
+                { label: 'Carga (Cargo)', color: SHIP_COLORS.cargo },
+                { label: 'Petrolero (Tanker)', color: SHIP_COLORS.tanker },
+                { label: 'Especial / Remolcador', color: SHIP_COLORS.tug },
+                { label: 'Pasajero / Pesca', color: SHIP_COLORS.passenger },
+              ].map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span
+                    style={{
+                      width: '0',
+                      height: '0',
+                      borderLeft: '4px solid transparent',
+                      borderRight: '4px solid transparent',
+                      borderBottom: `8px solid ${item.color}`,
+                      display: 'inline-block',
+                      transform: 'rotate(45deg)',
+                    }}
+                  />
+                  <span style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Map Controls Floating Bar */}
+          {!isMobile && (
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '20px',
+                left: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                backgroundColor: 'rgba(5, 8, 17, 0.85)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '8px',
+                padding: '10px',
+                backdropFilter: 'blur(10px)',
+                zIndex: 10,
+                boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
+              }}
+            >
+              <div style={{ display: 'flex', gap: '8px' }}>
                 <button
-                  onClick={() => handleZoom('in')}
-                  title="Acercar mapa"
+                  onClick={() => setMapMode('navigation')}
                   style={{
-                    width: '26px',
-                    height: '26px',
-                    backgroundColor: 'rgba(255,255,255,0.06)',
-                    color: '#ffffff',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 12px',
                     borderRadius: '4px',
-                    fontWeight: 'bold',
-                    fontSize: '14px',
+                    border: 'none',
+                    backgroundColor: mapMode === 'navigation' ? 'var(--primary-hover)' : 'transparent',
+                    color: '#ffffff',
+                    fontSize: '11px',
+                    fontWeight: 700,
                     cursor: 'pointer',
+                    transition: 'all 0.3s ease',
                   }}
                 >
-                  +
+                  🧭 Navegar
                 </button>
                 <button
-                  onClick={() => handleZoom('out')}
-                  title="Alejar mapa"
+                  onClick={() => setMapMode('draw')}
                   style={{
-                    width: '26px',
-                    height: '26px',
-                    backgroundColor: 'rgba(255,255,255,0.06)',
-                    color: '#ffffff',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 12px',
                     borderRadius: '4px',
-                    fontWeight: 'bold',
-                    fontSize: '14px',
+                    border: 'none',
+                    backgroundColor: mapMode === 'draw' ? 'var(--primary-hover)' : 'transparent',
+                    color: '#ffffff',
+                    fontSize: '11px',
+                    fontWeight: 700,
                     cursor: 'pointer',
+                    transition: 'all 0.3s ease',
                   }}
                 >
-                  -
+                  ⚓ Trazar Puertos
                 </button>
               </div>
 
-              {/* D-Pad Pan Directions */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 22px)', gap: '2px' }}>
-                <span />
-                <button
-                  onClick={() => handlePan('up')}
-                  title="Desplazar arriba"
-                  style={{ height: '20px', backgroundColor: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
-                >
-                  ▲
-                </button>
-                <span />
-                <button
-                  onClick={() => handlePan('left')}
-                  title="Desplazar izquierda"
-                  style={{ height: '20px', backgroundColor: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
-                >
-                  ◀
-                </button>
-                <button
-                  onClick={() => {
-                    // Reset to initial settings
-                    setZoom(4);
-                    setCenterLat(11.0);
-                    setCenterLng(-78.0);
-                    setIframeKey(prev => prev + 1);
-                    setToastMessage('Posición y zoom restablecidos al valor de origen.');
-                    setShowToast(true);
-                    setTimeout(() => setShowToast(false), 3000);
-                  }}
-                  title="Centrar mapa"
-                  style={{ height: '20px', backgroundColor: 'rgba(0,163,255,0.2)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
-                >
-                  ●
-                </button>
-                <button
-                  onClick={() => handlePan('right')}
-                  title="Desplazar derecha"
-                  style={{ height: '20px', backgroundColor: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
-                >
-                  ▶
-                </button>
-                <span />
-                <button
-                  onClick={() => handlePan('down')}
-                  title="Desplazar abajo"
-                  style={{ height: '20px', backgroundColor: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
-                >
-                  ▼
-                </button>
-                <span />
+              {/* Custom Control Pad for perfect Lat/Lng synchronized panning and zooming */}
+              <div
+                style={{
+                  borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                  paddingTop: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
+                }}
+              >
+                {/* Zoom Buttons */}
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  <button
+                    onClick={() => handleZoom('in')}
+                    title="Acercar mapa"
+                    style={{
+                      width: '26px',
+                      height: '26px',
+                      backgroundColor: 'rgba(255,255,255,0.06)',
+                      color: '#ffffff',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '4px',
+                      fontWeight: 'bold',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    +
+                  </button>
+                  <button
+                    onClick={() => handleZoom('out')}
+                    title="Alejar mapa"
+                    style={{
+                      width: '26px',
+                      height: '26px',
+                      backgroundColor: 'rgba(255,255,255,0.06)',
+                      color: '#ffffff',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '4px',
+                      fontWeight: 'bold',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    -
+                  </button>
+                </div>
+
+                {/* D-Pad Pan Directions */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 22px)', gap: '2px' }}>
+                  <span />
+                  <button
+                    onClick={() => handlePan('up')}
+                    title="Desplazar arriba"
+                    style={{ height: '20px', backgroundColor: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
+                  >
+                    ▲
+                  </button>
+                  <span />
+                  <button
+                    onClick={() => handlePan('left')}
+                    title="Desplazar izquierda"
+                    style={{ height: '20px', backgroundColor: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
+                  >
+                    ◀
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Reset to initial settings
+                      setZoom(3);
+                      setCenterLat(11.0);
+                      setCenterLng(-78.0);
+                      setIframeKey(prev => prev + 1);
+                      setToastMessage('Posición y zoom restablecidos al valor de origen.');
+                      setShowToast(true);
+                      setTimeout(() => setShowToast(false), 3000);
+                    }}
+                    title="Centrar mapa"
+                    style={{ height: '20px', backgroundColor: 'rgba(0,163,255,0.2)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
+                  >
+                    ●
+                  </button>
+                  <button
+                    onClick={() => handlePan('right')}
+                    title="Desplazar derecha"
+                    style={{ height: '20px', backgroundColor: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
+                  >
+                    ▶
+                  </button>
+                  <span />
+                  <button
+                    onClick={() => handlePan('down')}
+                    title="Desplazar abajo"
+                    style={{ height: '20px', backgroundColor: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '3px', color: '#fff', cursor: 'pointer', fontSize: '10px' }}
+                  >
+                    ▼
+                  </button>
+                  <span />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Interactive Toast Notifications */}
           {showToast && (
