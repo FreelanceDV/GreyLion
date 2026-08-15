@@ -67,6 +67,28 @@ export default function AdminPage() {
   const [mediaUrlInput, setMediaUrlInput] = useState('');
   const [copiedError, setCopiedError] = useState(false);
 
+  const [config, setConfig] = useState<Record<string, string>>({});
+
+  const loadConfig = async () => {
+    try {
+      const blobConfigUrl = 'https://77ydstadplufv4mf.public.blob.vercel-storage.com/media_config.json?t=' + Date.now();
+      const res = await fetch(blobConfigUrl, { cache: 'no-store' });
+      if (!res.ok) throw new Error('Blob config not found');
+      const data = await res.json();
+      setConfig(data);
+    } catch (err) {
+      try {
+        const res = await fetch('/media_config.json');
+        if (res.ok) {
+          const data = await res.json();
+          setConfig(data);
+        }
+      } catch (localErr) {
+        console.error('Failed to load media config:', localErr);
+      }
+    }
+  };
+
   // Authenticate locally using sessionStorage
   useEffect(() => {
     const token = sessionStorage.getItem('greylion_admin_token');
@@ -74,6 +96,7 @@ export default function AdminPage() {
     if (token === 'authenticated') {
       setIsAuthenticated(true);
       if (pass) setPassword(pass);
+      loadConfig();
     }
   }, []);
 
@@ -94,6 +117,7 @@ export default function AdminPage() {
         sessionStorage.setItem('greylion_admin_pass', password);
         setIsAuthenticated(true);
         setLoginError('');
+        loadConfig();
       } else {
         setLoginError(data.error || 'Contraseña incorrecta. Por favor, intente de nuevo.');
       }
@@ -233,6 +257,7 @@ export default function AdminPage() {
         '¡Todo listo! Los cambios se verán en la página web en unos instantes.'
       ]);
       setUploadSuccess(true);
+      loadConfig();
       
     } catch (err: any) {
       setLogMessages(prev => [...prev, `❌ ERROR: ${err.message || 'Error de conexión'}`]);
@@ -300,6 +325,7 @@ export default function AdminPage() {
         'Los cambios ya están visibles en la página web principal.'
       ]);
       setUploadSuccess(true);
+      loadConfig();
       
     } catch (err: any) {
       setLogMessages(prev => [...prev, `❌ ERROR: ${err.message || 'Error de conexión'}`]);
@@ -533,6 +559,73 @@ export default function AdminPage() {
                   >
                     🔄 Restablecer por defecto
                   </button>
+                </div>
+
+                {/* Preview of Currently Active Resource */}
+                <div style={{
+                  backgroundColor: 'rgba(255,255,255,0.015)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  marginBottom: '24px',
+                }}>
+                  <h4 style={{ 
+                    fontSize: '12px', 
+                    color: 'var(--text-gray)', 
+                    margin: '0 0 12px 0',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    fontWeight: 700
+                  }}>
+                    🔍 Recurso Actual en Uso (Página Web)
+                  </h4>
+                  {(() => {
+                    const currentUrl = config[selectedAsset.id] || '';
+                    const isDefault = !currentUrl || currentUrl.startsWith('/');
+                    const displayUrl = currentUrl || selectedAsset.path.replace('[ext]', selectedAsset.type === 'video' ? 'mp4' : 'jpg');
+                    
+                    // Simple check if it is a video file
+                    const cleanUrl = displayUrl.split('?')[0].toLowerCase();
+                    const isVideo = cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.mov') || cleanUrl.endsWith('.webm');
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ 
+                          width: '100%', 
+                          height: '160px', 
+                          borderRadius: '8px', 
+                          overflow: 'hidden', 
+                          backgroundColor: '#070b12',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '1px solid rgba(255,255,255,0.03)',
+                          position: 'relative'
+                        }}>
+                          {isVideo ? (
+                            <video src={displayUrl} controls muted style={{ maxWidth: '100%', maxHeight: '160px' }} />
+                          ) : (
+                            <img src={displayUrl} alt="Vista actual" style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain' }} />
+                          )}
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px' }}>
+                          <span style={{ color: 'var(--text-gray)' }}>
+                            Origen: <strong style={{ color: isDefault ? '#f59e0b' : '#3b82f6' }}>{isDefault ? 'Por defecto' : 'Nube (Blob Store)'}</strong>
+                          </span>
+                          {!isDefault && (
+                            <a 
+                              href={displayUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              style={{ color: '#00a3ff', textDecoration: 'none', fontWeight: 600 }}
+                            >
+                              Abrir archivo original ↗
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Upload Action Area */}
