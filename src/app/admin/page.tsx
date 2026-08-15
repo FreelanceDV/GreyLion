@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { upload } from '@vercel/blob/client';
 
 interface MediaAsset {
   id: string;
@@ -133,10 +134,10 @@ export default function AdminPage() {
       return;
     }
 
-    // Check file size (Vercel payload limit is 4.5MB)
-    const MAX_SIZE = 4.5 * 1024 * 1024;
+    // Check file size (Vercel Blob Hobby plan limit is 500MB)
+    const MAX_SIZE = 500 * 1024 * 1024;
     if (file.size > MAX_SIZE) {
-      alert(`El archivo es demasiado grande (${(file.size / 1024 / 1024).toFixed(2)}MB). El límite de carga es de 4.5MB para evitar errores del servidor (Payload Too Large).`);
+      alert(`El archivo es demasiado grande (${(file.size / 1024 / 1024).toFixed(2)}MB). El límite de carga es de 500MB.`);
       return;
     }
 
@@ -154,23 +155,54 @@ export default function AdminPage() {
     setUploadSuccess(false);
     
     if (uploadMode === 'file' && uploadFile) {
-      setLogMessages(['[1/3] Iniciando carga de archivo...', `Recurso: ${selectedAsset.name}`, `Nombre archivo: ${uploadFile.name}`]);
+      setLogMessages([
+        '[1/3] Iniciando carga de archivo...', 
+        `Recurso: ${selectedAsset.name}`, 
+        `Nombre archivo: ${uploadFile.name}`,
+        `Tamaño: ${(uploadFile.size / 1024 / 1024).toFixed(2)} MB`
+      ]);
     } else {
       setLogMessages(['[1/3] Registrando enlace externo...', `Recurso: ${selectedAsset.name}`, `Enlace: ${mediaUrlInput}`]);
     }
 
-    const formData = new FormData();
-    formData.append('password', password);
-    formData.append('assetId', selectedAsset.id);
-    
-    if (uploadMode === 'file' && uploadFile) {
-      formData.append('file', uploadFile);
-    } else {
-      formData.append('url', mediaUrlInput);
-    }
-
     try {
-      setLogMessages(prev => [...prev, '[2/3] Procesando y guardando en servidor...']);
+      let uploadUrl = '';
+
+      // Direct client-side upload to Vercel Blob if file is larger than 4.5MB
+      if (uploadMode === 'file' && uploadFile && uploadFile.size > 4.5 * 1024 * 1024) {
+        setLogMessages(prev => [...prev, '[2/3] Archivo > 4.5MB detectado. Subiendo directamente a Vercel Blob Storage...']);
+        try {
+          const blob = await upload(uploadFile.name, uploadFile, {
+            access: 'public',
+            handleUploadUrl: '/api/admin/media/upload',
+            clientPayload: JSON.stringify({ password }),
+          });
+          uploadUrl = blob.url;
+          setLogMessages(prev => [
+            ...prev, 
+            `✅ Archivo subido exitosamente a la nube:`,
+            `${uploadUrl}`,
+            '[2/3] Registrando URL en la configuración...'
+          ]);
+        } catch (blobErr: any) {
+          throw new Error(`Fallo la subida a Vercel Blob: ${blobErr.message}. Asegúrese de tener configurada la variable BLOB_READ_WRITE_TOKEN en su entorno de Vercel.`);
+        }
+      }
+
+      const formData = new FormData();
+      formData.append('password', password);
+      formData.append('assetId', selectedAsset.id);
+      
+      if (uploadUrl) {
+        // If uploaded to Vercel Blob, save the URL reference
+        formData.append('url', uploadUrl);
+      } else if (uploadMode === 'file' && uploadFile) {
+        formData.append('file', uploadFile);
+      } else {
+        formData.append('url', mediaUrlInput);
+      }
+
+      setLogMessages(prev => [...prev, uploadUrl ? '[2/3] Sincronizando con el servidor...' : '[2/3] Procesando y guardando en servidor...']);
       
       const response = await fetch('/api/admin/media', {
         method: 'POST',
