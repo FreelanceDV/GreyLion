@@ -31,6 +31,7 @@ export async function POST(request: Request): Promise<NextResponse> {
             'video/mp4', 'video/quicktime', 'video/webm', 'video/ogg'
           ],
           addRandomSuffix: false, // Prevent adding random hash suffix to filename
+          allowOverwrite: true,   // Allow client-side overwriting of existing blobs
           tokenPayload: JSON.stringify({
             authorized: true,
           }),

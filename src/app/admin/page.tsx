@@ -65,6 +65,7 @@ export default function AdminPage() {
   // Link upload / URL states
   const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file');
   const [mediaUrlInput, setMediaUrlInput] = useState('');
+  const [copiedError, setCopiedError] = useState(false);
 
   // Authenticate locally using sessionStorage
   useEffect(() => {
@@ -156,13 +157,13 @@ export default function AdminPage() {
     
     if (uploadMode === 'file' && uploadFile) {
       setLogMessages([
-        '[1/3] Iniciando carga de archivo...', 
-        `Recurso: ${selectedAsset.name}`, 
-        `Nombre archivo: ${uploadFile.name}`,
+        '[1/3] Preparando el archivo para subir...', 
+        `Sección: ${selectedAsset.name}`, 
+        `Nombre del archivo: ${uploadFile.name}`,
         `Tamaño: ${(uploadFile.size / 1024 / 1024).toFixed(2)} MB`
       ]);
     } else {
-      setLogMessages(['[1/3] Registrando enlace externo...', `Recurso: ${selectedAsset.name}`, `Enlace: ${mediaUrlInput}`]);
+      setLogMessages(['[1/3] Registrando enlace externo...', `Sección: ${selectedAsset.name}`, `Enlace: ${mediaUrlInput}`]);
     }
 
     try {
@@ -170,7 +171,7 @@ export default function AdminPage() {
 
       // Direct client-side upload to Vercel Blob if file is larger than 4.5MB
       if (uploadMode === 'file' && uploadFile && uploadFile.size > 4.5 * 1024 * 1024) {
-        setLogMessages(prev => [...prev, '[2/3] Archivo > 4.5MB detectado. Subiendo directamente a Vercel Blob Storage...']);
+        setLogMessages(prev => [...prev, '[2/3] El archivo es grande. Subiendo directamente a internet...']);
         try {
           const fileExtension = uploadFile.name.substring(uploadFile.name.lastIndexOf('.'));
           const fixedFileName = `${selectedAsset.id}${fileExtension}`;
@@ -183,12 +184,11 @@ export default function AdminPage() {
           uploadUrl = blob.url;
           setLogMessages(prev => [
             ...prev, 
-            `✅ Archivo subido exitosamente a la nube:`,
-            `${uploadUrl}`,
-            '[2/3] Registrando URL en la configuración...'
+            `✅ Archivo subido exitosamente a internet.`,
+            '[2/3] Registrando la nueva dirección del archivo...'
           ]);
         } catch (blobErr: any) {
-          throw new Error(`Fallo la subida a Vercel Blob: ${blobErr.message}. Asegúrese de tener configurada la variable BLOB_READ_WRITE_TOKEN en su entorno de Vercel.`);
+          throw new Error(`Error de conexión con el almacenamiento en internet: ${blobErr.message}. Asegúrese de tener configuradas las credenciales de almacenamiento en el servidor.`);
         }
       }
 
@@ -205,7 +205,7 @@ export default function AdminPage() {
         formData.append('url', mediaUrlInput);
       }
 
-      setLogMessages(prev => [...prev, uploadUrl ? '[2/3] Sincronizando con el servidor...' : '[2/3] Procesando y guardando en servidor...']);
+      setLogMessages(prev => [...prev, '[2/3] Sincronizando y guardando cambios en el servidor...']);
       
       const response = await fetch('/api/admin/media', {
         method: 'POST',
@@ -227,10 +227,10 @@ export default function AdminPage() {
       setLogMessages(prev => [
         ...prev,
         uploadMode === 'file' 
-          ? '[3/3] Archivo cargado y configurado con éxito.'
-          : '[3/3] Enlace externo guardado con éxito en la configuración.',
-        `Sincronización Git: ${data.syncStatus || 'Completado.'}`,
-        '¡Proceso finalizado! Los cambios se verán reflejados en breve.'
+          ? '[3/3] ¡Archivo guardado y configurado con éxito!'
+          : '[3/3] ¡Enlace externo guardado con éxito!',
+        `Estado: ${data.syncStatus || 'Completado.'}`,
+        '¡Todo listo! Los cambios se verán en la página web en unos instantes.'
       ]);
       setUploadSuccess(true);
       
@@ -239,6 +239,13 @@ export default function AdminPage() {
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleCopyError = () => {
+    const errorText = logMessages.join('\n');
+    navigator.clipboard.writeText(errorText);
+    setCopiedError(true);
+    setTimeout(() => setCopiedError(false), 4000);
   };
 
   // ---------------- RENDER LOGIN SCREEN ----------------
@@ -580,20 +587,91 @@ export default function AdminPage() {
                 </div>
 
                 {/* Logging / Progress Terminal */}
-                {(logMessages.length > 0 || isUploading) && (
-                  <div className="terminal-logs">
-                    <div className="terminal-header">
-                      <span className="terminal-title">Terminal de Estado</span>
-                      <span className="terminal-status">{isUploading ? 'PROCESANDO' : uploadSuccess ? 'COMPLETADO' : 'ERROR'}</span>
+                {(logMessages.length > 0 || isUploading) && (() => {
+                  const hasError = logMessages.some(msg => msg.includes('❌') || msg.includes('ERROR'));
+                  return (
+                    <div 
+                      className="terminal-logs" 
+                      style={hasError ? { 
+                        border: '2px solid #ef4444', 
+                        backgroundColor: 'rgba(239, 68, 68, 0.04)',
+                        boxShadow: '0 0 15px rgba(239, 68, 68, 0.15)'
+                      } : {}}
+                    >
+                      <div className="terminal-header" style={hasError ? { borderBottom: '1px solid rgba(239, 68, 68, 0.2)' } : {}}>
+                        <span className="terminal-title">Terminal de Estado</span>
+                        <span 
+                          className="terminal-status" 
+                          style={hasError ? { backgroundColor: '#ef4444', color: '#ffffff' } : {}}
+                        >
+                          {isUploading ? 'PROCESANDO' : uploadSuccess ? 'COMPLETADO' : 'ERROR'}
+                        </span>
+                      </div>
+                      <div className="terminal-body">
+                        {logMessages.map((msg, idx) => (
+                          <div 
+                            key={idx} 
+                            className="log-line"
+                            style={msg.includes('❌') ? { color: '#f87171', fontWeight: 600 } : {}}
+                          >
+                            {msg}
+                          </div>
+                        ))}
+                        {isUploading && <div className="log-line pulse">⚡ Guardando los cambios y publicando el contenido...</div>}
+                      </div>
+
+                      {hasError && !isUploading && (
+                        <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px dashed rgba(239, 68, 68, 0.2)', paddingTop: '16px' }}>
+                          <style>{`
+                            @keyframes pulse-error {
+                              0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+                              70% { transform: scale(1.02); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+                              100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+                            }
+                            .pulsing-error-btn {
+                              animation: pulse-error 1.6s infinite ease-in-out;
+                            }
+                          `}</style>
+                          <button
+                            onClick={handleCopyError}
+                            className="pulsing-error-btn"
+                            style={{
+                              width: '100%',
+                              padding: '16px 20px',
+                              backgroundColor: copiedError ? '#10b981' : '#ef4444',
+                              color: '#ffffff',
+                              border: '2px solid #ffffff',
+                              borderRadius: '12px',
+                              fontSize: '15px',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '10px',
+                              transition: 'all 0.3s ease',
+                              boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)',
+                            }}
+                          >
+                            <span>{copiedError ? '✅ ¡Copiado con éxito!' : '📋 Haz clic aquí para copiar el error y pedir soporte'}</span>
+                          </button>
+                          <p style={{ 
+                            fontSize: '12.5px', 
+                            color: copiedError ? '#6ee7b7' : '#f87171', 
+                            textAlign: 'center', 
+                            margin: '4px 0 0 0',
+                            fontWeight: 600,
+                            lineHeight: 1.4
+                          }}>
+                            {copiedError 
+                              ? '¡El texto del error ya se guardó! Ahora puedes ir al chat de soporte, presionar pegar (o Ctrl+V) y enviárnoslo.'
+                              : 'Presiona el botón rojo grande de arriba para copiar el reporte de error y enviárselo a soporte.'}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                    <div className="terminal-body">
-                      {logMessages.map((msg, idx) => (
-                        <div key={idx} className="log-line">{msg}</div>
-                      ))}
-                      {isUploading && <div className="log-line pulse">⚡ Ejecutando commit de Git y actualizando repositorio de Vercel...</div>}
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             ) : (
               <div className="no-selection-card">

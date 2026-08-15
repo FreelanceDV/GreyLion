@@ -164,6 +164,7 @@ export async function POST(req: NextRequest) {
         await put('media_config.json', updatedConfigContent, {
           access: 'public',
           addRandomSuffix: false,
+          allowOverwrite: true, // Allow updating the config file
           contentType: 'application/json',
           cacheControlMaxAge: 0,
         });
