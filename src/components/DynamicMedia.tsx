@@ -72,8 +72,11 @@ export default function DynamicMedia({
   ...props
 }: DynamicMediaProps) {
   const [resolvedSrc, setResolvedSrc] = useState<string>('');
+  const [isCloudLoaded, setIsCloudLoaded] = useState(false);
 
   useEffect(() => {
+    setIsCloudLoaded(false); // Reset loaded flag when source changes
+
     if (directSrc) {
       setResolvedSrc(directSrc);
       return;
@@ -95,19 +98,50 @@ export default function DynamicMedia({
     }
   }, [assetId, directSrc, fallbackSrc]);
 
+  const defaultLocalSrc = assetId ? (fallbackSrc || DEFAULT_FALLBACKS[assetId] || '') : '';
+  const isUsingCloud = resolvedSrc && resolvedSrc.startsWith('http');
+
   if (!resolvedSrc) {
     return <div style={{ width: '100%', height: '100%', backgroundColor: '#070b12', ...style }} className={className} />;
   }
 
-  // Detect file type from file extension
+  // Detect file type from file extension for cloud asset
   const cleanUrl = resolvedSrc.split('?')[0].toLowerCase();
   const isVideo = cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.webm') || cleanUrl.endsWith('.ogg') || cleanUrl.endsWith('.mov');
 
-  if (isVideo) {
+  // Detect file type from file extension for local default asset
+  const cleanLocalUrl = defaultLocalSrc.split('?')[0].toLowerCase();
+  const isLocalVideo = cleanLocalUrl.endsWith('.mp4') || cleanLocalUrl.endsWith('.webm') || cleanLocalUrl.endsWith('.ogg') || cleanLocalUrl.endsWith('.mov');
+
+  // If NOT using a cloud asset, render local fallback asset directly without layers
+  if (!isUsingCloud) {
+    if (isVideo) {
+      return (
+        <video
+          src={resolvedSrc}
+          className={className}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            display: 'block',
+            ...style,
+          }}
+          autoPlay={autoPlay}
+          loop={loop}
+          muted={muted}
+          playsInline={playsInline}
+          preload="auto"
+          {...props}
+        />
+      );
+    }
     return (
-      <video
+      <img
         src={resolvedSrc}
         className={className}
+        alt=""
         style={{
           width: '100%',
           height: '100%',
@@ -116,32 +150,106 @@ export default function DynamicMedia({
           display: 'block',
           ...style,
         }}
-        autoPlay={autoPlay}
-        loop={loop}
-        muted={muted}
-        playsInline={playsInline}
-        preload="metadata"
+        loading="eager"
         {...props}
       />
     );
   }
 
-  // Fallback for image / gif / webp
+  // If using a cloud asset, render dual overlapping layers for a smooth fade-in swap
   return (
-    <img
-      src={resolvedSrc}
+    <div
       className={className}
-      alt=""
       style={{
+        position: 'relative',
         width: '100%',
         height: '100%',
-        objectFit: 'cover',
-        objectPosition: 'center',
-        display: 'block',
+        overflow: 'hidden',
+        backgroundColor: '#070b12',
         ...style,
       }}
-      loading="lazy"
-      {...props}
-    />
+    >
+      {/* Layer 1: Backdrop local default file (loads instantly, remains visible until cloud is ready) */}
+      {defaultLocalSrc && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+          {isLocalVideo ? (
+            <video
+              src={defaultLocalSrc}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center',
+                display: 'block',
+              }}
+              autoPlay={autoPlay}
+              loop={loop}
+              muted={muted}
+              playsInline={playsInline}
+              preload="auto"
+            />
+          ) : (
+            <img
+              src={defaultLocalSrc}
+              alt=""
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center',
+                display: 'block',
+              }}
+              loading="eager"
+            />
+          )}
+        </div>
+      )}
+
+      {/* Layer 2: Cloud Blob asset (loads in background, transitions to visible opacity smoothly) */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 2,
+          opacity: isCloudLoaded ? 1 : 0,
+          transition: 'opacity 0.8s ease-in-out',
+        }}
+      >
+        {isVideo ? (
+          <video
+            src={resolvedSrc}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              display: 'block',
+            }}
+            autoPlay={autoPlay}
+            loop={loop}
+            muted={muted}
+            playsInline={playsInline}
+            preload="auto"
+            onLoadedData={() => setIsCloudLoaded(true)}
+            onCanPlay={() => setIsCloudLoaded(true)}
+            {...props}
+          />
+        ) : (
+          <img
+            src={resolvedSrc}
+            alt=""
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              display: 'block',
+            }}
+            onLoad={() => setIsCloudLoaded(true)}
+            {...props}
+          />
+        )}
+      </div>
+    </div>
   );
 }
