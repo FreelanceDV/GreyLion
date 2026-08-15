@@ -334,6 +334,57 @@ export default function AdminPage() {
     }
   };
 
+  const handleDisableAsset = async () => {
+    if (!selectedAsset) return;
+    
+    const confirmDisable = window.confirm(`¿Está seguro de que desea desactivar u ocultar el recurso "${selectedAsset.name}"? En la página web se mostrará un fondo oscuro sólido o no se mostrará nada.`);
+    if (!confirmDisable) return;
+    
+    setIsUploading(true);
+    setUploadSuccess(false);
+    setLogMessages(['[1/3] Solicitando desactivar recurso...', `Recurso: ${selectedAsset.name}`]);
+    
+    const formData = new FormData();
+    formData.append('password', password);
+    formData.append('assetId', selectedAsset.id);
+    formData.append('url', 'none');
+    
+    try {
+      setLogMessages(prev => [...prev, '[2/3] Sincronizando cambios en el servidor...']);
+      
+      const response = await fetch('/api/admin/media', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const responseText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseErr) {
+        throw new Error(responseText || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Ocurrió un error al guardar el recurso.');
+      }
+
+      setLogMessages(prev => [
+        ...prev,
+        '[3/3] ¡Recurso desactivado con éxito!',
+        `Estado: ${data.syncStatus || 'Completado.'}`,
+        'El recurso se ha ocultado de la página web.'
+      ]);
+      setUploadSuccess(true);
+      loadConfig();
+      
+    } catch (err: any) {
+      setLogMessages(prev => [...prev, `❌ ERROR: ${err.message || 'Error de conexión'}`]);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // ---------------- RENDER LOGIN SCREEN ----------------
   if (!isAuthenticated) {
     return (
@@ -536,29 +587,52 @@ export default function AdminPage() {
                       <strong>Recomendación:</strong> {selectedAsset.recommendedSize}
                     </p>
                   </div>
-                  <button
-                    onClick={handleResetToDefault}
-                    disabled={isUploading}
-                    style={{
-                      padding: '8px 14px',
-                      borderRadius: '8px',
-                      border: '1px solid rgba(255, 68, 68, 0.25)',
-                      backgroundColor: 'rgba(255, 68, 68, 0.05)',
-                      color: '#ff6b6b',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      transition: 'all 0.3s ease',
-                      flexShrink: 0,
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 68, 68, 0.12)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 68, 68, 0.05)'; }}
-                  >
-                    🔄 Restablecer por defecto
-                  </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
+                    <button
+                      onClick={handleResetToDefault}
+                      disabled={isUploading}
+                      style={{
+                        padding: '8px 14px',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255, 68, 68, 0.25)',
+                        backgroundColor: 'rgba(255, 68, 68, 0.05)',
+                        color: '#ff6b6b',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.3s ease',
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 68, 68, 0.12)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 68, 68, 0.05)'; }}
+                    >
+                      🔄 Restablecer
+                    </button>
+                    <button
+                      onClick={handleDisableAsset}
+                      disabled={isUploading}
+                      style={{
+                        padding: '8px 14px',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                        color: 'var(--text-gray)',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.3s ease',
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.03)'; }}
+                    >
+                      🚫 Ocultar / Apagar
+                    </button>
+                  </div>
                 </div>
 
                 {/* Preview of Currently Active Resource */}
@@ -581,12 +655,13 @@ export default function AdminPage() {
                   </h4>
                   {(() => {
                     const currentUrl = config[selectedAsset.id] || '';
+                    const isDisabled = currentUrl === 'none';
                     const isDefault = !currentUrl || currentUrl.startsWith('/');
                     const displayUrl = currentUrl || selectedAsset.path.replace('[ext]', selectedAsset.type === 'video' ? 'mp4' : 'jpg');
                     
                     // Simple check if it is a video file
                     const cleanUrl = displayUrl.split('?')[0].toLowerCase();
-                    const isVideo = cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.mov') || cleanUrl.endsWith('.webm');
+                    const isVideo = !isDisabled && (cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.mov') || cleanUrl.endsWith('.webm'));
 
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -602,7 +677,13 @@ export default function AdminPage() {
                           border: '1px solid rgba(255,255,255,0.03)',
                           position: 'relative'
                         }}>
-                          {isVideo ? (
+                          {isDisabled ? (
+                            <div style={{ textAlign: 'center', padding: '20px', color: 'rgba(255,255,255,0.4)' }}>
+                              <span style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>🚫</span>
+                              <strong style={{ fontSize: '13px', display: 'block', color: 'rgba(255,255,255,0.6)' }}>Recurso Apagado / Oculto</strong>
+                              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', display: 'block', marginTop: '4px' }}>Se mostrará un fondo oscuro sólido o transparente en la página.</span>
+                            </div>
+                          ) : isVideo ? (
                             <video src={displayUrl} controls muted style={{ maxWidth: '100%', maxHeight: '160px' }} />
                           ) : (
                             <img src={displayUrl} alt="Vista actual" style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain' }} />
@@ -610,9 +691,13 @@ export default function AdminPage() {
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px' }}>
                           <span style={{ color: 'var(--text-gray)' }}>
-                            Origen: <strong style={{ color: isDefault ? '#f59e0b' : '#3b82f6' }}>{isDefault ? 'Por defecto' : 'Nube (Blob Store)'}</strong>
+                            Origen: <strong style={{ 
+                              color: isDisabled ? '#ef4444' : isDefault ? '#f59e0b' : '#3b82f6' 
+                            }}>
+                              {isDisabled ? 'Apagado / Oculto' : isDefault ? 'Por defecto' : 'Nube (Blob Store)'}
+                            </strong>
                           </span>
-                          {!isDefault && (
+                          {!isDefault && !isDisabled && (
                             <a 
                               href={displayUrl} 
                               target="_blank" 

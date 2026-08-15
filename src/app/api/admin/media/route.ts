@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { put, del } from '@vercel/blob';
+import { put, del, list } from '@vercel/blob';
 
 const execPromise = promisify(exec);
 
@@ -56,16 +56,39 @@ export async function POST(req: NextRequest) {
 
     // Load existing config
     let config: Record<string, string> = {};
-    try {
-      const configData = await fs.promises.readFile(configPath, 'utf8');
-      config = JSON.parse(configData);
-    } catch (err) {
-      config = {
-        hero_ship: '/hero_ship_oceanis.jpg',
-        maritime_transport: '/maritime_transport_card.jpg',
-        integral_logistics: '/integral_logistics_card.jpg',
-        background_video: '/charger_boat.mp4',
-      };
+    let configLoaded = false;
+
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        const { blobs } = await list();
+        const configBlob = blobs.find(b => b.pathname === 'media_config.json');
+        if (configBlob) {
+          const res = await fetch(`${configBlob.url}?t=${Date.now()}`, { cache: 'no-store' });
+          if (res.ok) {
+            config = await res.json();
+            configLoaded = true;
+            console.log('Loaded media_config.json from Vercel Blob');
+          }
+        }
+      } catch (blobErr: any) {
+        console.error('Failed to load media_config.json from Vercel Blob:', blobErr.message);
+      }
+    }
+
+    if (!configLoaded) {
+      try {
+        const configData = await fs.promises.readFile(configPath, 'utf8');
+        config = JSON.parse(configData);
+        console.log('Loaded media_config.json from local filesystem');
+      } catch (err) {
+        config = {
+          hero_ship: '/hero_ship_oceanis.jpg',
+          maritime_transport: '/maritime_transport_card.jpg',
+          integral_logistics: '/integral_logistics_card.jpg',
+          background_video: '/charger_boat.mp4',
+        };
+        console.log('Using default media config fallbacks');
+      }
     }
 
     const oldUrl = config[assetId];

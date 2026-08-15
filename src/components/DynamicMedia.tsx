@@ -105,6 +105,10 @@ export default function DynamicMedia({
     return <div style={{ width: '100%', height: '100%', backgroundColor: '#070b12', ...style }} className={className} />;
   }
 
+  if (resolvedSrc === 'none') {
+    return null;
+  }
+
   // Detect file type from file extension for cloud asset
   const cleanUrl = resolvedSrc.split('?')[0].toLowerCase();
   const isVideo = cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.webm') || cleanUrl.endsWith('.ogg') || cleanUrl.endsWith('.mov');
