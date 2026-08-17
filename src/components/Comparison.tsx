@@ -41,86 +41,45 @@ export default function Comparison() {
   return (
     <section
       id="servicios-medida"
-      style={{
-        backgroundColor: '#0a0b0d',
-        color: 'var(--text-white)',
-        padding: '100px 0',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
+      className="bg-background-black text-white py-[100px] relative overflow-hidden"
     >
       {/* Background Video/Image */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 0,
-          overflow: 'hidden',
-        }}
-      >
-        <DynamicMedia assetId="background_video" fallbackSrc="/charger_boat.mp4" style={{ opacity: 0.15 }} />
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <DynamicMedia assetId="background_video" fallbackSrc="/charger_boat.mp4" className="opacity-15" />
         {/* Sleek Dark Gradient Overlay */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(180deg, #0a0b0d 0%, rgba(10, 11, 13, 0.8) 50%, #0a0b0d 100%)',
-          }}
-        />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#0a0b0d_0%,rgba(10,11,13,0.8)_50%,#0a0b0d_100%)]" />
       </div>
 
-      <div className="w-full max-w-[1280px] mx-auto px-5" style={{ position: 'relative', zIndex: 10 }}>
+      <div className="w-full max-w-[1280px] mx-auto px-5 relative z-10">
         {/* Header Title */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            gap: '16px',
-            marginBottom: '64px',
-          }}
-        >
-          <span
-            style={{
-              fontSize: '13px',
-              fontWeight: 800,
-              color: '#00a3ff',
-              textTransform: 'uppercase',
-              letterSpacing: '0.15em',
-            }}
-          >
+        <div className="flex flex-col items-center text-center gap-4 mb-16">
+          <span className="text-[13px] font-extrabold text-[#00a3ff] uppercase tracking-[0.15em]">
             Nuestros Servicios
           </span>
-          <h2
-            style={{
-              fontFamily: 'var(--font-space-grotesk)',
-              fontSize: 'clamp(32px, 5vw, 54px)',
-              fontWeight: 800,
-              lineHeight: 1.1,
-              letterSpacing: '-1.5px',
-            }}
-          >
+          <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(32px,5vw,54px)] font-extrabold leading-[1.1] tracking-[-1.5px]">
             SOLUCIONES A LA MEDIDA
           </h2>
-          <p
-            style={{
-              fontSize: '16px',
-              color: 'var(--text-gray)',
-              maxWidth: '680px',
-              lineHeight: 1.6,
-              marginTop: '4px',
-            }}
-          >
+          <p className="text-base text-text-gray max-w-[680px] leading-[1.6] mt-1">
             Ofrecemos un servicio integral de transporte marítimo diseñado para impulsar tu negocio sin fronteras.
           </p>
         </div>
 
         {/* Expanding Cards Container */}
-        <div className="expanding-cards-wrapper">
+        <div className="flex gap-6 w-full min-h-[600px] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] max-[991px]:flex-col max-[991px]:min-h-[auto]">
           {SERVICES.map((service, index) => {
             const isExpanded = activeIndex === index;
-            const cardClass = `service-expand-card ${isExpanded ? 'expanded' : 'collapsed'}`;
+            const cardClass = `group relative rounded-[20px] overflow-hidden bg-[#121417] border border-white/5 flex transition-[flex,border-color,box-shadow] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-[rgba(0,163,255,0.3)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] max-[991px]:flex-none! max-[991px]:w-full max-[991px]:h-auto max-[991px]:min-h-[380px] ${
+              isExpanded ? 'flex-[3.5] cursor-default' : 'flex-1 cursor-pointer'
+            }`;
+            const collapsedTitleOverlayClass = `absolute inset-0 z-[3] flex flex-col items-center py-10 px-5 pointer-events-none transition-opacity duration-[400ms] ease-[ease] max-[991px]:hidden ${
+              isExpanded ? 'opacity-0' : 'opacity-100'
+            }`;
+            const cardBgClass = `absolute inset-0 z-[1] overflow-hidden transition-[opacity,transform] duration-500 ease-[ease] ${
+              isExpanded ? 'opacity-0 pointer-events-none scale-105' : 'opacity-60 max-[991px]:opacity-15'
+            }`;
+            const expandedContentClass = `relative w-full h-full z-[2] flex transition-opacity ease-[ease] max-[991px]:flex-col max-[991px]:opacity-100! max-[991px]:pointer-events-auto! ${
+              isExpanded ? 'opacity-100 pointer-events-auto duration-500 delay-200' : 'opacity-0 pointer-events-none duration-300'
+            }`;
 
             return (
               <div
@@ -129,35 +88,39 @@ export default function Comparison() {
                 onMouseEnter={() => setActiveIndex(index)}
               >
                 {/* Collapsed State Title Overlay (Vertical text, hidden when expanded) */}
-                <div className="collapsed-title-overlay">
-                  <h3 className="collapsed-title">{service.title}</h3>
-                  <div className="expand-indicator-plus">+</div>
+                <div className={collapsedTitleOverlayClass}>
+                  <h3 className="font-[family-name:var(--font-space-grotesk)] text-2xl font-extrabold tracking-[2px] text-white [writing-mode:vertical-rl] [text-orientation:mixed] rotate-180 whitespace-nowrap">
+                    {service.title}
+                  </h3>
+                  <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 text-white flex items-center text-xl font-light transition-all duration-300 ease-[ease] group-hover:bg-[#00a3ff] group-hover:border-[#00a3ff] group-hover:rotate-90">
+                    +
+                  </div>
                 </div>
 
                 {/* Card Background Image/Video (Visible when collapsed) */}
-                <div className="card-bg">
+                <div className={cardBgClass}>
                   <DynamicMedia
                     assetId={service.id === 'maritimo' ? 'maritime_transport' : 'integral_logistics'}
                     fallbackSrc={service.image}
                   />
-                  <div className="card-bg-overlay" />
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,11,18,0.3)_0%,rgba(7,11,18,0.9)_100%)]" />
                 </div>
 
                 {/* Expanded State Content Wrapper (Visible when expanded) */}
-                <div className="expanded-content">
+                <div className={expandedContentClass}>
                   {/* Left Column: Text Content */}
-                  <div className="content-left">
-                    <span className="service-kicker">{service.subtitle}</span>
-                    <h3 className="service-title">{service.title}</h3>
-                    <p className="service-desc">{service.desc}</p>
+                  <div className="flex-[1.2] p-12 flex flex-col justify-center z-[5] bg-[#0d1118] rounded-l-[20px] max-[991px]:flex-none max-[991px]:py-8 max-[991px]:px-6 max-[991px]:rounded-[20px] max-[991px]:bg-[rgba(18,20,23,0.85)] max-[991px]:backdrop-blur-[10px]">
+                    <span className="text-[11px] font-extrabold text-[#00a3ff] tracking-[0.15em] uppercase mb-2">{service.subtitle}</span>
+                    <h3 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(24px,3vw,36px)] font-extrabold text-white mb-4">{service.title}</h3>
+                    <p className="text-sm leading-[1.6] text-text-gray mb-7 max-w-[480px]">{service.desc}</p>
 
-                    <div className="features-list">
+                    <div className="grid grid-cols-2 gap-5 mb-8 max-[991px]:grid-cols-1 max-[991px]:gap-4">
                       {service.features.map((feat, fIdx) => (
-                        <div key={fIdx} className="feature-item">
-                          <div className="feature-check">✓</div>
+                        <div key={fIdx} className="flex gap-3 items-start">
+                          <div className="text-[#00a3ff] font-bold text-base shrink-0 mt-0.5">✓</div>
                           <div>
-                            <h4 className="feature-title">{feat.name}</h4>
-                            <p className="feature-detail">{feat.detail}</p>
+                            <h4 className="text-sm font-bold text-white mb-1">{feat.name}</h4>
+                            <p className="text-xs text-white/50 leading-[1.4]">{feat.detail}</p>
                           </div>
                         </div>
                       ))}
@@ -167,19 +130,19 @@ export default function Comparison() {
                       href={`${whatsappUrl}${encodeURIComponent(service.title.toLowerCase())}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="cta-button"
+                      className="bg-[#0070f3] text-white border-0 rounded-md py-3.5 px-7 text-sm font-bold cursor-pointer w-fit no-underline transition-all duration-300 ease-[ease] shadow-[0_8px_20px_rgba(0,112,243,0.2)] hover:bg-[#005ccb] hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(0,112,243,0.35)]"
                     >
                       Cotizar Servicio ↗
                     </a>
                   </div>
 
                   {/* Right Column: Visual Showcase */}
-                  <div className="content-right" style={{ position: 'relative', overflow: 'hidden' }}>
+                  <div className="flex-1 relative overflow-hidden rounded-r-[20px] max-[991px]:hidden">
                     <DynamicMedia
                       assetId={service.id === 'maritimo' ? 'maritime_transport' : 'integral_logistics'}
                       fallbackSrc={service.image}
                     />
-                    <div className="right-overlay" />
+                    <div className="absolute inset-0 bg-[linear-gradient(90deg,#0d1118_0%,rgba(13,17,24,0.5)_20%,transparent_100%)]" />
                   </div>
                 </div>
               </div>
@@ -187,287 +150,6 @@ export default function Comparison() {
           })}
         </div>
       </div>
-
-      <style jsx>{`
-        .expanding-cards-wrapper {
-          display: flex;
-          gap: 24px;
-          width: 100%;
-          min-height: 600px;
-          transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        .service-expand-card {
-          position: relative;
-          border-radius: 20px;
-          overflow: hidden;
-          background-color: #121417;
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          transition: flex 0.6s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
-          display: flex;
-          cursor: pointer;
-        }
-
-        .service-expand-card:hover {
-          border-color: rgba(0, 163, 255, 0.3);
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Flex states */
-        .service-expand-card.expanded {
-          flex: 3.5;
-          cursor: default;
-        }
-
-        .service-expand-card.collapsed {
-          flex: 1;
-        }
-
-        /* Background image/video container & overlay */
-        .card-bg {
-          position: absolute;
-          inset: 0;
-          z-index: 1;
-          opacity: 0.6;
-          transition: opacity 0.5s ease, transform 0.8s ease;
-          overflow: hidden;
-        }
-
-        .service-expand-card.expanded .card-bg {
-          opacity: 0;
-          pointer-events: none;
-          transform: scale(1.05);
-        }
-
-        .card-bg-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(180deg, rgba(7, 11, 18, 0.3) 0%, rgba(7, 11, 18, 0.9) 100%);
-        }
-
-        /* Collapsed Title styling (vertical overlay) */
-        .collapsed-title-overlay {
-          position: absolute;
-          inset: 0;
-          z-index: 3;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justifyContent: space-between;
-          padding: 40px 20px;
-          opacity: 1;
-          pointer-events: none;
-          transition: opacity 0.4s ease;
-        }
-
-        .service-expand-card.expanded .collapsed-title-overlay {
-          opacity: 0;
-        }
-
-        .collapsed-title {
-          font-family: var(--font-space-grotesk);
-          font-size: 24px;
-          font-weight: 800;
-          letter-spacing: 2px;
-          color: #ffffff;
-          writing-mode: vertical-rl;
-          text-orientation: mixed;
-          transform: rotate(180deg);
-          white-space: nowrap;
-        }
-
-        .expand-indicator-plus {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: #ffffff;
-          display: flex;
-          align-items: center;
-          justifyContent: center;
-          font-size: 20px;
-          font-weight: 300;
-          transition: all 0.3s ease;
-        }
-
-        .service-expand-card:hover .expand-indicator-plus {
-          background: #00a3ff;
-          border-color: #00a3ff;
-          transform: rotate(90deg);
-        }
-
-        /* Expanded content container */
-        .expanded-content {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          z-index: 2;
-          display: flex;
-          opacity: 0;
-          pointer-events: none;
-          transition: opacity 0.3s ease;
-        }
-
-        .service-expand-card.expanded .expanded-content {
-          opacity: 1;
-          pointer-events: auto;
-          transition: opacity 0.5s ease 0.2s; /* Delayed fade in */
-        }
-
-        /* Left column (Text content) */
-        .content-left {
-          flex: 1.2;
-          padding: 48px;
-          display: flex;
-          flex-direction: column;
-          justifyContent: center;
-          z-index: 5;
-          background-color: #0d1118;
-          border-radius: 20px 0 0 20px;
-        }
-
-        .service-kicker {
-          font-size: 11px;
-          font-weight: 800;
-          color: #00a3ff;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          margin-bottom: 8px;
-        }
-
-        .service-title {
-          font-family: var(--font-space-grotesk);
-          font-size: clamp(24px, 3vw, 36px);
-          font-weight: 800;
-          color: #ffffff;
-          margin-bottom: 16px;
-        }
-
-        .service-desc {
-          font-size: 14px;
-          line-height: 1.6;
-          color: var(--text-gray);
-          margin-bottom: 28px;
-          max-width: 480px;
-        }
-
-        .features-list {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 20px;
-          margin-bottom: 32px;
-        }
-
-        .feature-item {
-          display: flex;
-          gap: 12px;
-          align-items: flex-start;
-        }
-
-        .feature-check {
-          color: #00a3ff;
-          font-weight: bold;
-          font-size: 16px;
-          flex-shrink: 0;
-          margin-top: 2px;
-        }
-
-        .feature-title {
-          font-size: 14px;
-          font-weight: 700;
-          color: #ffffff;
-          margin-bottom: 4px;
-        }
-
-        .feature-detail {
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.5);
-          line-height: 1.4;
-        }
-
-        .cta-button {
-          background-color: #0070f3;
-          color: #ffffff;
-          border: none;
-          border-radius: 6px;
-          padding: 14px 28px;
-          font-size: 14px;
-          font-weight: 700;
-          cursor: pointer;
-          width: fit-content;
-          text-decoration: none;
-          transition: all 0.3s ease;
-          box-shadow: 0 8px 20px rgba(0, 112, 243, 0.2);
-        }
-
-        .cta-button:hover {
-          background-color: #005ccb;
-          transform: translateY(-2px);
-          box-shadow: 0 12px 24px rgba(0, 112, 243, 0.35);
-        }
-
-        /* Right column (Visual photo) */
-        .content-right {
-          flex: 1;
-          position: relative;
-          border-radius: 0 20px 20px 0;
-          overflow: hidden;
-        }
-
-        .right-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(90deg, #0d1118 0%, rgba(13, 17, 24, 0.5) 20%, transparent 100%);
-        }
-
-        /* Responsive styling */
-        @media (max-width: 991px) {
-          .expanding-cards-wrapper {
-            flex-direction: column;
-            min-height: auto;
-          }
-
-          .service-expand-card {
-            flex: none !important;
-            width: 100%;
-            height: auto;
-            min-height: 380px;
-          }
-
-          .card-bg {
-            opacity: 0.15;
-          }
-
-          .collapsed-title-overlay {
-            display: none;
-          }
-
-          .expanded-content {
-            opacity: 1;
-            pointer-events: auto;
-            flex-direction: column;
-          }
-
-          .content-left {
-            flex: none;
-            padding: 32px 24px;
-            border-radius: 20px;
-            background-color: rgba(18, 20, 23, 0.85);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-          }
-
-          .content-right {
-            display: none;
-          }
-
-          .features-list {
-            grid-template-columns: 1fr;
-            gap: 16px;
-          }
-        }
-      `}</style>
     </section>
   );
 }
