@@ -75,7 +75,12 @@ export default function DynamicMedia({
   }, [assetId, directSrc, fallbackSrc]);
 
   if (!resolvedSrc) {
-    return <div style={{ width: '100%', height: '100%', backgroundColor: '#070b12', ...style }} className={className} />;
+    return (
+      <div
+        className={`w-full h-full bg-[#070b12] ${className || ''}`}
+        style={style}
+      />
+    );
   }
 
   // Detect file type from file extension
@@ -86,15 +91,8 @@ export default function DynamicMedia({
     return (
       <video
         src={resolvedSrc}
-        className={className}
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          objectPosition: 'center',
-          display: 'block',
-          ...style,
-        }}
+        className={`w-full h-full object-cover object-center block ${className || ''}`}
+        style={style}
         autoPlay={autoPlay}
         loop={loop}
         muted={muted}
@@ -109,16 +107,9 @@ export default function DynamicMedia({
   return (
     <img
       src={resolvedSrc}
-      className={className}
+      className={`w-full h-full object-cover object-center block ${className || ''}`}
+      style={style}
       alt=""
-      style={{
-        width: '100%',
-        height: '100%',
-        objectFit: 'cover',
-        objectPosition: 'center',
-        display: 'block',
-        ...style,
-      }}
       loading="lazy"
       {...props}
     />
