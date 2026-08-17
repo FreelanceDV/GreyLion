@@ -52,7 +52,7 @@ export default function AboutCompany() {
         }}
       />
 
-      <div className="container" style={{ position: 'relative', zIndex: 10 }}>
+      <div className="w-full max-w-[1280px] mx-auto px-5" style={{ position: 'relative', zIndex: 10 }}>
         
         {/* ================= SECTION 1: MISSION / VISION ================= */}
         <div id="mision-vision" style={{ scrollMarginTop: '100px', marginBottom: '100px' }}>
@@ -263,7 +263,7 @@ export default function AboutCompany() {
                   }}
                 >
                   ¿Por qué elegir a <br />
-                  <span className="text-gradient">GreyLion Maritime?</span>
+                  <span className="bg-[linear-gradient(90deg,#FFFFFF_0%,#FFFFFF_20%,var(--color-primary)_50%,#FFFFFF_80%,#FFFFFF_100%)] bg-[length:200%_100%] bg-clip-text text-transparent animate-gradient-flow">GreyLion Maritime?</span>
                 </h2>
               </div>
 
@@ -354,7 +354,7 @@ export default function AboutCompany() {
                     alignItems: 'flex-start',
                     transition: 'all 0.3s ease',
                   }}
-                  className="glow-card"
+                  className="relative rounded-[14px] overflow-hidden transition-all duration-300 before:content-[''] before:absolute before:inset-0 before:rounded-[14px] before:p-[1.5px] before:[background:linear-gradient(135deg,rgba(90,110,216,0.4)_0%,transparent_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[mask-composite:exclude] before:[-webkit-mask-composite:xor] before:pointer-events-none hover:before:[background:linear-gradient(135deg,var(--color-primary)_0%,var(--color-accent)_100%)]"
                   onMouseEnter={(e) => {
                     e.currentTarget.style.borderColor = 'rgba(15, 76, 129, 0.3)';
                     e.currentTarget.style.transform = 'translateX(6px)';

@@ -15,7 +15,7 @@ export default function CTA() {
         position: 'relative',
       }}
     >
-      <div className="container">
+      <div className="w-full max-w-[1280px] mx-auto px-5">
         {/* Glowing banner container */}
         <div
           style={{

@@ -81,7 +81,7 @@ export default function WorkWithUs() {
         borderTop: '1px solid #E4E7EC',
       }}
     >
-      <div className="container">
+      <div className="w-full max-w-[1280px] mx-auto px-5">
         {/* Header */}
         <div
           style={{

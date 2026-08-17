@@ -85,7 +85,7 @@ export default function CargoTypes() {
         borderTop: '1px solid rgba(255, 255, 255, 0.05)',
       }}
     >
-      <div className="container">
+      <div className="w-full max-w-[1280px] mx-auto px-5">
         {/* Section Header */}
         <div
           style={{

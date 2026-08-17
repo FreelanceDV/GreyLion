@@ -609,7 +609,7 @@ export default function Globe() {
         borderTop: '1px solid rgba(255, 255, 255, 0.05)',
       }}
     >
-      <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div className="w-full max-w-[1280px] mx-auto px-5" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {/* Section title */}
         <h2
           style={{
@@ -750,7 +750,7 @@ export default function Globe() {
                   gap: '12px',
                   transition: 'all 0.3s ease',
                 }}
-                className="glow-card"
+                className="relative rounded-[14px] overflow-hidden transition-all duration-300 before:content-[''] before:absolute before:inset-0 before:rounded-[14px] before:p-[1.5px] before:[background:linear-gradient(135deg,rgba(90,110,216,0.4)_0%,transparent_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[mask-composite:exclude] before:[-webkit-mask-composite:xor] before:pointer-events-none hover:before:[background:linear-gradient(135deg,var(--color-primary)_0%,var(--color-accent)_100%)]"
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-4px)';
                   e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';

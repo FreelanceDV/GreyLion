@@ -41,7 +41,7 @@ export default function CareersPage() {
           }}
         />
 
-        <div className="container" style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
+        <div className="w-full max-w-[1280px] mx-auto px-5" style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
           <span
             style={{
               fontSize: '13px',
@@ -63,7 +63,7 @@ export default function CareersPage() {
               marginTop: '16px',
             }}
           >
-            Únete al Equipo de <span className="text-gradient">GreyLion Maritime</span>
+            Únete al Equipo de <span className="bg-[linear-gradient(90deg,#FFFFFF_0%,#FFFFFF_20%,var(--color-primary)_50%,#FFFFFF_80%,#FFFFFF_100%)] bg-[length:200%_100%] bg-clip-text text-transparent animate-gradient-flow">GreyLion Maritime</span>
           </h1>
           <p
             style={{
@@ -90,7 +90,7 @@ export default function CareersPage() {
           borderTop: '1px solid rgba(255, 255, 255, 0.05)',
         }}
       >
-        <div className="container" style={{ maxWidth: '800px', textAlign: 'center' }}>
+        <div className="w-full max-w-[1280px] mx-auto px-5" style={{ maxWidth: '800px', textAlign: 'center' }}>
           <div
             style={{
               background: 'rgba(255, 255, 255, 0.02)',
@@ -102,7 +102,7 @@ export default function CareersPage() {
               gap: '28px',
               boxShadow: '0 15px 40px rgba(90, 110, 216, 0.04)',
             }}
-            className="glow-card"
+            className="relative rounded-[14px] overflow-hidden transition-all duration-300 before:content-[''] before:absolute before:inset-0 before:rounded-[14px] before:p-[1.5px] before:[background:linear-gradient(135deg,rgba(90,110,216,0.4)_0%,transparent_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[mask-composite:exclude] before:[-webkit-mask-composite:xor] before:pointer-events-none hover:before:[background:linear-gradient(135deg,var(--color-primary)_0%,var(--color-accent)_100%)]"
           >
             <h2
               style={{

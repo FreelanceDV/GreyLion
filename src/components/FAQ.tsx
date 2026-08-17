@@ -34,7 +34,7 @@ export default function FAQ() {
         padding: '100px 0',
       }}
     >
-      <div className="container" style={{ maxWidth: '800px' }}>
+      <div className="w-full max-w-[1280px] mx-auto px-5" style={{ maxWidth: '800px' }}>
         {/* Title */}
         <h2
           style={{

@@ -341,7 +341,7 @@ export default function AdminPage() {
     <main className="admin-dashboard-main">
       {/* Top Header */}
       <header className="dashboard-header">
-        <div className="container header-container">
+        <div className="w-full max-w-[1280px] mx-auto px-5 header-container">
           <div className="header-logo">
             <span className="logo-icon">⚓</span>
             <h1>GREYLION GESTOR</h1>
@@ -354,7 +354,7 @@ export default function AdminPage() {
       </header>
 
       {/* Main Grid Content */}
-      <div className="container dashboard-body">
+      <div className="w-full max-w-[1280px] mx-auto px-5 dashboard-body">
         <div className="dashboard-grid">
           
           {/* Left Panel: List of Assets */}

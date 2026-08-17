@@ -69,7 +69,7 @@ export default function Comparison() {
         />
       </div>
 
-      <div className="container" style={{ position: 'relative', zIndex: 10 }}>
+      <div className="w-full max-w-[1280px] mx-auto px-5" style={{ position: 'relative', zIndex: 10 }}>
         {/* Header Title */}
         <div
           style={{
