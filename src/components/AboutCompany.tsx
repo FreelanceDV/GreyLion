@@ -142,87 +142,87 @@ export default function AboutCompany() {
           </div>
         </div>
 
-        {/* ================= SECTION 3: WHY CHOOSE US ================= */}
-        <div id="porque-elegirnos" className="scroll-mt-[100px] border-t border-[rgba(255,255,255,0.06)] pt-20">
-          <div className="grid grid-cols-[0.85fr_1.15fr_0.8fr] rounded-3xl overflow-hidden border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(135deg,#060d1c_0%,#0b1730_55%,#0a1428_100%)] max-[991px]:grid-cols-1">
-            {/* Left Content Column */}
-            <div className="flex flex-col gap-6 justify-center p-10 max-[991px]:p-8">
-              <div className="flex flex-col gap-3">
-                <span className="text-[12px] font-bold text-primary-hover uppercase tracking-[0.14em]">
-                  Valores Agregados
-                </span>
-                <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(26px,3vw,38px)] font-extrabold leading-[1.15] text-white">
-                  ¿Por qué elegir a <br />
-                  <span className="text-primary-hover underline decoration-primary-hover/70 underline-offset-8">GreyLion Maritime?</span>
-                </h2>
-              </div>
+      </div>
 
-              <div className="flex flex-col gap-4">
-                <p className="text-[13.5px] leading-[1.7] text-text-gray">
-                  Optimizamos su cadena de suministro combinando tecnología avanzada para el seguimiento en tiempo real con tarifas competitivas gracias a nuestros acuerdos navieros directos.
-                </p>
-                <p className="text-[13.5px] leading-[1.7] text-text-gray">
-                  Garantizamos la máxima seguridad de su carga con pólizas incluidas y gestionamos de forma integral todo el papeleo aduanero bajo normativas internacionales. Con nosotros, obtiene el respaldo de un equipo experto dedicado exclusivamente a brindarle asesoría personalizada de principio a fin.
-                </p>
-              </div>
-
-              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="no-underline w-fit">
-                <button className="flex items-center gap-2 bg-primary text-white border-0 rounded-full py-3.5 px-6 text-[12px] font-bold uppercase tracking-[0.04em] cursor-pointer transition-all duration-300 ease-[ease] shadow-[0_8px_20px_rgba(15,76,129,0.25)] hover:bg-primary-hover hover:-translate-y-0.5">
-                  Recibir Propuesta Personalizada
-                  <span aria-hidden="true">→</span>
-                </button>
-              </a>
+      {/* ================= SECTION 3: WHY CHOOSE US (full-bleed, breaks out of the max-w container) ================= */}
+      <div id="porque-elegirnos" className="relative z-10 scroll-mt-[100px] mt-[100px] border-t border-[rgba(255,255,255,0.06)] pt-20">
+        <div className="grid grid-cols-[0.85fr_1.15fr_0.8fr] w-full bg-[linear-gradient(135deg,#060d1c_0%,#0b1730_55%,#0a1428_100%)] max-[991px]:grid-cols-1">
+          {/* Left Content Column */}
+          <div className="flex flex-col gap-6 justify-center py-10 pl-[clamp(20px,6vw,96px)] pr-8 max-[991px]:p-8">
+            <div className="flex flex-col gap-3">
+              <span className="text-[12px] font-bold text-primary-hover uppercase tracking-[0.14em]">
+                Valores Agregados
+              </span>
+              <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(26px,3vw,38px)] font-extrabold leading-[1.15] text-white">
+                ¿Por qué elegir a GreyLion <br />
+                <span className="text-primary-hover underline decoration-primary-hover/70 underline-offset-8">Maritime?</span>
+              </h2>
             </div>
 
-            {/* Middle Cards Column */}
-            <div className="flex flex-col gap-3 justify-center p-8 max-[991px]:p-8 max-[991px]:pt-0">
-              {[
-                {
-                  title: 'Coordinación Portuaria y Aduanas',
-                  desc: 'Enlace directo con autoridades aduaneras y portuarias en múltiples países para liberar su carga sin contratiempos.'
-                },
-                {
-                  title: 'Supervisión de Operaciones',
-                  desc: 'Control y supervisión física exhaustiva en las maniobras de estiba y desestiba para resguardar su mercancía.'
-                },
-                {
-                  title: 'Gestión de Almacenamiento',
-                  desc: 'Espacios de almacenamiento temporal controlados y seguros en depósitos aduaneros estratégicos.'
-                },
-                {
-                  title: 'Control de Calidad y Verificación',
-                  desc: 'Verificación física y control cuantitativo previo al despacho final, reduciendo discrepancias en origen.'
-                }
-              ].map((pillar, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-start gap-4 py-4 px-5 rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] transition-colors duration-300 ease-[ease] hover:border-primary-hover/50"
-                >
-                  <div className="w-9 h-9 rounded-lg border border-primary-hover/50 bg-[rgba(15,76,129,0.18)] text-primary-hover flex items-center justify-center shrink-0">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <h3 className="text-[14.5px] font-bold text-white">{pillar.title}</h3>
-                    <p className="text-[12px] leading-[1.5] text-text-gray">{pillar.desc}</p>
-                  </div>
+            <div className="flex flex-col gap-4">
+              <p className="text-[13.5px] leading-[1.7] text-text-gray">
+                Optimizamos su cadena de suministro combinando tecnología avanzada para el seguimiento en tiempo real con tarifas competitivas gracias a nuestros acuerdos navieros directos.
+              </p>
+              <p className="text-[13.5px] leading-[1.7] text-text-gray">
+                Garantizamos la máxima seguridad de su carga con pólizas incluidas y gestionamos de forma integral todo el papeleo aduanero bajo normativas internacionales. Con nosotros, obtiene el respaldo de un equipo experto dedicado exclusivamente a brindarle asesoría personalizada de principio a fin.
+              </p>
+            </div>
+
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="no-underline w-fit">
+              <button className="flex items-center gap-2 bg-primary text-white border-0 rounded-full py-3.5 px-6 text-[12px] font-bold uppercase tracking-[0.04em] cursor-pointer transition-all duration-300 ease-[ease] shadow-[0_8px_20px_rgba(15,76,129,0.25)] hover:bg-primary-hover hover:-translate-y-0.5">
+                Recibir Propuesta Personalizada
+                <span aria-hidden="true">→</span>
+              </button>
+            </a>
+          </div>
+
+          {/* Middle Cards Column */}
+          <div className="flex flex-col gap-3 justify-center p-8 max-[991px]:p-8 max-[991px]:pt-0">
+            {[
+              {
+                title: 'Coordinación Portuaria y Aduanas',
+                desc: 'Enlace directo con autoridades aduaneras y portuarias en múltiples países para liberar su carga sin contratiempos.'
+              },
+              {
+                title: 'Supervisión de Operaciones',
+                desc: 'Control y supervisión física exhaustiva en las maniobras de estiba y desestiba para resguardar su mercancía.'
+              },
+              {
+                title: 'Gestión de Almacenamiento',
+                desc: 'Espacios de almacenamiento temporal controlados y seguros en depósitos aduaneros estratégicos.'
+              },
+              {
+                title: 'Control de Calidad y Verificación',
+                desc: 'Verificación física y control cuantitativo previo al despacho final, reduciendo discrepancias en origen.'
+              }
+            ].map((pillar, idx) => (
+              <div
+                key={idx}
+                className="flex items-start gap-4 py-4 px-5 rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] transition-colors duration-300 ease-[ease] hover:border-primary-hover/50"
+              >
+                <div className="w-9 h-9 rounded-lg border border-primary-hover/50 bg-[rgba(15,76,129,0.18)] text-primary-hover flex items-center justify-center shrink-0">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
                 </div>
-              ))}
-            </div>
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-[14.5px] font-bold text-white">{pillar.title}</h3>
+                  <p className="text-[12px] leading-[1.5] text-text-gray">{pillar.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
 
-            {/* Right Image Column */}
-            <div className="relative min-h-[280px] max-[991px]:min-h-[220px]">
-              <img
-                src="/why_choose_greylion.png"
-                alt="Grúa portuaria cargando contenedores de GreyLion Maritime"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,13,28,0.35)_0%,transparent_25%)] max-[991px]:hidden" />
-            </div>
+          {/* Right Image Column */}
+          <div className="relative min-h-[280px] max-[991px]:min-h-[220px]">
+            <img
+              src="/why_choose_greylion.png"
+              alt="Grúa portuaria cargando contenedores de GreyLion Maritime"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,13,28,0.35)_0%,transparent_25%)] max-[991px]:hidden" />
           </div>
         </div>
-
       </div>
     </section>
   );
