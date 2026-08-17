@@ -53,7 +53,7 @@ export default function WhatsAppButton() {
   };
 
   return (
-    <div className="fixed right-8 bottom-8 z-[100] font-[family-name:var(--font-inter)]">
+    <div className="fixed right-8 bottom-8 max-[520px]:right-4 max-[520px]:bottom-4 z-[100] font-[family-name:var(--font-inter)]">
       {open && (
         <button
           className="fixed inset-0 z-0 border-0 bg-[rgba(3,7,12,.68)] backdrop-blur-[9px]"
