@@ -109,7 +109,7 @@ export default function Comparison() {
                 {/* Expanded State Content Wrapper (Visible when expanded) */}
                 <div className={expandedContentClass}>
                   {/* Left Column: Text Content */}
-                  <div className="flex-[1.2] p-12 flex flex-col justify-center z-[5] bg-[#0d1118] rounded-l-[20px] max-[991px]:flex-none max-[991px]:py-8 max-[991px]:px-6 max-[991px]:rounded-[20px] max-[991px]:bg-[rgba(18,20,23,0.85)] max-[991px]:backdrop-blur-[10px]">
+                  <div className="flex-[1.2] p-12 flex flex-col z-[5] bg-[#0d1118] rounded-l-[20px] max-[991px]:flex-none max-[991px]:py-8 max-[991px]:px-6 max-[991px]:rounded-[20px] max-[991px]:bg-[rgba(18,20,23,0.85)] max-[991px]:backdrop-blur-[10px]">
                     <span className="text-[11px] font-extrabold text-[#00a3ff] tracking-[0.15em] uppercase mb-2">{service.subtitle}</span>
                     <h3 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(24px,3vw,36px)] font-extrabold text-white mb-4">{service.title}</h3>
                     <p className="text-sm leading-[1.6] text-text-gray mb-7 max-w-[480px]">{service.desc}</p>
