@@ -10,31 +10,21 @@ interface LogoProps {
 
 export default function Logo({ size = 36, showText = true, textSize = '20px' }: LogoProps) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div className="flex items-center gap-[10px]">
       <Image
         src={logoImg}
         alt="GreyLion Maritime Logo"
         width={size}
         height={size}
-        style={{
-          borderRadius: '50%',
-          objectFit: 'cover',
-          flexShrink: 0,
-        }}
+        className="rounded-full object-cover shrink-0"
       />
 
       {showText && (
         <span
-          style={{
-            fontFamily: 'var(--font-space-grotesk)',
-            fontSize: textSize,
-            fontWeight: 800,
-            letterSpacing: '-0.7px',
-            color: 'var(--text-white)',
-            userSelect: 'none',
-          }}
+          className="font-space-grotesk font-extrabold tracking-[-0.7px] text-text-white select-none"
+          style={{ fontSize: textSize }}
         >
-          GreyLion <span style={{ color: 'var(--primary-hover)' }}>Maritime</span>
+          GreyLion <span className="text-primary-hover">Maritime</span>
         </span>
       )}
     </div>
