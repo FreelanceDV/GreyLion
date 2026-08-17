@@ -9,6 +9,15 @@ const quickReplies = [
   { icon: '⚙', text: 'Maquinaria pesada' },
 ];
 
+const controlClasses =
+  'cursor-pointer transition-[transform,background-color,border-color] duration-[180ms] ease-[ease] focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[3px] motion-reduce:transition-none';
+
+const messageBaseClasses = 'max-w-[250px] px-3 py-[10px] border text-[12px] leading-[1.5]';
+
+const replyBaseClasses = `flex items-center gap-[10px] w-full px-[11px] py-[10px] rounded-[11px] border text-[#e9ebef] text-[12px] font-semibold text-left hover:border-accent hover:bg-[rgba(15,76,129,.25)] ${controlClasses}`;
+
+const sendBaseClasses = `grid w-10 place-items-center rounded-[11px] border-0 bg-primary text-white text-[18px] no-underline disabled:cursor-not-allowed disabled:bg-[#29323a] disabled:text-accent ${controlClasses}`;
+
 export default function WhatsAppButton() {
   const [open, setOpen] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
@@ -44,59 +53,80 @@ export default function WhatsAppButton() {
   };
 
   return (
-    <div className="whatsapp-widget">
+    <div className="fixed right-8 bottom-8 z-[100] font-[family-name:var(--font-inter)]">
       {open && (
-        <button className="backdrop" type="button" onClick={() => setOpen(false)} aria-label="Cerrar chat" />
+        <button
+          className="fixed inset-0 z-0 border-0 bg-[rgba(3,7,12,.68)] backdrop-blur-[9px]"
+          type="button"
+          onClick={() => setOpen(false)}
+          aria-label="Cerrar chat"
+        />
       )}
 
       {open && (
-        <div className="modal-layer">
-          <section className="panel" role="dialog" aria-labelledby="whatsapp-title">
-            <div className="accent-line" />
-            <header className="header">
-              <div className="brand">
-                <span className="brand-mark" aria-hidden="true">◔</span>
+        <div className="absolute right-0 bottom-[calc(100%+14px)] z-[1] w-[min(390px,calc(100vw-32px))] max-[520px]:w-[calc(100vw-32px)]">
+          <section
+            className="w-full overflow-hidden rounded-[20px] border border-[rgba(140,150,158,.28)] bg-background-black shadow-[0_20px_55px_rgba(0,0,0,.52)] animate-whatsapp-reveal motion-reduce:animate-none"
+            role="dialog"
+            aria-labelledby="whatsapp-title"
+          >
+            <div className="h-[3px] bg-[linear-gradient(90deg,var(--color-primary-dark),var(--color-primary),var(--color-accent))]" />
+            <header className="flex items-center justify-between py-[15px] px-4 border-b border-border-light bg-background-dark">
+              <div className="flex gap-[11px] items-center">
+                <span className="grid w-[38px] h-[38px] place-items-center border border-[rgba(255,255,255,.16)] rounded-xl bg-primary text-white text-[20px]" aria-hidden="true">◔</span>
                 <div>
-                  <h2 id="whatsapp-title">GreyLion Maritime</h2>
-                  <p><span className="availability-dot" />Equipo disponible</p>
+                  <h2 id="whatsapp-title" className="m-0 text-white text-[14px] leading-[1.2]">GreyLion Maritime</h2>
+                  <p className="flex gap-[6px] items-center mt-1 mb-0 text-[#41bd7b] text-[11px] font-semibold">
+                    <span className="w-[6px] h-[6px] rounded-full bg-current" />
+                    Equipo disponible
+                  </p>
                 </div>
               </div>
-              <button className="close control" type="button" onClick={() => setOpen(false)} aria-label="Cerrar chat">×</button>
+              <button
+                className={`grid w-[30px] h-[30px] place-items-center border border-[rgba(255,255,255,.1)] rounded-[9px] bg-[#1a1f25] text-text-gray text-[22px] leading-none ${controlClasses}`}
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Cerrar chat"
+              >
+                ×
+              </button>
             </header>
 
-            <div className="conversation">
-              <div className="message message-company">¡Hola! Somos GreyLion Maritime. ¿Cómo podemos ayudarle?</div>
-              <p className="timestamp">GreyLion · ahora</p>
-              <div className="message message-company">Elija una opción o escriba su propio mensaje.</div>
+            <div className="flex flex-col gap-[10px] max-h-[min(430px,calc(100dvh-220px))] max-[520px]:max-h-[min(430px,calc(100dvh-154px))] overflow-y-auto p-4 bg-[radial-gradient(circle_at_5%_95%,rgba(15,76,129,.18),transparent_43%),#0d1014]">
+              <div className={`${messageBaseClasses} self-start rounded-[14px_14px_14px_4px] bg-[#171b20] border-[rgba(255,255,255,.1)] text-[#e9ebef]`}>¡Hola! Somos GreyLion Maritime. ¿Cómo podemos ayudarle?</div>
+              <p className="mt-[-6px] mb-[2px] ml-1 text-accent text-[10px]">GreyLion · ahora</p>
+              <div className={`${messageBaseClasses} self-start rounded-[14px_14px_14px_4px] bg-[#171b20] border-[rgba(255,255,255,.1)] text-[#e9ebef]`}>Elija una opción o escriba su propio mensaje.</div>
 
-              <div className="quick-replies" aria-label="Opciones de contacto">
+              <div className="grid gap-2 mt-[2px]" aria-label="Opciones de contacto">
               {quickReplies.map(({ icon, text }) => {
                 const isSelected = selectedMessage === text;
                 return (
                   <button
                     key={text}
-                    className={`reply control${isSelected ? ' selected' : ''}`}
+                    className={`${replyBaseClasses} ${isSelected ? 'border-accent bg-[rgba(15,76,129,.25)]' : 'border-[rgba(15,76,129,.55)] bg-background-dark'}`}
                     type="button"
                     aria-pressed={isSelected}
                     onClick={() => selectReply(text)}
                   >
-                    <span className="reply-icon" aria-hidden="true">{icon}</span>
+                    <span className="grid w-[23px] h-[23px] place-items-center rounded-[7px] bg-primary text-[#e0efff] text-[13px]" aria-hidden="true">{icon}</span>
                     {text}
-                    {isSelected && <span className="check" aria-hidden="true">✓</span>}
+                    {isSelected && <span className="ml-auto text-[#dceeff]" aria-hidden="true">✓</span>}
                   </button>
                 );
               })}
               </div>
 
-              {activeMessage && <div className="message message-visitor">{activeMessage}</div>}
+              {activeMessage && (
+                <div className={`${messageBaseClasses} self-end rounded-[14px_14px_4px_14px] bg-primary border-[rgba(140,150,158,.45)] text-white`}>{activeMessage}</div>
+              )}
             </div>
 
-            <div className="composer">
+            <div className="flex gap-2 pt-[13px] px-[13px] pb-2 border-t border-border-light bg-background-dark">
               <label className="sr-only" htmlFor="whatsapp-message">Mensaje para GreyLion Maritime</label>
               <input
                 ref={inputRef}
                 id="whatsapp-message"
-                className="message-input control"
+                className={`min-w-0 flex-1 rounded-[11px] outline-none bg-[#1a1f25] text-white text-[12px] px-3 py-[10px] border border-[rgba(255,255,255,.14)] placeholder:text-accent ${controlClasses}`}
                 type="text"
                 value={customMessage}
                 onChange={(event) => {
@@ -109,66 +139,31 @@ export default function WhatsAppButton() {
                 placeholder="Escriba un mensaje…"
               />
               {whatsappUrl ? (
-                <a ref={sendLinkRef} className="send control" href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Enviar mensaje a WhatsApp">↗</a>
+                <a ref={sendLinkRef} className={sendBaseClasses} href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Enviar mensaje a WhatsApp">↗</a>
               ) : (
-                <button className="send control" type="button" disabled aria-label="Escriba o seleccione un mensaje para enviar">↗</button>
+                <button className={sendBaseClasses} type="button" disabled aria-label="Escriba o seleccione un mensaje para enviar">↗</button>
               )}
             </div>
-            <p className="privacy-note">Abrirá WhatsApp con su mensaje.</p>
+            <p className="m-0 px-[13px] pb-3 bg-background-dark text-accent text-[10px] text-center">Abrirá WhatsApp con su mensaje.</p>
           </section>
         </div>
       )}
 
-      <button className="trigger control" type="button" onClick={() => setOpen((current) => !current)} aria-expanded={open} aria-controls="whatsapp-title" aria-label={open ? 'Cerrar chat de WhatsApp' : 'Contactar por WhatsApp'}>
-        {!open && <span className="ripple" aria-hidden="true" />}
+      <button
+        className={`relative z-[2] grid w-[60px] h-[60px] place-items-center border border-[rgba(255,255,255,.16)] rounded-full bg-[linear-gradient(135deg,var(--color-primary),var(--color-primary-dark))] text-white shadow-[0_10px_30px_rgba(15,76,129,.45)] text-[29px] hover:-translate-y-0.5 hover:scale-[1.04] ${controlClasses}`}
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+        aria-controls="whatsapp-title"
+        aria-label={open ? 'Cerrar chat de WhatsApp' : 'Contactar por WhatsApp'}
+      >
+        {!open && <span className="absolute -inset-0.5 z-[-1] border-2 border-primary rounded-[inherit] animate-whatsapp-ripple motion-reduce:animate-none" aria-hidden="true" />}
         {open ? '×' : (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg className="w-[29px] h-[29px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
           </svg>
         )}
       </button>
-
-      <style jsx>{`
-        .whatsapp-widget { position: fixed; right: 32px; bottom: 32px; z-index: 100; font-family: var(--font-inter); }
-        .backdrop { position: fixed; inset: 0; z-index: 0; border: 0; background: rgba(3, 7, 12, .68); backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px); }
-        .modal-layer { position: absolute; right: 0; bottom: calc(100% + 14px); z-index: 1; width: min(390px, calc(100vw - 32px)); }
-        .panel { width: 100%; overflow: hidden; border: 1px solid rgba(140,150,158,.28); border-radius: 20px; background: #0a0b0d; box-shadow: 0 20px 55px rgba(0,0,0,.52); animation: reveal .2s ease-out; }
-        .accent-line { height: 3px; background: linear-gradient(90deg, #082b4a, #0f4c81, #8c969e); }
-        .header { display: flex; align-items: center; justify-content: space-between; padding: 15px 16px; border-bottom: 1px solid rgba(255,255,255,.08); background: #121417; }
-        .brand { display: flex; gap: 11px; align-items: center; }
-        .brand-mark { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid rgba(255,255,255,.16); border-radius: 12px; background: #0f4c81; color: white; font-size: 20px; }
-        h2 { margin: 0; color: #fff; font-size: 14px; line-height: 1.2; }
-        .brand p { display: flex; gap: 6px; align-items: center; margin: 4px 0 0; color: #41bd7b; font-size: 11px; font-weight: 600; }
-        .availability-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-        .close { width: 30px; height: 30px; border: 1px solid rgba(255,255,255,.1); border-radius: 9px; background: #1a1f25; color: #cfd0d8; font-size: 22px; line-height: 1; }
-        .conversation { display: flex; max-height: min(430px, calc(100dvh - 220px)); flex-direction: column; gap: 10px; overflow-y: auto; padding: 16px; background: radial-gradient(circle at 5% 95%, rgba(15,76,129,.18), transparent 43%), #0d1014; }
-        .message { max-width: 250px; padding: 10px 12px; border: 1px solid rgba(255,255,255,.1); color: #e9ebef; font-size: 12px; line-height: 1.5; }
-        .message-company { align-self: flex-start; border-radius: 14px 14px 14px 4px; background: #171b20; }
-        .message-visitor { align-self: flex-end; border-color: rgba(140,150,158,.45); border-radius: 14px 14px 4px 14px; background: #0f4c81; color: #fff; }
-        .timestamp { margin: -6px 0 2px 4px; color: #8c969e; font-size: 10px; }
-        .quick-replies { display: grid; gap: 8px; margin-top: 2px; }
-        .reply { display: flex; gap: 10px; align-items: center; width: 100%; padding: 10px 11px; border: 1px solid rgba(15,76,129,.55); border-radius: 11px; background: #121417; color: #e9ebef; font: inherit; font-size: 12px; font-weight: 600; text-align: left; }
-        .reply:hover, .reply.selected { border-color: #8c969e; background: rgba(15,76,129,.25); }
-        .reply-icon { display: grid; width: 23px; height: 23px; place-items: center; border-radius: 7px; background: #0f4c81; color: #e0efff; font-size: 13px; }
-        .check { margin-left: auto; color: #dceeff; }
-        .composer { display: flex; gap: 8px; padding: 13px 13px 8px; border-top: 1px solid rgba(255,255,255,.08); background: #121417; }
-        .message-input { min-width: 0; flex: 1; border: 1px solid rgba(255,255,255,.14); border-radius: 11px; outline: none; background: #1a1f25; color: #fff; font: inherit; font-size: 12px; padding: 10px 12px; }
-        .message-input::placeholder { color: #8c969e; }
-        .send { display: grid; width: 40px; place-items: center; border: 0; border-radius: 11px; background: #0f4c81; color: white; font-size: 18px; text-decoration: none; }
-        .send:disabled { cursor: not-allowed; background: #29323a; color: #8c969e; }
-        .privacy-note { margin: 0; padding: 0 13px 12px; background: #121417; color: #8c969e; font-size: 10px; text-align: center; }
-        .trigger { position: relative; z-index: 2; display: grid; width: 60px; height: 60px; place-items: center; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; background: linear-gradient(135deg, #0f4c81, #082b4a); color: #fff; box-shadow: 0 10px 30px rgba(15,76,129,.45); font-size: 29px; }
-        .trigger svg { width: 29px; height: 29px; }
-        .ripple { position: absolute; inset: -2px; z-index: -1; border: 2px solid #0f4c81; border-radius: inherit; animation: ripple 2s infinite ease-out; }
-        .control { cursor: pointer; transition: transform .18s ease, background-color .18s ease, border-color .18s ease; }
-        .control:focus-visible { outline: 2px solid #8c969e; outline-offset: 3px; }
-        .trigger:hover { transform: translateY(-2px) scale(1.04); }
-        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-        @keyframes ripple { from { transform: scale(.9); opacity: .7; } to { transform: scale(1.55); opacity: 0; } }
-        @keyframes reveal { from { transform: translateY(10px) scale(.97); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-        @media (max-width: 520px) { .whatsapp-widget { right: 16px; bottom: 16px; } .modal-layer { width: calc(100vw - 32px); } .conversation { max-height: min(430px, calc(100dvh - 154px)); } }
-        @media (prefers-reduced-motion: reduce) { .trigger, .panel, .ripple, .control { animation: none; transition: none; } }
-      `}</style>
     </div>
   );
 }
