@@ -12,6 +12,15 @@ const navItems = [
   { label: 'Maquinaria', path: '/#maquinaria', icon: '⚙' },
 ];
 
+const desktopNavLinkClasses =
+  'relative px-0 py-[9px] text-[13px] font-semibold text-[rgba(255,255,255,.72)] no-underline transition-colors duration-200 ease-[ease] hover:text-text-white focus-visible:text-text-white focus-visible:outline-none motion-reduce:transition-none after:absolute after:right-0 after:bottom-[3px] after:left-0 after:h-px after:origin-center after:scale-x-0 after:bg-primary-hover after:transition-transform after:duration-200 after:content-[\'\'] hover:after:scale-x-100 focus-visible:after:scale-x-100 motion-reduce:after:transition-none';
+
+const actionLinkBaseClasses =
+  'inline-flex items-center gap-[7px] rounded-full text-[13px] font-bold no-underline transition-[transform,background,border-color] duration-200 ease-[ease] hover:-translate-y-[2px] motion-reduce:transition-none';
+
+const mobileActionBaseClasses =
+  'flex min-h-[47px] items-center justify-center rounded-[14px] text-[14px] font-[750] no-underline';
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -43,94 +52,64 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className={`navbar${scrolled ? ' scrolled' : ''}`} aria-label="Navegación principal">
-        <div className="nav-content container">
-          <Link className="logo-link" href="/" aria-label="GreyLion Maritime, inicio"><Logo size={36} textSize="22px" /></Link>
+      <nav
+        className={`fixed inset-x-0 top-0 z-[60] flex items-center border-b transition-[height,background,border-color] duration-[250ms] ease-[ease] motion-reduce:transition-none${
+          scrolled
+            ? ' h-[68px] border-[rgba(255,255,255,.09)] bg-[rgba(10,11,13,.88)] backdrop-blur-[18px]'
+            : ' h-[86px] border-transparent bg-[linear-gradient(180deg,rgba(10,11,13,.78),rgba(10,11,13,.34))] max-[991px]:h-[72px] max-[991px]:bg-[rgba(10,11,13,.86)] max-[991px]:backdrop-blur-[14px]'
+        }`}
+        aria-label="Navegación principal"
+      >
+        <div className="container grid grid-cols-[1fr_auto_1fr] items-center max-[991px]:grid-cols-[1fr_auto]">
+          <Link className="inline-flex w-fit no-underline" href="/" aria-label="GreyLion Maritime, inicio"><Logo size={36} textSize="22px" /></Link>
 
-          <div className="desktop-nav">
-            {navItems.map((item) => <Link key={item.label} href={item.path}>{item.label}</Link>)}
+          <div className="flex items-center gap-[25px] max-[991px]:hidden">
+            {navItems.map((item) => <Link key={item.label} href={item.path} className={desktopNavLinkClasses}>{item.label}</Link>)}
           </div>
 
-          <div className="desktop-actions">
-            <a className="tracking-link" href={trackingUrl} target="_blank" rel="noopener noreferrer"><span aria-hidden="true">⌁</span> Seguimiento</a>
-            <a className="quote-link" href={quoteUrl} target="_blank" rel="noopener noreferrer">Cotizar envío <span aria-hidden="true">↗</span></a>
+          <div className="flex items-center justify-end gap-[10px] max-[991px]:hidden">
+            <a className={`${actionLinkBaseClasses} px-[13px] py-[10px] text-[#d8dce1] hover:bg-[rgba(255,255,255,.07)]`} href={trackingUrl} target="_blank" rel="noopener noreferrer"><span aria-hidden="true">⌁</span> Seguimiento</a>
+            <a className={`${actionLinkBaseClasses} px-[15px] py-[10px] bg-primary text-text-white shadow-[0_8px_20px_rgba(15,76,129,.28)] hover:bg-primary-hover`} href={quoteUrl} target="_blank" rel="noopener noreferrer">Cotizar envío <span aria-hidden="true">↗</span></a>
           </div>
 
-          <button className="menu-toggle" type="button" onClick={() => setMobileMenuOpen(true)} aria-expanded={mobileMenuOpen} aria-controls="mobile-menu" aria-label="Abrir menú">
-            <span /><span /><span />
+          <button className="hidden h-[42px] w-[42px] justify-self-end rounded-xl border border-[rgba(255,255,255,.13)] bg-[rgba(10,11,13,.58)] p-[10px] max-[991px]:block" type="button" onClick={() => setMobileMenuOpen(true)} aria-expanded={mobileMenuOpen} aria-controls="mobile-menu" aria-label="Abrir menú">
+            <span className="my-1 block h-0.5 rounded-[1px] bg-white" /><span className="my-1 block h-0.5 rounded-[1px] bg-white" /><span className="my-1 block h-0.5 rounded-[1px] bg-white" />
           </button>
         </div>
       </nav>
 
       {mobileMenuOpen && (
-        <div id="mobile-menu" className="mobile-menu" role="dialog" aria-modal="true" aria-label="Menú de navegación">
-          <button className="menu-backdrop" type="button" onClick={closeMenu} aria-label="Cerrar menú" />
-          <section className="menu-panel">
-            <header className="menu-header">
+        <div id="mobile-menu" className="fixed inset-0 z-[120]" role="dialog" aria-modal="true" aria-label="Menú de navegación">
+          <button className="absolute inset-0 w-full border-0 bg-[rgba(3,7,12,.66)] backdrop-blur-[9px]" type="button" onClick={closeMenu} aria-label="Cerrar menú" />
+          <section className="relative flex min-h-full w-[min(480px,100%)] flex-col px-[14px] pb-[28px] border-r border-[rgba(34,47,63,.72)] bg-[#030507] shadow-[28px_0_80px_rgba(0,0,0,.62)] animate-panel-in motion-reduce:animate-none max-[991px]:w-full">
+            <header className="flex min-h-[60px] items-center justify-between border-b border-[rgba(34,47,63,.72)] pl-6 pr-[10px]">
               <Link href="/" onClick={closeMenu} aria-label="GreyLion Maritime, inicio"><Logo size={38} textSize="21px" /></Link>
-              <button className="menu-close" type="button" onClick={closeMenu} aria-label="Cerrar menú">×</button>
+              <button className="h-[42px] w-[42px] border-0 bg-transparent text-[34px] font-extralight leading-none text-[#f13b38]" type="button" onClick={closeMenu} aria-label="Cerrar menú">×</button>
             </header>
-            <p className="menu-label">NAVEGACIÓN</p>
-            <div className="menu-links">
+            <p className="mx-[6px] mt-[17px] mb-[14px] text-right text-[10px] font-extrabold tracking-[.16em] text-[#697383]">NAVEGACIÓN</p>
+            <div className="grid gap-2">
               {navItems.map((item, index) => (
-                <Link key={item.label} href={item.path} className="menu-card" onClick={closeMenu}>
-                  <span className="index">{String(index + 1).padStart(2, '0')}</span>
-                  <span className="card-divider" />
-                  <span className="menu-icon" aria-hidden="true">{item.icon}</span>
-                  <span className="menu-text">{item.label}</span>
-                  <span className="menu-arrow" aria-hidden="true">›</span>
+                <Link
+                  key={item.label}
+                  href={item.path}
+                  className="grid min-h-[62px] grid-cols-[29px_1px_37px_minmax(0,1fr)_18px] items-center gap-[12px] rounded-[15px] border border-[rgba(61,103,144,.62)] bg-[linear-gradient(105deg,#10161f,#0c1118)] px-[18px] py-[10px] text-[#e8ebef] no-underline transition-[transform,border-color,background] duration-[180ms] ease-[ease] hover:translate-x-[3px] hover:border-primary-hover hover:bg-[#131d28] hover:outline-none focus-visible:translate-x-[3px] focus-visible:border-primary-hover focus-visible:bg-[#131d28] focus-visible:outline-none motion-reduce:transition-none"
+                  onClick={closeMenu}
+                >
+                  <span className="text-[11px] font-extrabold text-[#516176]">{String(index + 1).padStart(2, '0')}</span>
+                  <span className="self-stretch bg-[rgba(86,104,128,.36)]" />
+                  <span className="grid h-[33px] w-[33px] place-items-center rounded-[10px] border border-[rgba(15,76,129,.68)] bg-[rgba(15,76,129,.2)] text-[16px] text-[#9ed2fc]" aria-hidden="true">{item.icon}</span>
+                  <span className="text-[14px] font-[750]">{item.label}</span>
+                  <span className="justify-self-end text-[24px] font-light text-[#59687a]" aria-hidden="true">›</span>
                 </Link>
               ))}
             </div>
-            <div className="menu-actions">
-              <a className="mobile-tracking" href={trackingUrl} target="_blank" rel="noopener noreferrer">Seguimiento de carga</a>
-              <a className="mobile-quote" href={quoteUrl} target="_blank" rel="noopener noreferrer">Cotizar envío <span aria-hidden="true">↗</span></a>
+            <div className="mt-[18px] grid gap-[9px] max-[991px]:mt-auto max-[991px]:pt-[18px]">
+              <a className={`${mobileActionBaseClasses} border border-[rgba(255,255,255,.15)] bg-[#171b20] text-text-white`} href={trackingUrl} target="_blank" rel="noopener noreferrer">Seguimiento de carga</a>
+              <a className={`${mobileActionBaseClasses} gap-2 bg-primary text-text-white`} href={quoteUrl} target="_blank" rel="noopener noreferrer">Cotizar envío <span aria-hidden="true">↗</span></a>
             </div>
           </section>
         </div>
       )}
-
-      <style jsx>{`
-        .navbar { position: fixed; inset: 0 0 auto; z-index: 60; height: 86px; display: flex; align-items: center; border-bottom: 1px solid transparent; background: linear-gradient(180deg, rgba(10,11,13,.78), rgba(10,11,13,.34)); transition: height .25s ease, background .25s ease, border-color .25s ease; }
-        .navbar.scrolled { height: 68px; border-color: rgba(255,255,255,.09); background: rgba(10,11,13,.88); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
-        .nav-content { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
-        .logo-link { display: inline-flex; width: fit-content; text-decoration: none; }
-        .desktop-nav { display: flex; gap: 25px; align-items: center; }
-        .desktop-nav :global(a) { position: relative; padding: 9px 0; color: rgba(255,255,255,.72); font-size: 13px; font-weight: 600; text-decoration: none; transition: color .2s ease; }
-        .desktop-nav :global(a)::after { position: absolute; right: 0; bottom: 3px; left: 0; height: 1px; content: ''; background: var(--primary-hover); transform: scaleX(0); transform-origin: center; transition: transform .2s ease; }
-        .desktop-nav :global(a:hover), .desktop-nav :global(a:focus-visible) { color: #fff; outline: none; }
-        .desktop-nav :global(a:hover)::after, .desktop-nav :global(a:focus-visible)::after { transform: scaleX(1); }
-        .desktop-actions { display: flex; gap: 10px; justify-content: end; align-items: center; }
-        .tracking-link, .quote-link { display: inline-flex; gap: 7px; align-items: center; border-radius: 999px; font-size: 13px; font-weight: 700; text-decoration: none; transition: transform .2s ease, background .2s ease, border-color .2s ease; }
-        .tracking-link { padding: 10px 13px; color: #d8dce1; }
-        .quote-link { padding: 10px 15px; background: var(--primary); color: #fff; box-shadow: 0 8px 20px rgba(15,76,129,.28); }
-        .tracking-link:hover, .quote-link:hover { transform: translateY(-2px); }
-        .tracking-link:hover { background: rgba(255,255,255,.07); }
-        .quote-link:hover { background: var(--primary-hover); }
-        .menu-toggle { display: none; justify-self: end; width: 42px; height: 42px; padding: 10px; border: 1px solid rgba(255,255,255,.13); border-radius: 12px; background: rgba(10,11,13,.58); }
-        .menu-toggle span { display: block; height: 2px; margin: 4px 0; border-radius: 1px; background: #fff; }
-        .mobile-menu { position: fixed; inset: 0; z-index: 120; }
-        .menu-backdrop { position: absolute; inset: 0; width: 100%; border: 0; background: rgba(3,7,12,.66); backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px); }
-        .menu-panel { position: relative; display: flex; width: min(480px, 100%); min-height: 100%; flex-direction: column; padding: 0 14px 28px; border-right: 1px solid rgba(34, 47, 63, .72); background: #030507; box-shadow: 28px 0 80px rgba(0,0,0,.62); animation: panelIn .24s ease-out; }
-        .menu-header { display: flex; min-height: 60px; justify-content: space-between; align-items: center; padding: 0 10px 0 24px; border-bottom: 1px solid rgba(34, 47, 63, .72); }
-        .menu-close { width: 42px; height: 42px; border: 0; background: transparent; color: #f13b38; font-size: 34px; font-weight: 200; line-height: 1; }
-        .menu-label { margin: 17px 6px 14px; color: #697383; font-size: 10px; font-weight: 800; letter-spacing: .16em; text-align: right; }
-        .menu-links { display: grid; gap: 8px; }
-        :global(.menu-card) { display: grid; grid-template-columns: 29px 1px 37px minmax(0, 1fr) 18px; gap: 12px; align-items: center; min-height: 62px; padding: 10px 18px; border: 1px solid rgba(61, 103, 144, .62); border-radius: 15px; background: linear-gradient(105deg, #10161f, #0c1118); color: #e8ebef; text-decoration: none; transition: transform .18s ease, border-color .18s ease, background .18s ease; }
-        :global(.menu-card:hover), :global(.menu-card:focus-visible) { border-color: var(--primary-hover); background: #131d28; outline: none; transform: translateX(3px); }
-        .index { color: #516176; font-size: 11px; font-weight: 800; }
-        .card-divider { align-self: stretch; background: rgba(86, 104, 128, .36); }
-        .menu-icon { display: grid; width: 33px; height: 33px; place-items: center; border: 1px solid rgba(15, 76, 129, .68); border-radius: 10px; background: rgba(15, 76, 129, .2); color: #9ed2fc; font-size: 16px; }
-        .menu-text { font-size: 14px; font-weight: 750; }
-        .menu-arrow { justify-self: end; color: #59687a; font-size: 24px; font-weight: 300; }
-        .menu-actions { display: grid; gap: 9px; margin-top: 18px; }
-        .mobile-tracking, .mobile-quote { display: flex; justify-content: center; align-items: center; min-height: 47px; border-radius: 14px; font-size: 14px; font-weight: 750; text-decoration: none; }
-        .mobile-tracking { border: 1px solid rgba(255,255,255,.15); background: #171b20; color: #fff; }
-        .mobile-quote { gap: 8px; background: var(--primary); color: #fff; }
-        @keyframes panelIn { from { transform: translateX(-16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @media (max-width: 991px) { .navbar { height: 72px; background: rgba(10,11,13,.86); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); } .nav-content { grid-template-columns: 1fr auto; } .desktop-nav, .desktop-actions { display: none; } .menu-toggle { display: block; } .menu-panel { width: 100%; } .menu-actions { margin-top: auto; padding-top: 18px; } }
-        @media (prefers-reduced-motion: reduce) { .navbar, .desktop-nav :global(a), .desktop-nav :global(a)::after, .tracking-link, .quote-link, :global(.menu-card), .menu-panel { animation: none; transition: none; } }
-      `}</style>
     </>
   );
 }
