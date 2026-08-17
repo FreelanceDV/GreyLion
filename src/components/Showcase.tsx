@@ -8,7 +8,7 @@ const MODALITIES = [
     tagline: 'Proteja sus grandes operaciones',
     desc: 'Rapidez, exclusividad y total seguridad. Asignamos contenedores sellados de 20 y 40 pies exclusivos para su negocio, garantizando un tránsito directo y minimizando tiempos de entrega.',
     logoText: 'FC',
-    accentColor: 'var(--primary)',
+    accentClass: 'bg-primary',
     details: [
       { label: 'Equipos', value: 'Contenedores de 20 y 40 pies' },
       { label: 'Exclusividad', value: 'Contenedor sellado único' },
@@ -21,7 +21,7 @@ const MODALITIES = [
     tagline: 'Flexibilidad económica para su negocio',
     desc: 'Logística flexible y rentable. Envíe mercancía fraccionada compartiendo contenedor de forma segura, divida gastos y pague únicamente por el espacio que utiliza.',
     logoText: 'LC',
-    accentColor: 'var(--accent)',
+    accentClass: 'bg-accent',
     details: [
       { label: 'Modalidad de Envío', value: 'Compartido (Grupaje)' },
       { label: 'Optimización de Costos', value: 'Pague solo espacio ocupado' },
@@ -34,7 +34,7 @@ const MODALITIES = [
     tagline: 'Infraestructura para grandes industrias',
     desc: 'Movilización experta de carga pesada, minerales y productos agrícolas. Gestionamos la logística compleja de materias primas con la precisión técnica y los buques de gran capacidad que su sector exige.',
     logoText: 'TG',
-    accentColor: 'var(--primary-hover)',
+    accentClass: 'bg-primary-hover',
     details: [
       { label: 'Tipos de Granel', value: 'Minerales, agro, carbón' },
       { label: 'Buques', value: 'Bulk Carriers de alta capacidad' },
@@ -128,7 +128,7 @@ export default function Showcase() {
 
   const renderIcon = () => {
     return (
-      <span style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center' }}>
+      <span className="flex items-center text-primary">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10"></circle>
           <line x1="12" y1="8" x2="12" y2="16"></line>
@@ -141,99 +141,30 @@ export default function Showcase() {
   const activeServiceCategory = SERVICES_CATEGORIES.find((cat) => cat.id === activeServiceTab) || SERVICES_CATEGORIES[0];
 
   return (
-    <section
-      id="operaciones"
-      style={{
-        backgroundColor: 'var(--background-black)',
-        padding: '100px 0',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
+    <section id="operaciones" className="bg-background-black py-[100px] relative overflow-hidden">
       {/* Background radial glow */}
-      <div
-        style={{
-          position: 'absolute',
-          right: 0,
-          top: 0,
-          bottom: 0,
-          width: '50%',
-          zIndex: 0,
-          pointerEvents: 'none',
-          background: 'radial-gradient(ellipse at 80% 50%, rgba(90, 110, 216, 0.08) 0%, transparent 60%)',
-        }}
-      />
+      <div className="absolute right-0 top-0 bottom-0 w-1/2 z-0 pointer-events-none bg-[radial-gradient(ellipse_at_80%_50%,rgba(90,110,216,0.08)_0%,transparent_60%)]" />
 
-      <div className="w-full max-w-[1280px] mx-auto px-5" style={{ position: 'relative', zIndex: 10 }}>
+      <div className="w-full max-w-[1280px] mx-auto px-5 relative z-10">
         {/* Title */}
-        <h2
-          style={{
-            fontFamily: 'var(--font-space-grotesk)',
-            fontSize: 'clamp(32px, 4vw, 56px)',
-            fontWeight: 800,
-            textAlign: 'center',
-            marginBottom: '72px',
-          }}
-        >
-          Modalidades de <span style={{ color: 'var(--primary)' }}>Transporte Marítimo</span>
+        <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(32px,4vw,56px)] font-extrabold text-center mb-[72px]">
+          Modalidades de <span className="text-primary">Transporte Marítimo</span>
         </h2>
 
         {/* Core Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1.2fr 1fr',
-            gap: '64px',
-            alignItems: 'center',
-          }}
-          className="showcase-grid"
-        >
+        <div className="grid grid-cols-[1.2fr_1fr] gap-16 items-center max-[991px]:grid-cols-1 max-[991px]:gap-10">
           {/* Left Column: Marquees */}
-          <div
-            style={{
-              position: 'relative',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              overflow: 'hidden',
-              height: '380px',
-              width: '100%',
-              borderRadius: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.05)',
-              background: 'rgba(255, 255, 255, 0.01)',
-              padding: '24px 0',
-            }}
-          >
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '40px',
-                background: 'linear-gradient(to bottom, var(--background-black), transparent)',
-                zIndex: 5,
-              }}
-            />
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: '40px',
-                background: 'linear-gradient(to top, var(--background-black), transparent)',
-                zIndex: 5,
-              }}
-            />
+          <div className="relative flex flex-col gap-4 overflow-hidden h-[380px] w-full rounded-2xl border border-[rgba(255,255,255,0.05)] bg-[rgba(255,255,255,0.01)] py-6">
+            <div className="absolute top-0 left-0 right-0 h-10 z-[5] bg-[linear-gradient(to_bottom,var(--color-background-black),transparent)]" />
+            <div className="absolute bottom-0 left-0 right-0 h-10 z-[5] bg-[linear-gradient(to_top,var(--color-background-black),transparent)]" />
 
             {/* Marquee Row 1 */}
-            <div className="marquee-wrapper">
-              <div className="marquee-container speed-normal">
+            <div className="w-full overflow-hidden py-1">
+              <div className="flex gap-4 whitespace-nowrap w-max animate-marquee">
                 {MARQUEE_ITEMS_1.concat(MARQUEE_ITEMS_1).map((item, idx) => (
-                  <div key={idx} className="marquee-item">
+                  <div key={idx} className="flex items-center gap-2 bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-lg px-4 py-2 select-none">
                     {renderIcon()}
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-white)' }}>
+                    <span className="text-[13px] font-semibold text-text-white">
                       {item.text}
                     </span>
                   </div>
@@ -242,12 +173,12 @@ export default function Showcase() {
             </div>
 
             {/* Marquee Row 2 */}
-            <div className="marquee-wrapper">
-              <div className="marquee-container speed-slow reverse">
+            <div className="w-full overflow-hidden py-1">
+              <div className="flex gap-4 whitespace-nowrap w-max animate-marquee-reverse">
                 {MARQUEE_ITEMS_2.concat(MARQUEE_ITEMS_2).map((item, idx) => (
-                  <div key={idx} className="marquee-item">
+                  <div key={idx} className="flex items-center gap-2 bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-lg px-4 py-2 select-none">
                     {renderIcon()}
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-white)' }}>
+                    <span className="text-[13px] font-semibold text-text-white">
                       {item.text}
                     </span>
                   </div>
@@ -256,12 +187,12 @@ export default function Showcase() {
             </div>
 
             {/* Marquee Row 3 */}
-            <div className="marquee-wrapper">
-              <div className="marquee-container speed-normal">
+            <div className="w-full overflow-hidden py-1">
+              <div className="flex gap-4 whitespace-nowrap w-max animate-marquee">
                 {MARQUEE_ITEMS_3.concat(MARQUEE_ITEMS_3).map((item, idx) => (
-                  <div key={idx} className="marquee-item">
+                  <div key={idx} className="flex items-center gap-2 bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-lg px-4 py-2 select-none">
                     {renderIcon()}
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-white)' }}>
+                    <span className="text-[13px] font-semibold text-text-white">
                       {item.text}
                     </span>
                   </div>
@@ -271,34 +202,18 @@ export default function Showcase() {
           </div>
 
           {/* Right Column: Dynamic Cards */}
-          <div style={{ position: 'relative', width: '100%' }}>
+          <div className="relative w-full">
             {/* Top Selector Tabs */}
-            <div
-              style={{
-                display: 'flex',
-                gap: '8px',
-                marginBottom: '16px',
-                overflowX: 'auto',
-                paddingBottom: '8px',
-              }}
-            >
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
               {MODALITIES.map((mod, idx) => (
                 <button
                   key={idx}
                   onClick={() => setActiveModalityIndex(idx)}
-                  style={{
-                    backgroundColor: activeModalityIndex === idx ? 'rgba(90, 110, 216, 0.1)' : 'rgba(255, 255, 255, 0.02)',
-                    border: '1px solid',
-                    borderColor: activeModalityIndex === idx ? 'var(--primary)' : 'rgba(255, 255, 255, 0.08)',
-                    borderRadius: '30px',
-                    padding: '8px 16px',
-                    color: activeModalityIndex === idx ? 'var(--primary)' : 'rgba(255, 255, 255, 0.6)',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    transition: 'all 0.3s ease',
-                  }}
+                  className={`rounded-[30px] px-4 py-2 text-[13px] font-semibold cursor-pointer whitespace-nowrap transition-all duration-300 ease-[ease] border ${
+                    activeModalityIndex === idx
+                      ? 'bg-[rgba(90,110,216,0.1)] border-primary text-primary'
+                      : 'bg-[rgba(255,255,255,0.02)] border-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.6)]'
+                  }`}
                 >
                   {mod.name.split(' ')[0]}
                 </button>
@@ -307,46 +222,20 @@ export default function Showcase() {
 
             {/* Active Details Card */}
             <div
-              style={{
-                background: 'rgba(18, 20, 23, 0.8)',
-                border: '1.5px solid rgba(15, 76, 129, 0.25)',
-                borderRadius: '16px',
-                padding: '32px',
-                boxShadow: '0 15px 40px rgba(15, 76, 129, 0.06)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '20px',
-              }}
-              className="relative rounded-[14px] overflow-hidden transition-all duration-300 before:content-[''] before:absolute before:inset-0 before:rounded-[14px] before:p-[1.5px] before:[background:linear-gradient(135deg,rgba(90,110,216,0.4)_0%,transparent_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[mask-composite:exclude] before:[-webkit-mask-composite:xor] before:pointer-events-none hover:before:[background:linear-gradient(135deg,var(--color-primary)_0%,var(--color-accent)_100%)]"
+              className="relative rounded-[14px] overflow-hidden transition-all duration-300 before:content-[''] before:absolute before:inset-0 before:rounded-[14px] before:p-[1.5px] before:[background:linear-gradient(135deg,rgba(90,110,216,0.4)_0%,transparent_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[mask-composite:exclude] before:[-webkit-mask-composite:xor] before:pointer-events-none hover:before:[background:linear-gradient(135deg,var(--color-primary)_0%,var(--color-accent)_100%)] bg-[rgba(18,20,23,0.8)] border-[1.5px] border-[rgba(15,76,129,0.25)] p-8 shadow-[0_15px_40px_rgba(15,76,129,0.06)] flex flex-col gap-5"
             >
-              <div
-                style={{
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                  paddingBottom: '16px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div className="border-b border-[rgba(255,255,255,0.08)] pb-4">
+                <div className="flex items-center gap-4">
                   <div
-                    style={{
-                      width: '42px',
-                      height: '42px',
-                      borderRadius: '50%',
-                      backgroundColor: MODALITIES[activeModalityIndex].accentColor,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: 700,
-                      fontSize: '14px',
-                      color: '#FFF',
-                    }}
+                    className={`w-[42px] h-[42px] rounded-full flex items-center justify-center font-bold text-sm text-white ${MODALITIES[activeModalityIndex].accentClass}`}
                   >
                     {MODALITIES[activeModalityIndex].logoText}
                   </div>
                   <div>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <span className="text-xs font-semibold text-accent uppercase tracking-[0.05em]">
                       Modalidad de Tránsito
                     </span>
-                    <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-white)', marginTop: '2px', fontFamily: 'var(--font-space-grotesk)' }}>
+                    <h3 className="text-xl font-bold text-text-white mt-0.5 font-[family-name:var(--font-space-grotesk)]">
                       {MODALITIES[activeModalityIndex].name}
                     </h3>
                   </div>
@@ -354,51 +243,38 @@ export default function Showcase() {
               </div>
 
               {/* Tagline & Description */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--primary-hover)' }}>
+              <div className="flex flex-col gap-2">
+                <h4 className="text-[15px] font-bold text-primary-hover">
                   {MODALITIES[activeModalityIndex].tagline}
                 </h4>
-                <p style={{ fontSize: '13.5px', lineHeight: 1.6, color: 'var(--text-gray)' }}>
+                <p className="text-[13.5px] leading-[1.6] text-text-gray">
                   {MODALITIES[activeModalityIndex].desc}
                 </p>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className="flex flex-col gap-2.5">
                 {MODALITIES[activeModalityIndex].details.map((detail, idx) => (
                   <div
                     key={idx}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '10px 14px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                      borderRadius: '8px',
-                      border: '1px solid rgba(255, 255, 255, 0.04)'
-                    }}
+                    className="flex justify-between items-center px-3.5 py-2.5 bg-[rgba(255,255,255,0.02)] rounded-lg border border-[rgba(255,255,255,0.04)]"
                   >
-                    <span style={{ fontSize: '12.5px', color: 'rgba(255, 255, 255, 0.5)' }}>{detail.label}</span>
-                    <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-white)', textAlign: 'right' }}>
+                    <span className="text-[12.5px] text-[rgba(255,255,255,0.5)]">{detail.label}</span>
+                    <span className="text-[12.5px] font-semibold text-text-white text-right">
                       {detail.value}
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <div className="flex gap-2 flex-wrap">
                 {MODALITIES[activeModalityIndex].badges.map((b, idx) => (
                   <span
                     key={idx}
-                    style={{
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      backgroundColor: b === 'Seguro de Carga' ? 'rgba(90, 110, 216, 0.12)' : 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid',
-                      borderColor: b === 'Seguro de Carga' ? 'rgba(90, 110, 216, 0.25)' : 'rgba(255, 255, 255, 0.1)',
-                      color: b === 'Seguro de Carga' ? 'var(--primary)' : 'var(--text-white)',
-                      padding: '4px 10px',
-                      borderRadius: '4px',
-                    }}
+                    className={`text-[11px] font-semibold border rounded px-2.5 py-1 ${
+                      b === 'Seguro de Carga'
+                        ? 'bg-[rgba(90,110,216,0.12)] border-[rgba(90,110,216,0.25)] text-primary'
+                        : 'bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)] text-text-white'
+                    }`}
                   >
                     {b}
                   </span>
@@ -409,65 +285,26 @@ export default function Showcase() {
         </div>
 
         {/* Dynamic Industrial Supply Switcher Section */}
-        <div
-          id="servicios"
-          style={{
-            marginTop: '100px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            paddingTop: '80px',
-            scrollMarginTop: '100px',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              textAlign: 'center',
-              gap: '20px',
-              marginBottom: '48px',
-            }}
-          >
-            <span
-              style={{
-                fontSize: '13px',
-                fontWeight: 600,
-                color: 'var(--accent)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-              }}
-            >
+        <div id="servicios" className="mt-[100px] border-t border-[rgba(255,255,255,0.08)] pt-20 scroll-mt-[100px]">
+          <div className="flex flex-col items-center text-center gap-5 mb-12">
+            <span className="text-[13px] font-semibold text-accent uppercase tracking-[0.08em]">
               Soluciones Integrales
             </span>
-            <h3
-              style={{
-                fontFamily: 'var(--font-space-grotesk)',
-                fontSize: 'clamp(28px, 3.5vw, 44px)',
-                fontWeight: 800,
-                color: 'var(--text-white)',
-              }}
-            >
-              Nuestros <span style={{ color: 'var(--primary-hover)' }}>Servicios</span>
+            <h3 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(28px,3.5vw,44px)] font-extrabold text-text-white">
+              Nuestros <span className="text-primary-hover">Servicios</span>
             </h3>
-            
+
             {/* Category Select Buttons */}
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div className="flex gap-3 flex-wrap justify-center">
               {SERVICES_CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setActiveServiceTab(cat.id)}
-                  style={{
-                    backgroundColor: activeServiceTab === cat.id ? 'rgba(15, 76, 129, 0.15)' : 'rgba(255, 255, 255, 0.02)',
-                    border: '1px solid',
-                    borderColor: activeServiceTab === cat.id ? 'var(--primary)' : 'rgba(255, 255, 255, 0.08)',
-                    borderRadius: '30px',
-                    padding: '10px 24px',
-                    color: activeServiceTab === cat.id ? 'var(--primary-hover)' : 'rgba(255, 255, 255, 0.6)',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                  }}
+                  className={`rounded-[30px] px-6 py-2.5 text-sm font-semibold cursor-pointer transition-all duration-300 ease-[ease] border ${
+                    activeServiceTab === cat.id
+                      ? 'bg-[rgba(15,76,129,0.15)] border-primary text-primary-hover'
+                      : 'bg-[rgba(255,255,255,0.02)] border-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.6)]'
+                  }`}
                 >
                   {cat.title.split('. ')[1]}
                 </button>
@@ -475,83 +312,27 @@ export default function Showcase() {
             </div>
 
             {/* Category Subtitle */}
-            <p
-              style={{
-                fontSize: '15px',
-                lineHeight: 1.6,
-                color: 'var(--text-gray)',
-                maxWidth: '750px',
-                marginTop: '8px',
-              }}
-            >
+            <p className="text-[15px] leading-[1.6] text-text-gray max-w-[750px] mt-2">
               {activeServiceCategory.subtitle}
             </p>
           </div>
 
           {/* Supply items grid */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '32px',
-            }}
-          >
+          <div className="grid [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))] gap-8">
             {activeServiceCategory.items.map((benefit, i) => (
               <div
                 key={i}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '16px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.01)',
-                  border: '1px solid rgba(255, 255, 255, 0.04)',
-                  borderRadius: '16px',
-                  padding: '32px',
-                  transition: 'all 0.3s ease',
-                }}
-                className="relative rounded-[14px] overflow-hidden transition-all duration-300 before:content-[''] before:absolute before:inset-0 before:rounded-[14px] before:p-[1.5px] before:[background:linear-gradient(135deg,rgba(90,110,216,0.4)_0%,transparent_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[mask-composite:exclude] before:[-webkit-mask-composite:xor] before:pointer-events-none hover:before:[background:linear-gradient(135deg,var(--color-primary)_0%,var(--color-accent)_100%)]"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.03)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.01)';
-                }}
+                className="relative rounded-[14px] overflow-hidden transition-all duration-300 before:content-[''] before:absolute before:inset-0 before:rounded-[14px] before:p-[1.5px] before:[background:linear-gradient(135deg,rgba(90,110,216,0.4)_0%,transparent_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[mask-composite:exclude] before:[-webkit-mask-composite:xor] before:pointer-events-none hover:before:[background:linear-gradient(135deg,var(--color-primary)_0%,var(--color-accent)_100%)] flex flex-col gap-4 bg-[rgba(255,255,255,0.01)] border border-[rgba(255,255,255,0.04)] p-8 hover:-translate-y-1 hover:bg-[rgba(255,255,255,0.03)]"
               >
-                <div
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '12px',
-                    backgroundColor: 'rgba(15, 76, 129, 0.08)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--primary-hover)',
-                  }}
-                >
+                <div className="w-10 h-10 rounded-xl bg-[rgba(15,76,129,0.08)] flex items-center justify-center text-primary-hover">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
                 </div>
-                <h3
-                  style={{
-                    fontFamily: 'var(--font-space-grotesk)',
-                    fontSize: '18px',
-                    fontWeight: 700,
-                    color: 'var(--text-white)',
-                  }}
-                >
+                <h3 className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold text-text-white">
                   {benefit.title}
                 </h3>
-                <p
-                  style={{
-                    fontSize: '13.5px',
-                    lineHeight: 1.6,
-                    color: 'rgba(255, 255, 255, 0.65)',
-                  }}
-                >
+                <p className="text-[13.5px] leading-[1.6] text-[rgba(255,255,255,0.65)]">
                   {benefit.desc}
                 </p>
               </div>
@@ -559,45 +340,6 @@ export default function Showcase() {
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .marquee-wrapper {
-          width: 100%;
-          overflow: hidden;
-          padding: 4px 0;
-        }
-        .marquee-container {
-          display: flex;
-          gap: 16px;
-          white-space: nowrap;
-          width: max-content;
-        }
-        .speed-normal {
-          animation: marquee 25s linear infinite;
-        }
-        .speed-slow {
-          animation: marquee 35s linear infinite;
-        }
-        .reverse {
-          animation: marquee-reverse 30s linear infinite;
-        }
-        .marquee-item {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 8px;
-          padding: 8px 16px;
-          user-select: none;
-        }
-        @media (max-width: 991px) {
-          .showcase-grid {
-            grid-template-columns: 1fr !important;
-            gap: 40px !important;
-          }
-        }
-      `}</style>
     </section>
   );
 }
