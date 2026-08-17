@@ -9,14 +9,14 @@ import Process from "@/components/Process";
 import Comparison from "@/components/Comparison";
 import MachineryCatalog from "@/components/MachineryCatalog";
 import Testimonials from "@/components/Testimonials";
-import FAQ from "@/components/FAQ";
+import FAQ from "@/components/faq";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 
 export default function Home() {
   return (
-    <main style={{ minHeight: "100vh", width: "100%", overflowX: "hidden" }}>
+    <main className="min-h-screen w-full overflow-x-hidden">
       <Navbar />
       <Hero />
       <SectionIndicator />
@@ -29,7 +29,7 @@ export default function Home() {
       <MachineryCatalog />
       <Testimonials />
       <FAQ />
-      <CTA />
+      {/* <CTA /> */}
       <Footer />
       <WhatsAppButton />
     </main>

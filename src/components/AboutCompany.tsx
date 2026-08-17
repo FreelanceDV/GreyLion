@@ -146,11 +146,11 @@ export default function AboutCompany() {
 
       {/* ================= SECTION 3: WHY CHOOSE US (full-bleed, breaks out of the max-w container) ================= */}
       <div id="porque-elegirnos" className="relative z-10 scroll-mt-[100px] mt-[100px] border-t border-[rgba(255,255,255,0.06)] pt-20">
-        <div className="grid grid-cols-[0.85fr_1.15fr_0.8fr] w-full bg-[linear-gradient(135deg,#060d1c_0%,#0b1730_55%,#0a1428_100%)] max-[991px]:grid-cols-1">
+        <div className="grid grid-cols-[0.85fr_1.15fr_0.8fr] w-full max-[991px]:grid-cols-1">
           {/* Left Content Column */}
           <div className="flex flex-col gap-6 justify-center py-10 pl-[clamp(20px,6vw,96px)] pr-8 max-[991px]:p-8">
             <div className="flex flex-col gap-3">
-              <span className="text-[12px] font-bold text-primary-hover uppercase tracking-[0.14em]">
+              <span className="text-sm font-bold text-primary-hover uppercase tracking-[0.14em]">
                 Valores Agregados
               </span>
               <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(26px,3vw,38px)] font-extrabold leading-[1.15] text-white">
@@ -160,16 +160,16 @@ export default function AboutCompany() {
             </div>
 
             <div className="flex flex-col gap-4">
-              <p className="text-[13.5px] leading-[1.7] text-text-gray">
+              <p className="text-sm leading-[1.7] text-text-gray">
                 Optimizamos su cadena de suministro combinando tecnología avanzada para el seguimiento en tiempo real con tarifas competitivas gracias a nuestros acuerdos navieros directos.
               </p>
-              <p className="text-[13.5px] leading-[1.7] text-text-gray">
+              <p className="text-sm leading-[1.7] text-text-gray">
                 Garantizamos la máxima seguridad de su carga con pólizas incluidas y gestionamos de forma integral todo el papeleo aduanero bajo normativas internacionales. Con nosotros, obtiene el respaldo de un equipo experto dedicado exclusivamente a brindarle asesoría personalizada de principio a fin.
               </p>
             </div>
 
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="no-underline w-fit">
-              <button className="flex items-center gap-2 bg-primary text-white border-0 rounded-full py-3.5 px-6 text-[12px] font-bold uppercase tracking-[0.04em] cursor-pointer transition-all duration-300 ease-[ease] shadow-[0_8px_20px_rgba(15,76,129,0.25)] hover:bg-primary-hover hover:-translate-y-0.5">
+              <button className="flex items-center gap-2 bg-primary text-white border-0 rounded-lg py-3.5 px-6 text-[12px] font-bold uppercase tracking-[0.04em] cursor-pointer transition-all duration-300 ease-[ease] shadow-[0_8px_20px_rgba(15,76,129,0.25)] hover:bg-primary-hover hover:-translate-y-0.5">
                 Recibir Propuesta Personalizada
                 <span aria-hidden="true">→</span>
               </button>
