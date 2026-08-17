@@ -22,65 +22,86 @@ export default function AboutCompany() {
 
         {/* ================= SECTION 1: MISSION / VISION ================= */}
         <div id="mision-vision" className="scroll-mt-[100px] mb-[100px]">
-          <div className="flex flex-col items-center text-center gap-4 mb-12">
-            <span className="text-[13px] font-semibold text-accent uppercase tracking-[0.08em]">
-              Nuestra Identidad
-            </span>
-            <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(28px,3.5vw,48px)] font-extrabold leading-[1.2]">
-              Misión <span className="text-primary">& Visión</span>
-            </h2>
-            <p className="text-[15px] text-text-gray max-w-[600px] leading-[1.5]">
-              Los pilares fundamentales que guían nuestras operaciones diarias y definen nuestro rumbo estratégico en el comercio internacional.
-            </p>
-          </div>
+          <div className="grid grid-cols-[0.8fr_1.2fr] gap-10 items-start max-[991px]:grid-cols-1 max-[991px]:gap-8">
+            {/* Left: intro copy */}
+            <div className="flex flex-col gap-3 max-[991px]:items-center max-[991px]:text-center">
+              <span className="text-[13px] font-semibold text-accent uppercase tracking-[0.08em]">
+                Nuestra Esencia
+              </span>
+              <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(28px,3.2vw,42px)] font-extrabold leading-[1.2]">
+                Misión <span className="text-primary">& Visión</span>
+              </h2>
+              <p className="text-[15px] text-text-gray leading-[1.6] max-[991px]:max-w-[500px]">
+                Los pilares fundamentales que guían nuestras operaciones diarias y definen nuestro rumbo estratégico en el comercio internacional.
+              </p>
+            </div>
 
-          <div className="grid grid-cols-2 gap-8 max-[991px]:grid-cols-1 max-[991px]:gap-5">
-            <article className="relative min-h-[308px] overflow-hidden pt-9 px-8 pb-[30px] border border-[rgba(70,117,163,0.45)] rounded-[18px] bg-[linear-gradient(145deg,#101722_0%,#0b1018_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)] transition-[transform,border-color,box-shadow] duration-[250ms] ease-[ease] before:content-[''] before:absolute before:top-0 before:right-0 before:left-0 before:h-[3px] before:bg-[linear-gradient(90deg,var(--color-primary),var(--color-primary-hover),#8c969e)] hover:border-[rgba(78,146,204,0.8)] hover:shadow-[0_24px_54px_rgba(4,25,43,0.46)] hover:-translate-y-[5px] max-[520px]:min-h-0 max-[520px]:pt-[29px] max-[520px]:px-[23px] max-[520px]:pb-[27px] motion-reduce:transition-none">
-              <span className="absolute right-[-2px] bottom-[-30px] text-[rgba(140,150,158,0.055)] font-[family-name:var(--font-space-grotesk)] text-[180px] font-extrabold leading-[0.9] pointer-events-none" aria-hidden="true">M</span>
-              <div className="relative flex gap-[15px] items-center">
-                <span className="grid w-16 h-16 flex-none place-items-center border border-[rgba(27,108,168,0.55)] rounded-[17px] bg-[rgba(15,76,129,0.2)] text-[#8ed0ff] [&>svg]:w-[29px] [&>svg]:h-[29px]" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /><circle cx="12" cy="12" r="1" />
-                  </svg>
-                </span>
-                <div>
-                  <p className="m-0 mb-1 text-[#8ed0ff] text-[11px] font-extrabold tracking-[0.12em]">01 / PROPÓSITO</p>
-                  <h3 className="m-0 text-white font-[family-name:var(--font-space-grotesk)] text-[27px] font-extrabold leading-[1.1] max-[520px]:text-[23px]">Nuestra Misión</h3>
-                </div>
-              </div>
-              <blockquote className="relative mt-6 mb-[21px] pl-4 border-l-2 border-primary-hover text-text-gray text-[14px] italic leading-[1.65] max-[520px]:mt-[21px] max-[520px]:text-[13px]">“Simplificamos el comercio internacional para que su carga avance con seguridad, puntualidad y eficiencia.”</blockquote>
-              <ul className="relative grid gap-[11px] m-0 p-0 list-none text-text-gray text-[13px] leading-[1.35]">
-                <li className="flex gap-2.5 items-center before:content-['✓'] before:grid before:w-[17px] before:h-[17px] before:flex-none before:place-items-center before:rounded-full before:bg-primary-hover before:text-white before:text-[11px] before:font-black">Procesos logísticos y aduaneros simplificados</li>
-                <li className="flex gap-2.5 items-center before:content-['✓'] before:grid before:w-[17px] before:h-[17px] before:flex-none before:place-items-center before:rounded-full before:bg-primary-hover before:text-white before:text-[11px] before:font-black">Coordinación portuaria de principio a fin</li>
-                <li className="flex gap-2.5 items-center before:content-['✓'] before:grid before:w-[17px] before:h-[17px] before:flex-none before:place-items-center before:rounded-full before:bg-primary-hover before:text-white before:text-[11px] before:font-black">Soluciones ajustadas a cada operación</li>
-              </ul>
-            </article>
-
-            <article className="relative min-h-[308px] overflow-hidden pt-9 px-8 pb-[30px] border border-[rgba(70,117,163,0.45)] rounded-[18px] bg-[linear-gradient(145deg,#101722_0%,#0b1018_100%)] shadow-[0_18px_42px_rgba(0,0,0,0.18)] transition-[transform,border-color,box-shadow] duration-[250ms] ease-[ease] before:content-[''] before:absolute before:top-0 before:right-0 before:left-0 before:h-[3px] before:bg-[linear-gradient(90deg,var(--color-primary),var(--color-primary-hover),#8c969e)] hover:border-[rgba(78,146,204,0.8)] hover:shadow-[0_24px_54px_rgba(4,25,43,0.46)] hover:-translate-y-[5px] max-[520px]:min-h-0 max-[520px]:pt-[29px] max-[520px]:px-[23px] max-[520px]:pb-[27px] motion-reduce:transition-none">
-              <span className="absolute right-[-2px] bottom-[-30px] text-[rgba(140,150,158,0.055)] font-[family-name:var(--font-space-grotesk)] text-[180px] font-extrabold leading-[0.9] pointer-events-none" aria-hidden="true">V</span>
-              <div className="relative flex gap-[15px] items-center">
-                <span className="grid w-16 h-16 flex-none place-items-center border border-[rgba(27,108,168,0.55)] rounded-[17px] bg-[rgba(15,76,129,0.2)] text-[#8ed0ff] [&>svg]:w-[29px] [&>svg]:h-[29px]" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2 12s3.7-6 10-6 10 6 10 6-3.7 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" />
-                  </svg>
-                </span>
-                <div>
-                  <p className="m-0 mb-1 text-[#8ed0ff] text-[11px] font-extrabold tracking-[0.12em]">02 / RUMBO 2030</p>
-                  <h3 className="m-0 text-white font-[family-name:var(--font-space-grotesk)] text-[27px] font-extrabold leading-[1.1] max-[520px]:text-[23px]">Nuestra Visión</h3>
-                </div>
-              </div>
-              <blockquote className="relative mt-6 mb-[21px] pl-4 border-l-2 border-primary-hover text-text-gray text-[14px] italic leading-[1.65] max-[520px]:mt-[21px] max-[520px]:text-[13px]">“Conectamos empresas y mercados con operaciones marítimas más inteligentes, visibles y confiables.”</blockquote>
-              <ul className="relative grid gap-[11px] m-0 p-0 list-none text-text-gray text-[13px] leading-[1.35]">
-                <li className="flex gap-2.5 items-center before:content-['✓'] before:grid before:w-[17px] before:h-[17px] before:flex-none before:place-items-center before:rounded-full before:bg-primary-hover before:text-white before:text-[11px] before:font-black">Tecnología avanzada para rastreo de carga</li>
-                <li className="flex gap-2.5 items-center before:content-['✓'] before:grid before:w-[17px] before:h-[17px] before:flex-none before:place-items-center before:rounded-full before:bg-primary-hover before:text-white before:text-[11px] before:font-black">Red global de puertos y aliados estratégicos</li>
-                <li className="flex gap-2.5 items-center before:content-['✓'] before:grid before:w-[17px] before:h-[17px] before:flex-none before:place-items-center before:rounded-full before:bg-primary-hover before:text-white before:text-[11px] before:font-black">Respaldo experto para crecer con confianza</li>
-              </ul>
-            </article>
+            {/* Right: mission / vision cards */}
+            <div className="grid grid-cols-2 gap-5 max-[700px]:grid-cols-1">
+              {[
+                {
+                  kicker: '01 / PROPÓSITO',
+                  title: 'Nuestra Misión',
+                  quote: '"Simplificamos el comercio internacional para que su carga avance con seguridad, puntualidad y eficiencia."',
+                  items: [
+                    'Procesos logísticos y aduaneros simplificados',
+                    'Coordinación portuaria de principio a fin',
+                    'Soluciones ajustadas a cada operación',
+                  ],
+                  icon: (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /><circle cx="12" cy="12" r="1" />
+                    </svg>
+                  ),
+                },
+                {
+                  kicker: '02 / RUMBO 2030',
+                  title: 'Nuestra Visión',
+                  quote: '"Conectamos empresas y mercados con operaciones marítimas más inteligentes, visibles y confiables."',
+                  items: [
+                    'Tecnología avanzada para rastreo de carga',
+                    'Red global de puertos y aliados estratégicos',
+                    'Respaldo experto para crecer con confianza',
+                  ],
+                  icon: (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2 12s3.7-6 10-6 10 6 10 6-3.7 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" />
+                    </svg>
+                  ),
+                },
+              ].map((card) => (
+                <article
+                  key={card.title}
+                  className="relative overflow-hidden p-6 border border-[rgba(70,117,163,0.4)] rounded-2xl bg-[rgba(6,13,26,0.55)] transition-colors duration-300 hover:border-primary-hover/60"
+                >
+                  <div className="flex gap-3 items-center mb-4">
+                    <span className="grid w-9 h-9 flex-none place-items-center rounded-full border border-primary-hover/50 bg-primary/15 text-primary-hover [&>svg]:w-[18px] [&>svg]:h-[18px]" aria-hidden="true">
+                      {card.icon}
+                    </span>
+                    <div>
+                      <p className="m-0 text-primary-hover text-[10px] font-extrabold tracking-[0.1em]">{card.kicker}</p>
+                      <h3 className="m-0 text-white font-[family-name:var(--font-space-grotesk)] text-lg font-extrabold leading-[1.15]">{card.title}</h3>
+                    </div>
+                  </div>
+                  <blockquote className="text-text-gray text-[13px] italic leading-[1.6] mb-4">{card.quote}</blockquote>
+                  <ul className="grid gap-2.5 m-0 p-0 list-none text-text-gray text-[12.5px] leading-[1.3]">
+                    {card.items.map((item) => (
+                      <li key={item} className="flex gap-2.5 items-center">
+                        <span className="grid w-4 h-4 flex-none place-items-center rounded-full bg-primary-hover/20 text-primary-hover">
+                          <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" /></svg>
+                        </span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* ================= SECTION 2: OBJECTIVES ================= */}
-        <div id="objetivos" className="scroll-mt-[100px] mb-[100px] border-t border-[rgba(255,255,255,0.06)] pt-20">
+        <div id="objetivos" className="scroll-mt-[100px] mb-[100px] border-t border-[rgba(255,255,255,0.06)] pt-14">
           <div className="flex flex-col items-center text-center gap-4 mb-12">
             <span className="text-[13px] font-semibold text-accent uppercase tracking-[0.08em]">
               Metas y Propósitos
