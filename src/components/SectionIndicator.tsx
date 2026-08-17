@@ -54,119 +54,37 @@ export default function SectionIndicator() {
   };
 
   return (
-    <div className="section-indicator-container">
-      <div className="indicator-line" />
-      <div className="dots-list">
+    <div className="fixed top-1/2 right-8 z-[99] flex -translate-y-1/2 flex-col items-center pointer-events-none max-[991px]:hidden">
+      <div className="absolute top-[10px] bottom-[10px] z-[1] w-px bg-white/[0.08]" />
+      <div className="relative z-[2] flex flex-col gap-7">
         {SECTIONS.map((sec, idx) => {
           const isActive = activeSection === sec.id;
           return (
             <button
               key={sec.id}
               onClick={() => scrollTo(sec.id)}
-              className={`dot-button ${isActive ? 'active' : ''}`}
+              className="group relative flex h-3 w-3 items-center border-none bg-transparent p-0 pointer-events-auto outline-none cursor-pointer"
               aria-label={`Ir a sección ${sec.label}`}
             >
-              <span className="dot-circle" />
-              <span className="dot-label-tooltip">{sec.label}</span>
-              <span className="dot-number-badge">{String(idx + 1).padStart(2, '0')}</span>
+              <span
+                className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.6] group-hover:bg-[#00a3ff] group-hover:shadow-[0_0_10px_rgba(0,163,255,0.6)] ${
+                  isActive ? 'scale-[1.6] bg-[#00a3ff] shadow-[0_0_10px_rgba(0,163,255,0.6)]' : 'bg-white/25'
+                }`}
+              />
+              <span className="pointer-events-none absolute right-7 translate-x-2.5 whitespace-nowrap rounded border border-white/[0.08] bg-[rgba(10,11,19,0.85)] px-2.5 py-1 text-[11px] font-semibold text-white opacity-0 backdrop-blur-[8px] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-0 group-hover:opacity-100">
+                {sec.label}
+              </span>
+              <span
+                className={`absolute left-6 font-[family-name:var(--font-space-grotesk)] text-[10px] font-extrabold transition-colors duration-300 ease-in-out ${
+                  isActive ? 'text-[#00a3ff]' : 'text-white/15'
+                }`}
+              >
+                {String(idx + 1).padStart(2, '0')}
+              </span>
             </button>
           );
         })}
       </div>
-
-      <style jsx>{`
-        .section-indicator-container {
-          position: fixed;
-          right: 32px;
-          top: 50%;
-          transform: translateY(-50%);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          z-index: 99;
-          pointer-events: none;
-        }
-        .indicator-line {
-          position: absolute;
-          top: 10px;
-          bottom: 10px;
-          width: 1px;
-          background: rgba(255, 255, 255, 0.08);
-          z-index: 1;
-        }
-        .dots-list {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          gap: 28px;
-          z-index: 2;
-        }
-        .dot-button {
-          position: relative;
-          width: 12px;
-          height: 12px;
-          padding: 0;
-          border: none;
-          background: transparent;
-          cursor: pointer;
-          pointer-events: auto;
-          display: flex;
-          align-items: center;
-          justifyContent: center;
-          outline: none;
-        }
-        .dot-circle {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.25);
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .dot-button:hover .dot-circle,
-        .dot-button.active .dot-circle {
-          background: #00a3ff;
-          transform: scale(1.6);
-          box-shadow: 0 0 10px rgba(0, 163, 255, 0.6);
-        }
-        .dot-label-tooltip {
-          position: absolute;
-          right: 28px;
-          background: rgba(10, 11, 19, 0.85);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          backdrop-filter: blur(8px);
-          color: #ffffff;
-          padding: 4px 10px;
-          border-radius: 4px;
-          font-size: 11px;
-          font-weight: 600;
-          white-space: nowrap;
-          opacity: 0;
-          transform: translateX(10px);
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          pointer-events: none;
-        }
-        .dot-button:hover .dot-label-tooltip {
-          opacity: 1;
-          transform: translateX(0);
-        }
-        .dot-number-badge {
-          position: absolute;
-          left: 24px;
-          font-size: 10px;
-          font-weight: 800;
-          color: rgba(255, 255, 255, 0.15);
-          font-family: var(--font-space-grotesk);
-          transition: color 0.3s ease;
-        }
-        .dot-button.active .dot-number-badge {
-          color: #00a3ff;
-        }
-        @media (max-width: 991px) {
-          .section-indicator-container {
-            display: none;
-          }
-        }
-      `}</style>
     </div>
   );
 }
