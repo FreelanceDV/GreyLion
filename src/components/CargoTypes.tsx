@@ -76,95 +76,43 @@ const CARGO_TYPES = [
 
 export default function CargoTypes() {
   return (
-    <section
-      style={{
-        backgroundColor: 'var(--background-dark)',
-        color: 'var(--text-white)',
-        padding: '100px 0',
-        position: 'relative',
-        borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-      }}
-    >
+    <section className="relative bg-background-dark text-white py-[100px] border-t border-[rgba(255,255,255,0.05)]">
       <div className="w-full max-w-[1280px] mx-auto px-5">
         {/* Section Header */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            gap: '20px',
-            marginBottom: '64px',
-          }}
-        >
-          <span
-            style={{
-              fontSize: '13px',
-              fontWeight: 600,
-              color: 'var(--primary)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-            }}
-          >
+        <div className="flex flex-col items-center text-center gap-5 mb-16">
+          <span className="text-[13px] font-semibold text-primary uppercase tracking-[0.05em]">
             Qué Transportamos
           </span>
-          <h2
-            style={{
-              fontFamily: 'var(--font-space-grotesk)',
-              fontSize: 'clamp(32px, 4vw, 54px)',
-              fontWeight: 800,
-              lineHeight: 1.15,
-              maxWidth: '800px',
-            }}
-          >
-            Tipos de Carga <span style={{ color: 'var(--accent)' }}>Especializada</span>
+          <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(32px,4vw,54px)] font-extrabold leading-[1.15] max-w-[800px]">
+            Tipos de Carga <span className="text-accent">Especializada</span>
           </h2>
-          <p
-            style={{
-              fontSize: '16px',
-              color: 'var(--text-gray)',
-              maxWidth: '640px',
-              lineHeight: 1.6,
-            }}
-          >
+          <p className="text-base text-text-gray max-w-[640px] leading-[1.6]">
             Gestionamos y coordinamos el fletamento marítimo adaptándonos a las especificaciones técnicas e industriales de cada tipo de mercancía.
           </p>
         </div>
 
         {/* Cargo Types Grid */}
-        <div className="cargo-grid">
+        <div className="grid grid-cols-3 gap-5 max-[900px]:grid-cols-2 max-[560px]:grid-cols-1">
           {CARGO_TYPES.map((cargo, idx) => (
             <article
               key={idx}
-              className="cargo-card"
+              className="relative flex min-h-[286px] max-[560px]:min-h-[260px] flex-col overflow-hidden p-[27px] border border-[rgba(80,111,145,0.32)] rounded-[18px] bg-[linear-gradient(145deg,#131b25,#10161e)] shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] transition-[border-color,transform,box-shadow] duration-[250ms] ease-[ease] motion-reduce:transition-none hover:border-[rgba(91,162,214,0.82)] hover:shadow-[0_18px_36px_rgba(0,0,0,0.22)] hover:-translate-y-[5px] before:absolute before:inset-y-0 before:right-0 before:w-1 before:bg-[linear-gradient(180deg,var(--color-primary-hover),transparent_72%)] before:content-[''] before:opacity-80"
             >
-              <div className="cargo-card-top"><span className="cargo-icon">{cargo.icon}</span><span className="cargo-number">{String(idx + 1).padStart(2, '0')}</span></div>
-              <p className="cargo-code">{cargo.code}</p>
-              <h3>{cargo.title}</h3>
-              <p className="cargo-description">{cargo.desc}</p>
-              <footer><span>Gestión especializada</span><span aria-hidden="true">↗</span></footer>
+              <div className="flex justify-between items-start">
+                <span className="grid w-12 h-12 place-items-center border border-[rgba(27,108,168,0.45)] rounded-[14px] bg-[rgba(15,76,129,0.16)] text-[#a7bed0] [&>svg]:w-6 [&>svg]:h-6">{cargo.icon}</span>
+                <span className="text-[rgba(142,208,255,0.2)] font-[family-name:var(--font-space-grotesk)] text-[29px] font-extrabold leading-none">{String(idx + 1).padStart(2, '0')}</span>
+              </div>
+              <p className="m-0 mt-5 mb-2 text-[#8ed0ff] text-[10px] font-extrabold tracking-[0.13em]">{cargo.code}</p>
+              <h3 className="m-0 mb-2.5 text-white font-[family-name:var(--font-space-grotesk)] text-[19px] leading-[1.2]">{cargo.title}</h3>
+              <p className="m-0 text-text-gray text-[13px] leading-[1.6]">{cargo.desc}</p>
+              <footer className="flex justify-between items-center mt-auto pt-[18px] border-t border-[rgba(140,150,158,0.12)] text-[#8aa3b8] text-[10px] font-extrabold tracking-[0.09em] uppercase">
+                <span>Gestión especializada</span>
+                <span aria-hidden="true" className="text-[#8ed0ff] text-[17px]">↗</span>
+              </footer>
             </article>
           ))}
         </div>
       </div>
-      <style jsx>{`
-        .cargo-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-        .cargo-card { position: relative; display: flex; min-height: 286px; flex-direction: column; overflow: hidden; padding: 27px; border: 1px solid rgba(80,111,145,.32); border-radius: 18px; background: linear-gradient(145deg, #131b25, #10161e); box-shadow: inset 0 1px 0 rgba(255,255,255,.025); transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease; }
-        .cargo-card::before { position: absolute; top: 0; right: 0; bottom: 0; width: 4px; background: linear-gradient(180deg, var(--primary-hover), transparent 72%); content: ''; opacity: .8; }
-        .cargo-card:hover { border-color: rgba(91,162,214,.82); box-shadow: 0 18px 36px rgba(0,0,0,.22); transform: translateY(-5px); }
-        .cargo-card-top { display: flex; justify-content: space-between; align-items: start; }
-        .cargo-icon { display: grid; width: 48px; height: 48px; place-items: center; border: 1px solid rgba(27,108,168,.45); border-radius: 14px; background: rgba(15,76,129,.16); color: #a7bed0; }
-        .cargo-icon :global(svg) { width: 24px; height: 24px; }
-        .cargo-number { color: rgba(142,208,255,.2); font-family: var(--font-space-grotesk); font-size: 29px; font-weight: 800; line-height: 1; }
-        .cargo-code { margin: 20px 0 8px; color: #8ed0ff; font-size: 10px; font-weight: 800; letter-spacing: .13em; }
-        .cargo-card h3 { margin: 0 0 10px; color: #fff; font-family: var(--font-space-grotesk); font-size: 19px; line-height: 1.2; }
-        .cargo-description { margin: 0; color: var(--text-gray); font-size: 13px; line-height: 1.6; }
-        .cargo-card footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 18px; border-top: 1px solid rgba(140,150,158,.12); color: #8aa3b8; font-size: 10px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
-        .cargo-card footer span:last-child { color: #8ed0ff; font-size: 17px; }
-        @media (max-width: 900px) { .cargo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-        @media (max-width: 560px) { .cargo-grid { grid-template-columns: 1fr; } .cargo-card { min-height: 260px; } }
-        @media (prefers-reduced-motion: reduce) { .cargo-card { transition: none; } }
-      `}</style>
     </section>
   );
 }
