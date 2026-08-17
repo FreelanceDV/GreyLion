@@ -168,7 +168,7 @@ export default function Showcase() {
 
           {/* Active Details Card */}
           <div
-            className="relative rounded-[14px] overflow-hidden transition-all duration-300 before:content-[''] before:absolute before:inset-0 before:rounded-[14px] before:p-[1.5px] before:[background:linear-gradient(135deg,rgba(90,110,216,0.4)_0%,transparent_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[mask-composite:exclude] before:[-webkit-mask-composite:xor] before:pointer-events-none hover:before:[background:linear-gradient(135deg,var(--color-primary)_0%,var(--color-accent)_100%)] bg-[rgba(18,20,23,0.8)] border-[1.5px] border-[rgba(15,76,129,0.25)] p-8 shadow-[0_15px_40px_rgba(15,76,129,0.06)] flex flex-col gap-5"
+            className="relative rounded-[14px] overflow-hidden transition-colors duration-300 bg-[rgba(18,20,23,0.8)] border-[1.5px] border-[rgba(15,76,129,0.25)] hover:border-primary-hover/60 p-8 shadow-[0_15px_40px_rgba(15,76,129,0.06)] flex flex-col gap-5"
           >
             <div className="border-b border-[rgba(255,255,255,0.08)] pb-4">
               <div className="flex items-center justify-between gap-4">

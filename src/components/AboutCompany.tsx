@@ -216,7 +216,7 @@ export default function AboutCompany() {
           {/* Right Image Column */}
           <div className="relative min-h-[280px] max-[991px]:min-h-[220px]">
             <img
-              src="/why_choose_greylion.png"
+              src="/why_choose.png"
               alt="Grúa portuaria cargando contenedores de GreyLion Maritime"
               className="absolute inset-0 w-full h-full object-cover"
             />

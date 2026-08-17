@@ -14,7 +14,7 @@ export default function Hero() {
   return (
     <div
       id="inicio"
-      className="relative w-full min-h-screen flex flex-col justify-between overflow-hidden bg-[#070b12] before:absolute before:inset-0 before:z-0 before:content-[''] before:pointer-events-none before:bg-[radial-gradient(ellipse_48%_38%_at_62%_54%,rgba(255,181,99,.2),transparent_68%),linear-gradient(90deg,rgba(1,7,16,.52),transparent_72%)]"
+      className="relative w-full min-h-screen flex flex-col justify-between overflow-hidden bg-[#060d1c] before:absolute before:inset-0 before:z-0 before:content-[''] before:pointer-events-none before:bg-[radial-gradient(ellipse_48%_38%_at_62%_54%,rgba(255,181,99,.2),transparent_68%),linear-gradient(90deg,rgba(1,7,16,.52),transparent_72%)]"
     >
       <div
         aria-hidden="true"
@@ -34,8 +34,8 @@ export default function Hero() {
           aria-hidden="true"
         />
         {/* Soft Radial and Linear Gradients to blend image to background */}
-        <div className="absolute inset-0 z-[1] bg-[linear-gradient(to_right,#070b12_0%,rgba(7,11,18,0.8)_25%,rgba(7,11,18,0.2)_70%,transparent_100%)]" />
-        <div className="absolute inset-0 z-[1] bg-[linear-gradient(to_top,#070b12_0%,transparent_20%,transparent_80%,rgba(7,11,18,0.4)_100%)]" />
+        <div className="absolute inset-0 z-[1] bg-[linear-gradient(to_right,#060d1c_0%,rgba(6,13,28,0.8)_25%,rgba(6,13,28,0.2)_70%,transparent_100%)]" />
+        <div className="absolute inset-0 z-[1] bg-[linear-gradient(to_top,#060d1c_0%,transparent_20%,transparent_80%,rgba(6,13,28,0.4)_100%)]" />
       </div>
 
       {/* Decorative Radial Glows */}
@@ -90,7 +90,7 @@ export default function Hero() {
       {/* Stats Bar Container (Glassmorphism) & Divider */}
       <div className="relative w-full z-10 animate-stats-rise motion-reduce:animate-none">
         {/* Stats Glass Bar */}
-        <div className="w-full border-t border-b border-[rgba(255,255,255,0.08)] bg-[rgba(7,11,18,0.65)] backdrop-blur-[20px] pt-6 pb-[54px]">
+        <div className="w-full border-t border-b border-[rgba(255,255,255,0.08)] bg-[rgba(6,13,28,0.65)] backdrop-blur-[20px] pt-6 pb-[54px]">
           <div className="w-full max-w-[1280px] mx-auto px-5 flex justify-between items-center flex-wrap gap-6 max-[991px]:justify-center max-[991px]:gap-8 max-[768px]:px-6!">
             {/* Stat 1 */}
             <div className={statItemClasses}>
@@ -178,7 +178,7 @@ export default function Hero() {
         {/* Wavy bottom divider using inline SVG */}
         <div className="absolute bottom-[-4px] left-0 w-full overflow-hidden leading-none z-[12]">
           <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-[calc(100%+1.3px)] h-10">
-            <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z" fill="#0a0b0d"></path>
+            <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z" fill="#060b16"></path>
           </svg>
         </div>
       </div>

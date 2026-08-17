@@ -55,8 +55,8 @@ export default function Navbar() {
       <nav
         className={`fixed inset-x-0 top-0 z-[60] flex items-center border-b transition-[height,background,border-color] duration-[250ms] ease-[ease] motion-reduce:transition-none${
           scrolled
-            ? ' h-[68px] border-[rgba(255,255,255,.09)] bg-[rgba(10,11,13,.88)] backdrop-blur-[18px]'
-            : ' h-[86px] border-transparent bg-[linear-gradient(180deg,rgba(10,11,13,.78),rgba(10,11,13,.34))] max-[991px]:h-[72px] max-[991px]:bg-[rgba(10,11,13,.86)] max-[991px]:backdrop-blur-[14px]'
+            ? ' h-[68px] border-[rgba(255,255,255,.09)] bg-[rgba(6,13,26,.88)] backdrop-blur-[18px]'
+            : ' h-[86px] border-transparent bg-[linear-gradient(180deg,rgba(6,13,26,.78),rgba(6,13,26,.34))] max-[991px]:h-[72px] max-[991px]:bg-[rgba(6,13,26,.86)] max-[991px]:backdrop-blur-[14px]'
         }`}
         aria-label="Navegación principal"
       >
@@ -72,7 +72,7 @@ export default function Navbar() {
             <a className={`${actionLinkBaseClasses} px-[15px] py-[10px] bg-primary text-text-white shadow-[0_8px_20px_rgba(15,76,129,.28)] hover:bg-primary-hover`} href={quoteUrl} target="_blank" rel="noopener noreferrer">Cotizar envío <span aria-hidden="true">↗</span></a>
           </div>
 
-          <button className="hidden h-[42px] w-[42px] justify-self-end rounded-xl border border-[rgba(255,255,255,.13)] bg-[rgba(10,11,13,.58)] p-[10px] max-[991px]:block" type="button" onClick={() => setMobileMenuOpen(true)} aria-expanded={mobileMenuOpen} aria-controls="mobile-menu" aria-label="Abrir menú">
+          <button className="hidden h-[42px] w-[42px] justify-self-end rounded-xl border border-[rgba(255,255,255,.13)] bg-[rgba(6,13,26,.58)] p-[10px] max-[991px]:block" type="button" onClick={() => setMobileMenuOpen(true)} aria-expanded={mobileMenuOpen} aria-controls="mobile-menu" aria-label="Abrir menú">
             <span className="my-1 block h-0.5 rounded-[1px] bg-white" /><span className="my-1 block h-0.5 rounded-[1px] bg-white" /><span className="my-1 block h-0.5 rounded-[1px] bg-white" />
           </button>
         </div>
