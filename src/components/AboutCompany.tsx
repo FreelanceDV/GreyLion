@@ -144,37 +144,38 @@ export default function AboutCompany() {
 
         {/* ================= SECTION 3: WHY CHOOSE US ================= */}
         <div id="porque-elegirnos" className="scroll-mt-[100px] border-t border-[rgba(255,255,255,0.06)] pt-20">
-          <div className="grid grid-cols-[1.2fr_1fr] gap-16 items-center max-[991px]:grid-cols-1 max-[991px]:gap-12">
+          <div className="grid grid-cols-[0.85fr_1.15fr_0.8fr] rounded-3xl overflow-hidden border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(135deg,#060d1c_0%,#0b1730_55%,#0a1428_100%)] max-[991px]:grid-cols-1">
             {/* Left Content Column */}
-            <div className="flex flex-col gap-7">
-              <div className="flex flex-col gap-4">
-                <span className="text-[13px] font-semibold text-primary uppercase tracking-[0.08em]">
+            <div className="flex flex-col gap-6 justify-center p-10 max-[991px]:p-8">
+              <div className="flex flex-col gap-3">
+                <span className="text-[12px] font-bold text-primary-hover uppercase tracking-[0.14em]">
                   Valores Agregados
                 </span>
-                <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(28px,3.5vw,46px)] font-extrabold leading-[1.15]">
+                <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(26px,3vw,38px)] font-extrabold leading-[1.15] text-white">
                   ¿Por qué elegir a <br />
-                  <span className="bg-[linear-gradient(90deg,#FFFFFF_0%,#FFFFFF_20%,var(--color-primary)_50%,#FFFFFF_80%,#FFFFFF_100%)] bg-[length:200%_100%] bg-clip-text text-transparent animate-gradient-flow">GreyLion Maritime?</span>
+                  <span className="text-primary-hover underline decoration-primary-hover/70 underline-offset-8">GreyLion Maritime?</span>
                 </h2>
               </div>
 
-              <div className="flex flex-col gap-5">
-                <p className="text-[16px] leading-[1.6] text-text-gray">
+              <div className="flex flex-col gap-4">
+                <p className="text-[13.5px] leading-[1.7] text-text-gray">
                   Optimizamos su cadena de suministro combinando tecnología avanzada para el seguimiento en tiempo real con tarifas competitivas gracias a nuestros acuerdos navieros directos.
                 </p>
-                <p className="text-[16px] leading-[1.6] text-text-gray">
+                <p className="text-[13.5px] leading-[1.7] text-text-gray">
                   Garantizamos la máxima seguridad de su carga con pólizas incluidas y gestionamos de forma integral todo el papeleo aduanero bajo normativas internacionales. Con nosotros, obtiene el respaldo de un equipo experto dedicado exclusivamente a brindarle asesoría personalizada de principio a fin.
                 </p>
               </div>
 
               <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="no-underline w-fit">
-                <button className="bg-primary text-white border-0 rounded-[30px] py-4 px-9 text-[15px] font-bold cursor-pointer transition-all duration-300 ease-[ease] shadow-[0_8px_20px_rgba(15,76,129,0.25)] hover:bg-primary-hover hover:-translate-y-0.5">
+                <button className="flex items-center gap-2 bg-primary text-white border-0 rounded-full py-3.5 px-6 text-[12px] font-bold uppercase tracking-[0.04em] cursor-pointer transition-all duration-300 ease-[ease] shadow-[0_8px_20px_rgba(15,76,129,0.25)] hover:bg-primary-hover hover:-translate-y-0.5">
                   Recibir Propuesta Personalizada
+                  <span aria-hidden="true">→</span>
                 </button>
               </a>
             </div>
 
-            {/* Right Pillars List Column */}
-            <div className="flex flex-col gap-5">
+            {/* Middle Cards Column */}
+            <div className="flex flex-col gap-3 justify-center p-8 max-[991px]:p-8 max-[991px]:pt-0">
               {[
                 {
                   title: 'Coordinación Portuaria y Aduanas',
@@ -195,19 +196,29 @@ export default function AboutCompany() {
               ].map((pillar, idx) => (
                 <div
                   key={idx}
-                  className="relative flex items-start gap-5 py-6 px-7 overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.05)] bg-[rgba(255,255,255,0.02)] transition-all duration-300 ease-[ease] before:content-[''] before:absolute before:inset-0 before:rounded-2xl before:p-[1.5px] before:[background:linear-gradient(135deg,rgba(90,110,216,0.4)_0%,transparent_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[mask-composite:exclude] before:[-webkit-mask-composite:xor] before:pointer-events-none hover:border-[rgba(15,76,129,0.3)] hover:before:[background:linear-gradient(135deg,var(--color-primary)_0%,var(--color-accent)_100%)] hover:translate-x-1.5"
+                  className="flex items-start gap-4 py-4 px-5 rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] transition-colors duration-300 ease-[ease] hover:border-primary-hover/50"
                 >
-                  <div className="w-9 h-9 rounded-full bg-[rgba(15,76,129,0.1)] text-primary flex items-center justify-center shrink-0">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <div className="w-9 h-9 rounded-lg border border-primary-hover/50 bg-[rgba(15,76,129,0.18)] text-primary-hover flex items-center justify-center shrink-0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <h3 className="text-[16px] font-bold text-white">{pillar.title}</h3>
-                    <p className="text-[13px] leading-[1.5] text-text-gray">{pillar.desc}</p>
+                    <h3 className="text-[14.5px] font-bold text-white">{pillar.title}</h3>
+                    <p className="text-[12px] leading-[1.5] text-text-gray">{pillar.desc}</p>
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Right Image Column */}
+            <div className="relative min-h-[280px] max-[991px]:min-h-[220px]">
+              <img
+                src="/why_choose_greylion.png"
+                alt="Grúa portuaria cargando contenedores de GreyLion Maritime"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,13,28,0.35)_0%,transparent_25%)] max-[991px]:hidden" />
             </div>
           </div>
         </div>
