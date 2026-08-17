@@ -52,7 +52,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [selectedAsset, setSelectedAsset] = useState<MediaAsset | null>(null);
-  
+
   // Uploading states
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -76,7 +76,7 @@ export default function AdminPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!password) return;
-    
+
     // Send a dummy test upload or just verify locally against standard
     // In production we send requests with password to ensure api validation.
     // For client-side route protection, we use a simple sessionStorage save.
@@ -140,7 +140,7 @@ export default function AdminPage() {
 
     setIsUploading(true);
     setUploadSuccess(false);
-    
+
     if (uploadMode === 'file' && uploadFile) {
       setLogMessages(['[1/3] Iniciando carga de archivo...', `Recurso: ${selectedAsset.name}`, `Nombre archivo: ${uploadFile.name}`]);
     } else {
@@ -150,7 +150,7 @@ export default function AdminPage() {
     const formData = new FormData();
     formData.append('password', password || 'greylion2026');
     formData.append('assetId', selectedAsset.id);
-    
+
     if (uploadMode === 'file' && uploadFile) {
       formData.append('file', uploadFile);
     } else {
@@ -159,7 +159,7 @@ export default function AdminPage() {
 
     try {
       setLogMessages(prev => [...prev, '[2/3] Procesando y guardando en servidor...']);
-      
+
       const response = await fetch('/api/admin/media', {
         method: 'POST',
         body: formData,
@@ -179,14 +179,14 @@ export default function AdminPage() {
 
       setLogMessages(prev => [
         ...prev,
-        uploadMode === 'file' 
+        uploadMode === 'file'
           ? '[3/3] Archivo cargado y configurado con éxito.'
           : '[3/3] Enlace externo guardado con éxito en la configuración.',
         `Sincronización Git: ${data.syncStatus || 'Completado.'}`,
         '¡Proceso finalizado! Los cambios se verán reflejados en breve.'
       ]);
       setUploadSuccess(true);
-      
+
     } catch (err: any) {
       setLogMessages(prev => [...prev, `❌ ERROR: ${err.message || 'Error de conexión'}`]);
     } finally {
@@ -197,17 +197,17 @@ export default function AdminPage() {
   // ---------------- RENDER LOGIN SCREEN ----------------
   if (!isAuthenticated) {
     return (
-      <main className="admin-login-main">
-        <div className="login-card">
-          <div className="logo-area">
-            <span className="logo-icon">⚓</span>
-            <h2>GREYLION MARITIME</h2>
-            <p className="subtitle">Gestor de Recursos Multimedia</p>
+      <main className="min-h-screen flex items-center justify-center bg-[#070b12] text-white font-[family-name:var(--font-inter)] p-5">
+        <div className="w-full max-w-[420px] bg-[rgba(18,20,23,0.85)] border border-[rgba(255,255,255,0.08)] rounded-[20px] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-[16px] flex flex-col gap-7">
+          <div className="text-center">
+            <span className="text-4xl text-[#00a3ff]">⚓</span>
+            <h2 className="font-[family-name:var(--font-space-grotesk)] text-[22px] font-extrabold mt-3 tracking-[1.5px]">GREYLION MARITIME</h2>
+            <p className="text-[13px] text-white/40 mt-1">Gestor de Recursos Multimedia</p>
           </div>
 
-          <form onSubmit={handleLogin} className="login-form">
-            <div className="form-group">
-              <label htmlFor="admin-pass">Contraseña Administrativa</label>
+          <form onSubmit={handleLogin} className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="admin-pass" className="text-xs font-semibold text-white/60 uppercase tracking-[0.05em]">Contraseña Administrativa</label>
               <input
                 id="admin-pass"
                 type="password"
@@ -216,166 +216,65 @@ export default function AdminPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
                 required
+                className="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.1)] rounded-lg p-3.5 text-white text-[15px] outline-none transition-colors duration-300 ease-[ease] focus:border-[#00a3ff]"
               />
             </div>
-            
-            {loginError && <p className="error-message">{loginError}</p>}
 
-            <button type="submit" className="login-btn">Acceder al Panel</button>
+            {loginError && <p className="text-[13px] text-[#ff3b30] text-center">{loginError}</p>}
+
+            <button type="submit" className="bg-[#0070f3] text-white border-0 rounded-lg p-3.5 text-[15px] font-bold cursor-pointer transition-all duration-300 ease-[ease] shadow-[0_4px_14px_rgba(0,112,243,0.3)] hover:bg-[#005ccb] hover:-translate-y-0.5">Acceder al Panel</button>
           </form>
 
-          <Link href="/" className="back-link">← Volver a la Landing</Link>
+          <Link href="/" className="text-center text-[13px] text-white/40 no-underline transition-colors duration-300 ease-[ease] hover:text-white">← Volver a la Landing</Link>
         </div>
-
-        <style jsx>{`
-          .admin-login-main {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #070b12;
-            color: #ffffff;
-            font-family: var(--font-inter), sans-serif;
-            padding: 20px;
-          }
-          .login-card {
-            width: 100%;
-            max-width: 420px;
-            background: rgba(18, 20, 23, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(16px);
-            display: flex;
-            flex-direction: column;
-            gap: 28px;
-          }
-          .logo-area {
-            text-align: center;
-          }
-          .logo-icon {
-            font-size: 36px;
-            color: #00a3ff;
-          }
-          .logo-area h2 {
-            font-family: var(--font-space-grotesk);
-            font-size: 22px;
-            font-weight: 800;
-            margin-top: 12px;
-            letter-spacing: 1.5px;
-          }
-          .logo-area .subtitle {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.4);
-            margin-top: 4px;
-          }
-          .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-          }
-          .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-          }
-          .form-group label {
-            font-size: 12px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.6);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-          }
-          .form-group input {
-            background-color: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 14px;
-            color: #ffffff;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.3s ease;
-          }
-          .form-group input:focus {
-            border-color: #00a3ff;
-          }
-          .error-message {
-            font-size: 13px;
-            color: #ff3b30;
-            text-align: center;
-          }
-          .login-btn {
-            background-color: #0070f3;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            padding: 14px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 14px rgba(0, 112, 243, 0.3);
-          }
-          .login-btn:hover {
-            background-color: #005ccb;
-            transform: translateY(-1px);
-          }
-          .back-link {
-            text-align: center;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.4);
-            text-decoration: none;
-            transition: color 0.3s ease;
-          }
-          .back-link:hover {
-            color: #ffffff;
-          }
-        `}</style>
       </main>
     );
   }
 
   // ---------------- RENDER MAIN ADMIN DASHBOARD ----------------
   return (
-    <main className="admin-dashboard-main">
+    <main className="min-h-screen bg-[#070b12] text-white font-[family-name:var(--font-inter)] pb-20">
       {/* Top Header */}
-      <header className="dashboard-header">
-        <div className="w-full max-w-[1280px] mx-auto px-5 header-container">
-          <div className="header-logo">
-            <span className="logo-icon">⚓</span>
-            <h1>GREYLION GESTOR</h1>
+      <header className="bg-[#0d1118] border-b border-[rgba(255,255,255,0.08)] py-5 sticky top-0 z-40">
+        <div className="w-full max-w-[1280px] mx-auto px-5 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl text-[#00a3ff]">⚓</span>
+            <h1 className="font-[family-name:var(--font-space-grotesk)] text-lg font-extrabold tracking-[1px]">GREYLION GESTOR</h1>
           </div>
-          <div className="header-actions">
-            <Link href="/" className="view-landing-btn">Ver Landing Page</Link>
-            <button onClick={handleLogout} className="logout-btn">Cerrar Sesión</button>
+          <div className="flex items-center gap-3">
+            <Link href="/" className="text-[13px] font-semibold text-white/70 no-underline py-2 px-4 rounded-md border border-[rgba(255,255,255,0.1)] transition-all duration-200 ease-[ease] hover:text-white hover:border-white">Ver Landing Page</Link>
+            <button onClick={handleLogout} className="text-[13px] font-semibold text-[#ff3b30] bg-transparent border border-[rgba(255,59,48,0.2)] py-2 px-4 rounded-md cursor-pointer transition-all duration-200 ease-[ease] hover:bg-[rgba(255,59,48,0.1)] hover:border-[#ff3b30]">Cerrar Sesión</button>
           </div>
         </div>
       </header>
 
       {/* Main Grid Content */}
-      <div className="w-full max-w-[1280px] mx-auto px-5 dashboard-body">
-        <div className="dashboard-grid">
-          
-          {/* Left Panel: List of Assets */}
-          <div className="assets-panel">
-            <h2 className="panel-title">Recursos de la Landing</h2>
-            <p className="panel-subtitle">Seleccione el recurso que desea actualizar:</p>
+      <div className="w-full max-w-[1280px] mx-auto px-5 mt-10">
+        <div className="grid grid-cols-[1.1fr_1.5fr] gap-10 max-[991px]:grid-cols-1 max-[991px]:gap-8">
 
-            <div className="assets-list">
+          {/* Left Panel: List of Assets */}
+          <div className="bg-[rgba(13,17,24,0.6)] border border-[rgba(255,255,255,0.05)] rounded-2xl p-8">
+            <h2 className="font-[family-name:var(--font-space-grotesk)] text-xl font-extrabold mb-1">Recursos de la Landing</h2>
+            <p className="text-[13px] text-white/40 mb-6">Seleccione el recurso que desea actualizar:</p>
+
+            <div className="flex flex-col gap-4">
               {MEDIA_ASSETS.map((asset) => {
                 const isSelected = selectedAsset?.id === asset.id;
                 return (
                   <button
                     key={asset.id}
-                    className={`asset-card ${isSelected ? 'active' : ''}`}
+                    className={`w-full text-left rounded-xl p-4 cursor-pointer transition-all duration-300 ease-[ease] flex flex-col gap-1.5 outline-none border ${
+                      isSelected
+                        ? 'bg-[rgba(0,163,255,0.05)] border-[#00a3ff]'
+                        : 'bg-[rgba(255,255,255,0.02)] border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.15)]'
+                    }`}
                     onClick={() => selectAsset(asset)}
                   >
-                    <div className="asset-type-badge">{asset.type.toUpperCase()}</div>
-                    <h3 className="asset-name">{asset.name}</h3>
-                    <p className="asset-desc">{asset.description}</p>
-                    <div className="asset-meta">
-                      <span>Ruta: <code>{asset.path}</code></span>
+                    <div className="text-[9px] font-extrabold text-[#00a3ff] tracking-[0.1em] bg-[rgba(0,163,255,0.1)] py-1 px-2 rounded w-fit">{asset.type.toUpperCase()}</div>
+                    <h3 className="text-[15px] font-bold text-white">{asset.name}</h3>
+                    <p className="text-xs text-white/50 leading-[1.4]">{asset.description}</p>
+                    <div className="text-[11px] text-white/30 mt-1">
+                      <span>Ruta: <code className="bg-black/20 py-0.5 px-1.5 rounded">{asset.path}</code></span>
                     </div>
                   </button>
                 );
@@ -384,108 +283,89 @@ export default function AdminPage() {
           </div>
 
           {/* Right Panel: Editor / Dropzone */}
-          <div className="editor-panel">
+          <div className="min-h-[500px]">
             {selectedAsset ? (
-              <div className="editor-card">
-                <div className="editor-header">
-                  <span className="editor-kicker">Editor de Recurso</span>
-                  <h2 className="editor-title">{selectedAsset.name}</h2>
-                  <p className="editor-desc">{selectedAsset.description}</p>
-                  <p className="recommended-size">
+              <div className="bg-[#0d1118] border border-[rgba(255,255,255,0.08)] rounded-2xl p-8 flex flex-col gap-6">
+                <div>
+                  <span className="text-[11px] font-extrabold text-[#00a3ff] uppercase tracking-[0.1em]">Editor de Recurso</span>
+                  <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl font-extrabold mt-1">{selectedAsset.name}</h2>
+                  <p className="text-sm text-white/50 leading-[1.5] mt-2">{selectedAsset.description}</p>
+                  <p className="text-[13px] text-[#ffb800] mt-3 bg-[rgba(255,184,0,0.08)] border border-[rgba(255,184,0,0.2)] py-2.5 px-3.5 rounded-lg">
                     <strong>Recomendación:</strong> {selectedAsset.recommendedSize}
                   </p>
                 </div>
 
                 {/* Upload Action Area */}
-                <div className="upload-section">
+                <div>
                   {/* Mode selector */}
-                  <div className="upload-mode-selector" style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+                  <div className="flex gap-3 mb-5">
                     <button
                       onClick={() => { setUploadMode('file'); resetUpload(); }}
-                      style={{
-                        padding: '10px 18px',
-                        borderRadius: '8px',
-                        border: '1px solid ' + (uploadMode === 'file' ? 'var(--primary-hover)' : 'rgba(255,255,255,0.08)'),
-                        backgroundColor: uploadMode === 'file' ? 'rgba(0,163,255,0.08)' : 'transparent',
-                        color: uploadMode === 'file' ? '#00a3ff' : 'var(--text-gray)',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                      }}
+                      className={`py-2.5 px-[18px] rounded-lg border font-semibold cursor-pointer transition-all duration-300 ease-[ease] ${
+                        uploadMode === 'file'
+                          ? 'border-primary-hover bg-[rgba(0,163,255,0.08)] text-[#00a3ff]'
+                          : 'border-[rgba(255,255,255,0.08)] bg-transparent text-text-gray'
+                      }`}
                     >
                       📁 Archivo Local
                     </button>
                     <button
                       onClick={() => { setUploadMode('url'); resetUpload(); }}
-                      style={{
-                        padding: '10px 18px',
-                        borderRadius: '8px',
-                        border: '1px solid ' + (uploadMode === 'url' ? 'var(--primary-hover)' : 'rgba(255,255,255,0.08)'),
-                        backgroundColor: uploadMode === 'url' ? 'rgba(0,163,255,0.08)' : 'transparent',
-                        color: uploadMode === 'url' ? '#00a3ff' : 'var(--text-gray)',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                      }}
+                      className={`py-2.5 px-[18px] rounded-lg border font-semibold cursor-pointer transition-all duration-300 ease-[ease] ${
+                        uploadMode === 'url'
+                          ? 'border-primary-hover bg-[rgba(0,163,255,0.08)] text-[#00a3ff]'
+                          : 'border-[rgba(255,255,255,0.08)] bg-transparent text-text-gray'
+                      }`}
                     >
                       🔗 Enlace / URL
                     </button>
                   </div>
 
                   {uploadMode === 'file' ? (
-                    <div className="file-dropzone" onClick={() => fileInputRef.current?.click()}>
+                    <div className="relative border-2 border-dashed border-[rgba(255,255,255,0.12)] rounded-xl p-10 text-center cursor-pointer bg-[rgba(255,255,255,0.01)] transition-all duration-300 ease-[ease] hover:border-[#00a3ff] hover:bg-[rgba(0,163,255,0.02)]" onClick={() => fileInputRef.current?.click()}>
                       <input
                         ref={fileInputRef}
                         type="file"
-                        style={{ display: 'none' }}
+                        className="hidden"
                         accept="image/*,video/*"
                         onChange={handleFileChange}
                       />
-                      
+
                       {previewUrl && uploadFile ? (
-                        <div className="preview-container" onClick={(e) => e.stopPropagation()}>
+                        <div className="relative flex flex-col items-center gap-4" onClick={(e) => e.stopPropagation()}>
                           {uploadFile.type.startsWith('video/') ? (
-                            <video src={previewUrl} controls className="media-preview" />
+                            <video src={previewUrl} controls className="max-h-[240px] max-w-full rounded-lg object-contain border border-[rgba(255,255,255,0.08)]" />
                           ) : (
-                            <img src={previewUrl} alt="Vista previa" className="media-preview" />
+                            <img src={previewUrl} alt="Vista previa" className="max-h-[240px] max-w-full rounded-lg object-contain border border-[rgba(255,255,255,0.08)]" />
                           )}
-                          <button onClick={resetUpload} className="change-file-btn">Cambiar Archivo</button>
+                          <button onClick={resetUpload} className="bg-[rgba(255,255,255,0.08)] text-white border border-[rgba(255,255,255,0.15)] rounded-md py-2 px-4 text-xs font-semibold cursor-pointer transition-colors duration-200 ease-[ease] hover:bg-[rgba(255,255,255,0.15)]">Cambiar Archivo</button>
                         </div>
                       ) : (
-                        <div className="dropzone-prompt">
-                          <span className="upload-arrow">⬆</span>
-                          <p className="title">Haga clic para subir un archivo nuevo</p>
-                          <p className="subtitle">
+                        <div className="flex flex-col items-center gap-3">
+                          <span className="text-[32px] text-white/30">⬆</span>
+                          <p className="text-[15px] font-bold">Haga clic para subir un archivo nuevo</p>
+                          <p className="text-xs text-white/40">
                             Cualquier imagen, GIF o video (.jpg, .png, .webp, .gif, .mp4)
                           </p>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+                    <div className="flex flex-col gap-5 w-full">
                       {previewUrl ? (
-                        <div className="preview-container" style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <div className="relative w-full flex flex-col items-center gap-4">
                           {(previewUrl.toLowerCase().split('?')[0].endsWith('.mp4') ||
                             previewUrl.toLowerCase().split('?')[0].endsWith('.mov') ||
                             previewUrl.toLowerCase().split('?')[0].endsWith('.webm')) ? (
-                            <video src={previewUrl} controls className="media-preview" style={{ maxWidth: '100%', maxHeight: '240px', borderRadius: '8px' }} />
+                            <video src={previewUrl} controls className="max-w-full max-h-[240px] rounded-lg" />
                           ) : (
-                            <img src={previewUrl} alt="Vista previa" className="media-preview" style={{ maxWidth: '100%', maxHeight: '240px', borderRadius: '8px', objectFit: 'contain' }} />
+                            <img src={previewUrl} alt="Vista previa" className="max-w-full max-h-[240px] rounded-lg object-contain" />
                           )}
-                          <button onClick={resetUpload} className="change-file-btn" style={{ marginTop: '12px' }}>Limpiar Enlace</button>
+                          <button onClick={resetUpload} className="mt-3 bg-[rgba(255,255,255,0.08)] text-white border border-[rgba(255,255,255,0.15)] rounded-md py-2 px-4 text-xs font-semibold cursor-pointer transition-colors duration-200 ease-[ease] hover:bg-[rgba(255,255,255,0.15)]">Limpiar Enlace</button>
                         </div>
                       ) : (
-                        <div style={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.01)',
-                          border: '1px dashed rgba(255, 255, 255, 0.15)',
-                          borderRadius: '16px',
-                          padding: '40px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '16px',
-                          width: '100%',
-                        }}>
-                          <label style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-white)' }}>
+                        <div className="bg-[rgba(255,255,255,0.01)] border border-dashed border-[rgba(255,255,255,0.15)] rounded-2xl p-10 flex flex-col gap-4 w-full">
+                          <label className="text-sm font-semibold text-text-white">
                             Pegue el enlace directo de la imagen, gif o video:
                           </label>
                           <input
@@ -497,18 +377,9 @@ export default function AdminPage() {
                               setMediaUrlInput(val);
                               setPreviewUrl(val || null);
                             }}
-                            style={{
-                              width: '100%',
-                              padding: '14px 16px',
-                              borderRadius: '8px',
-                              border: '1px solid rgba(255,255,255,0.08)',
-                              backgroundColor: '#0a0b0d',
-                              color: '#ffffff',
-                              fontSize: '14px',
-                              outline: 'none',
-                            }}
+                            className="w-full py-3.5 px-4 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#0a0b0d] text-white text-sm outline-none"
                           />
-                          <p style={{ fontSize: '12px', color: 'var(--text-gray)', margin: 0 }}>
+                          <p className="text-xs text-text-gray m-0">
                             Nota: Asegúrese de usar enlaces directos que terminen en la extensión correspondiente para que la página los procese correctamente.
                           </p>
                         </div>
@@ -517,15 +388,15 @@ export default function AdminPage() {
                   )}
 
                   {((uploadMode === 'file' && uploadFile) || (uploadMode === 'url' && mediaUrlInput)) && (
-                    <div className="upload-actions" style={{ marginTop: '20px' }}>
+                    <div className="flex gap-3 mt-5">
                       <button
                         onClick={handleSave}
                         disabled={isUploading}
-                        className="save-btn"
+                        className="flex-1 bg-[#00a3ff] text-white border-0 rounded-lg p-3.5 text-sm font-bold cursor-pointer transition-all duration-300 ease-[ease] shadow-[0_4px_14px_rgba(0,163,255,0.3)] hover:not-disabled:bg-[#008be5] hover:not-disabled:-translate-y-0.5 disabled:bg-[rgba(255,255,255,0.05)] disabled:text-white/30 disabled:cursor-not-allowed disabled:shadow-none"
                       >
                         {isUploading ? 'Guardando...' : 'Guardar Cambios'}
                       </button>
-                      <button onClick={resetUpload} disabled={isUploading} className="cancel-btn">
+                      <button onClick={resetUpload} disabled={isUploading} className="bg-transparent text-white/60 border border-[rgba(255,255,255,0.1)] rounded-lg py-3.5 px-5 text-sm font-semibold cursor-pointer transition-all duration-200 ease-[ease] hover:not-disabled:text-white hover:not-disabled:border-[rgba(255,255,255,0.3)] disabled:opacity-50 disabled:cursor-not-allowed">
                         Cancelar
                       </button>
                     </div>
@@ -534,408 +405,31 @@ export default function AdminPage() {
 
                 {/* Logging / Progress Terminal */}
                 {(logMessages.length > 0 || isUploading) && (
-                  <div className="terminal-logs">
-                    <div className="terminal-header">
-                      <span className="terminal-title">Terminal de Estado</span>
-                      <span className="terminal-status">{isUploading ? 'PROCESANDO' : uploadSuccess ? 'COMPLETADO' : 'ERROR'}</span>
+                  <div className="bg-[#030508] border border-[rgba(255,255,255,0.06)] rounded-[10px] font-mono mt-3 overflow-hidden">
+                    <div className="bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.04)] py-2.5 px-4 flex justify-between text-[11px]">
+                      <span className="text-white/40">Terminal de Estado</span>
+                      <span className="text-[#00a3ff] font-bold">{isUploading ? 'PROCESANDO' : uploadSuccess ? 'COMPLETADO' : 'ERROR'}</span>
                     </div>
-                    <div className="terminal-body">
+                    <div className="p-4 text-xs leading-[1.5] flex flex-col gap-1.5 max-h-[180px] overflow-y-auto">
                       {logMessages.map((msg, idx) => (
-                        <div key={idx} className="log-line">{msg}</div>
+                        <div key={idx} className="text-white/85">{msg}</div>
                       ))}
-                      {isUploading && <div className="log-line pulse">⚡ Ejecutando commit de Git y actualizando repositorio de Vercel...</div>}
+                      {isUploading && <div className="text-[#00a3ff] animate-terminal-pulse">⚡ Ejecutando commit de Git y actualizando repositorio de Vercel...</div>}
                     </div>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="no-selection-card">
-                <span className="selection-icon">⚓</span>
-                <h3>Sin selección</h3>
-                <p>Seleccione un recurso multimedia del panel izquierdo para comenzar el proceso de actualización.</p>
+              <div className="border border-dashed border-[rgba(255,255,255,0.08)] rounded-2xl h-full flex flex-col items-center justify-center text-center p-10 gap-4">
+                <span className="text-5xl text-white/10">⚓</span>
+                <h3 className="text-lg font-bold">Sin selección</h3>
+                <p className="text-[13px] text-white/40 max-w-[320px] leading-[1.5]">Seleccione un recurso multimedia del panel izquierdo para comenzar el proceso de actualización.</p>
               </div>
             )}
           </div>
 
         </div>
       </div>
-
-      <style jsx>{`
-        .admin-dashboard-main {
-          min-height: 100vh;
-          background-color: #070b12;
-          color: #ffffff;
-          font-family: var(--font-inter), sans-serif;
-          padding-bottom: 80px;
-        }
-        .dashboard-header {
-          background-color: #0d1118;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-          padding: 20px 0;
-          position: sticky;
-          top: 0;
-          z-index: 40;
-        }
-        .header-container {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .header-logo {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        .header-logo .logo-icon {
-          font-size: 24px;
-          color: #00a3ff;
-        }
-        .header-logo h1 {
-          font-family: var(--font-space-grotesk);
-          font-size: 18px;
-          font-weight: 800;
-          letter-spacing: 1px;
-        }
-        .header-actions {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        .view-landing-btn {
-          font-size: 13px;
-          font-weight: 600;
-          color: rgba(255,255,255,0.7);
-          text-decoration: none;
-          padding: 8px 16px;
-          border-radius: 6px;
-          border: 1px solid rgba(255,255,255,0.1);
-          transition: all 0.2s ease;
-        }
-        .view-landing-btn:hover {
-          color: #ffffff;
-          border-color: #ffffff;
-        }
-        .logout-btn {
-          font-size: 13px;
-          font-weight: 600;
-          color: #ff3b30;
-          background: transparent;
-          border: 1px solid rgba(255,59,48,0.2);
-          padding: 8px 16px;
-          border-radius: 6px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        .logout-btn:hover {
-          background: rgba(255,59,48,0.1);
-          border-color: #ff3b30;
-        }
-        .dashboard-body {
-          margin-top: 40px;
-        }
-        .dashboard-grid {
-          display: grid;
-          grid-template-columns: 1.1fr 1.5fr;
-          gap: 40px;
-        }
-        .assets-panel {
-          background: rgba(13, 17, 24, 0.6);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 16px;
-          padding: 32px;
-        }
-        .panel-title {
-          font-family: var(--font-space-grotesk);
-          font-size: 20px;
-          font-weight: 800;
-          margin-bottom: 4px;
-        }
-        .panel-subtitle {
-          font-size: 13px;
-          color: rgba(255, 255, 255, 0.4);
-          margin-bottom: 24px;
-        }
-        .assets-list {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-        .asset-card {
-          width: 100%;
-          text-align: left;
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 12px;
-          padding: 16px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          outline: none;
-        }
-        .asset-card:hover {
-          background: rgba(255, 255, 255, 0.04);
-          border-color: rgba(255, 255, 255, 0.15);
-        }
-        .asset-card.active {
-          background: rgba(0, 163, 255, 0.05);
-          border-color: #00a3ff;
-        }
-        .asset-type-badge {
-          font-size: 9px;
-          font-weight: 800;
-          color: #00a3ff;
-          letter-spacing: 0.1em;
-          background: rgba(0, 163, 255, 0.1);
-          padding: 3px 8px;
-          border-radius: 4px;
-          width: fit-content;
-        }
-        .asset-name {
-          font-size: 15px;
-          font-weight: 700;
-          color: #ffffff;
-        }
-        .asset-desc {
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.5);
-          line-height: 1.4;
-        }
-        .asset-meta {
-          font-size: 11px;
-          color: rgba(255, 255, 255, 0.3);
-          margin-top: 4px;
-        }
-        .asset-meta code {
-          background-color: rgba(0, 0, 0, 0.2);
-          padding: 2px 6px;
-          border-radius: 4px;
-        }
-        .editor-panel {
-          min-height: 500px;
-        }
-        .editor-card {
-          background: #0d1118;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 16px;
-          padding: 32px;
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-        }
-        .editor-kicker {
-          font-size: 11px;
-          font-weight: 800;
-          color: #00a3ff;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-        }
-        .editor-title {
-          font-family: var(--font-space-grotesk);
-          font-size: 24px;
-          font-weight: 800;
-          margin-top: 4px;
-        }
-        .editor-desc {
-          font-size: 14px;
-          color: rgba(255, 255, 255, 0.5);
-          line-height: 1.5;
-          margin-top: 8px;
-        }
-        .recommended-size {
-          font-size: 13px;
-          color: #ffb800;
-          margin-top: 12px;
-          background: rgba(255, 184, 0, 0.08);
-          border: 1px solid rgba(255, 184, 0, 0.2);
-          padding: 10px 14px;
-          border-radius: 8px;
-        }
-        .file-dropzone {
-          border: 2px dashed rgba(255, 255, 255, 0.12);
-          border-radius: 12px;
-          padding: 40px;
-          text-align: center;
-          cursor: pointer;
-          background: rgba(255, 255, 255, 0.01);
-          transition: all 0.3s ease;
-          position: relative;
-        }
-        .file-dropzone:hover {
-          border-color: #00a3ff;
-          background: rgba(0, 163, 255, 0.02);
-        }
-        .dropzone-prompt {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 12px;
-        }
-        .upload-arrow {
-          font-size: 32px;
-          color: rgba(255, 255, 255, 0.3);
-        }
-        .dropzone-prompt .title {
-          font-size: 15px;
-          font-weight: 700;
-        }
-        .dropzone-prompt .subtitle {
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.4);
-        }
-        .preview-container {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 16px;
-        }
-        .media-preview {
-          max-height: 240px;
-          max-width: 100%;
-          border-radius: 8px;
-          object-fit: contain;
-          border: 1px solid rgba(255,255,255,0.08);
-        }
-        .change-file-btn {
-          background: rgba(255, 255, 255, 0.08);
-          color: #ffffff;
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          border-radius: 6px;
-          padding: 8px 16px;
-          font-size: 12px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.2s ease;
-        }
-        .change-file-btn:hover {
-          background: rgba(255, 255, 255, 0.15);
-        }
-        .upload-actions {
-          display: flex;
-          gap: 12px;
-          margin-top: 24px;
-        }
-        .save-btn {
-          flex: 1;
-          background-color: #00a3ff;
-          color: #ffffff;
-          border: none;
-          border-radius: 8px;
-          padding: 14px;
-          font-size: 14px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 4px 14px rgba(0, 163, 255, 0.3);
-        }
-        .save-btn:hover:not(:disabled) {
-          background-color: #008be5;
-          transform: translateY(-1px);
-        }
-        .save-btn:disabled {
-          background-color: rgba(255, 255, 255, 0.05);
-          color: rgba(255, 255, 255, 0.3);
-          cursor: not-allowed;
-          box-shadow: none;
-        }
-        .cancel-btn {
-          background-color: transparent;
-          color: rgba(255, 255, 255, 0.6);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 8px;
-          padding: 14px 20px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        .cancel-btn:hover:not(:disabled) {
-          color: #ffffff;
-          border-color: rgba(255, 255, 255, 0.3);
-        }
-        .cancel-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-        .terminal-logs {
-          background-color: #030508;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 10px;
-          font-family: monospace;
-          margin-top: 12px;
-          overflow: hidden;
-        }
-        .terminal-header {
-          background-color: rgba(255, 255, 255, 0.02);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-          padding: 10px 16px;
-          display: flex;
-          justify-content: space-between;
-          font-size: 11px;
-        }
-        .terminal-title {
-          color: rgba(255, 255, 255, 0.4);
-        }
-        .terminal-status {
-          color: #00a3ff;
-          font-weight: bold;
-        }
-        .terminal-body {
-          padding: 16px;
-          font-size: 12px;
-          line-height: 1.5;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          max-height: 180px;
-          overflow-y: auto;
-        }
-        .log-line {
-          color: rgba(255, 255, 255, 0.85);
-        }
-        .log-line.pulse {
-          color: #00a3ff;
-          animation: terminalPulse 1.5s infinite;
-        }
-        @keyframes terminalPulse {
-          0%, 100% { opacity: 0.6; }
-          50% { opacity: 1; }
-        }
-        .no-selection-card {
-          border: 1px dashed rgba(255, 255, 255, 0.08);
-          border-radius: 16px;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justifyContent: center;
-          text-align: center;
-          padding: 40px;
-          gap: 16px;
-        }
-        .selection-icon {
-          font-size: 48px;
-          color: rgba(255, 255, 255, 0.1);
-        }
-        .no-selection-card h3 {
-          font-size: 18px;
-          font-weight: 700;
-        }
-        .no-selection-card p {
-          font-size: 13px;
-          color: rgba(255, 255, 255, 0.4);
-          max-width: 320px;
-          line-height: 1.5;
-        }
-        @media (max-width: 991px) {
-          .dashboard-grid {
-            grid-template-columns: 1fr;
-            gap: 32px;
-          }
-        }
-      `}</style>
     </main>
   );
 }

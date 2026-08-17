@@ -8,153 +8,38 @@ export default function CTA() {
   const whatsappUrl = `https://wa.me/${phone}?text=Hola%20GreyLion,%20quiero%20cotizar%20el%20envio%20de%20`;
 
   return (
-    <section
-      style={{
-        backgroundColor: '#FFFFFF',
-        padding: '0 0 120px 0',
-        position: 'relative',
-      }}
-    >
+    <section className="relative bg-white pb-[120px]">
       <div className="w-full max-w-[1280px] mx-auto px-5">
         {/* Glowing banner container */}
-        <div
-          style={{
-            backgroundColor: 'var(--primary)',
-            borderRadius: '40px',
-            padding: '80px clamp(40px, 8vw, 120px)',
-            position: 'relative',
-            overflow: 'hidden',
-            boxShadow: '0 30px 60px rgba(15, 76, 129, 0.25)',
-          }}
-        >
+        <div className="relative overflow-hidden bg-primary rounded-[40px] py-20 px-[clamp(40px,8vw,120px)] shadow-[0_30px_60px_rgba(15,76,129,0.25)]">
           {/* Background Video */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              zIndex: 0,
-              overflow: 'hidden',
-            }}
-          >
-            <DynamicMedia assetId="background_video" fallbackSrc="/charger_boat.mp4" style={{ opacity: 0.25 }} />
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(90deg, var(--primary) 0%, rgba(15, 76, 129, 0.75) 50%, rgba(10, 11, 13, 0.95) 100%)',
-              }}
-            />
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            <DynamicMedia assetId="background_video" fallbackSrc="/charger_boat.mp4" className="opacity-25" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,var(--color-primary)_0%,rgba(15,76,129,0.75)_50%,rgba(10,11,13,0.95)_100%)]" />
           </div>
 
           {/* Subtle grid pattern background overlay in CSS */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              opacity: 0.08,
-              backgroundImage: 'linear-gradient(rgba(0,0,0,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.15) 1px, transparent 1px)',
-              backgroundSize: '24px 24px',
-              pointerEvents: 'none',
-              zIndex: 1,
-            }}
-          />
+          <div className="absolute inset-0 z-[1] opacity-[0.08] pointer-events-none bg-[linear-gradient(rgba(0,0,0,0.15)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.15)_1px,transparent_1px)] bg-[size:24px_24px]" />
 
           {/* Content Wrapper */}
-          <div
-            style={{
-              position: 'relative',
-              zIndex: 10,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '24px',
-              maxWidth: '900px',
-            }}
-          >
-            <h2
-              style={{
-                fontFamily: 'var(--font-space-grotesk)',
-                fontSize: 'clamp(28px, 4.5vw, 50px)',
-                fontWeight: 800,
-                color: 'var(--text-white)',
-                lineHeight: 1.15,
-                letterSpacing: '-1.5px',
-              }}
-            >
+          <div className="relative z-10 flex flex-col gap-6 max-w-[900px]">
+            <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(28px,4.5vw,50px)] font-extrabold text-text-white leading-[1.15] tracking-[-1.5px]">
               Comience a Exportar e Importar con <br />
               GreyLion Maritime, su socio de confianza.
             </h2>
-            <p
-              style={{
-                fontSize: 'clamp(16px, 1.8vw, 22px)',
-                lineHeight: 1.5,
-                color: 'rgba(255, 255, 255, 0.8)',
-                maxWidth: '720px',
-              }}
-            >
+            <p className="text-[clamp(16px,1.8vw,22px)] leading-[1.5] text-white/80 max-w-[720px]">
               En GreyLion Maritime transformamos los desafíos del comercio internacional y la infraestructura en oportunidades de crecimiento para su empresa.
             </p>
 
             {/* Action buttons */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '24px',
-                marginTop: '16px',
-                flexWrap: 'wrap',
-              }}
-            >
-              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                <button
-                  style={{
-                    backgroundColor: 'var(--background-dark)',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    borderRadius: '30px',
-                    padding: '16px 36px',
-                    fontSize: '16px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 8px 24px rgba(6, 11, 19, 0.15)',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.backgroundColor = '#15223a';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.backgroundColor = 'var(--background-dark)';
-                  }}
-                >
+            <div className="flex items-center gap-6 mt-4 flex-wrap">
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="no-underline">
+                <button className="bg-background-dark text-white border-0 rounded-[30px] py-4 px-9 text-base font-bold cursor-pointer transition-all duration-300 ease-[ease] shadow-[0_8px_24px_rgba(6,11,19,0.15)] hover:-translate-y-0.5 hover:bg-[#15223a]">
                   Cotizar Envío
                 </button>
               </a>
 
-              <button
-                style={{
-                  backgroundColor: 'transparent',
-                  color: 'var(--text-white)',
-                  border: '1.5px solid var(--text-white)',
-                  borderRadius: '30px',
-                  padding: '15px 36px',
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  transition: 'all 0.3s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
+              <button className="bg-transparent text-text-white border-[1.5px] border-text-white rounded-[30px] py-[15px] px-9 text-base font-bold cursor-pointer flex items-center gap-2 transition-all duration-300 ease-[ease] hover:bg-white/5 hover:-translate-y-0.5">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>

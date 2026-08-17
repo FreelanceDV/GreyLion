@@ -72,131 +72,40 @@ const ADVANTAGES = [
 
 export default function WorkWithUs() {
   return (
-    <section
-      style={{
-        backgroundColor: '#FFFFFF',
-        color: 'var(--background-dark)',
-        padding: '100px 0',
-        position: 'relative',
-        borderTop: '1px solid #E4E7EC',
-      }}
-    >
+    <section className="relative bg-white text-background-dark py-[100px] border-t border-[#E4E7EC]">
       <div className="w-full max-w-[1280px] mx-auto px-5">
         {/* Header */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            gap: '20px',
-            marginBottom: '72px',
-          }}
-        >
-          <span
-            style={{
-              fontSize: '13px',
-              fontWeight: 600,
-              color: 'var(--primary-dark)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-            }}
-          >
+        <div className="flex flex-col items-center text-center gap-5 mb-[72px]">
+          <span className="text-[13px] font-semibold text-primary-dark uppercase tracking-[0.05em]">
             Ventajas Corporativas
           </span>
-          <h2
-            style={{
-              fontFamily: 'var(--font-space-grotesk)',
-              fontSize: 'clamp(32px, 4vw, 54px)',
-              fontWeight: 800,
-              lineHeight: 1.15,
-              maxWidth: '800px',
-            }}
-          >
+          <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(32px,4vw,54px)] font-extrabold leading-[1.15] max-w-[800px]">
             Ventajas de Trabajar con <br />
-            <span style={{ color: 'var(--primary-dark)' }}>GreyLion Maritime</span>
+            <span className="text-primary-dark">GreyLion Maritime</span>
           </h2>
-          <p
-            style={{
-              fontSize: '16px',
-              color: '#475467',
-              maxWidth: '680px',
-              lineHeight: 1.6,
-            }}
-          >
+          <p className="text-base text-[#475467] max-w-[680px] leading-[1.6]">
             Ofrecemos excelencia operativa, seguridad y gestión aduanera simplificada para potenciar el crecimiento comercial de tu empresa.
           </p>
         </div>
 
         {/* Grid Items */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: '32px',
-          }}
-        >
+        <div className="grid [grid-template-columns:repeat(auto-fit,minmax(320px,1fr))] gap-8">
           {ADVANTAGES.map((adv, idx) => (
             <div
               key={idx}
-              style={{
-                backgroundColor: '#FAFAFA',
-                border: '1px solid #E4E7EC',
-                borderRadius: '16px',
-                padding: '36px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '20px',
-                transition: 'all 0.3s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-6px)';
-                e.currentTarget.style.backgroundColor = '#FFFFFF';
-                e.currentTarget.style.borderColor = 'var(--primary)';
-                e.currentTarget.style.boxShadow = '0 12px 30px rgba(90, 110, 216, 0.08)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.backgroundColor = '#FAFAFA';
-                e.currentTarget.style.borderColor = '#E4E7EC';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
+              className="flex flex-col gap-5 bg-[#FAFAFA] border border-[#E4E7EC] rounded-2xl p-9 transition-all duration-300 ease-[ease] hover:-translate-y-1.5 hover:bg-white hover:border-primary hover:shadow-[0_12px_30px_rgba(90,110,216,0.08)]"
             >
               {/* Icon Container */}
-              <div
-                style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  backgroundColor: 'rgba(90, 110, 216, 0.08)',
-                  color: 'var(--primary-dark)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+              <div className="w-12 h-12 rounded-xl bg-[rgba(90,110,216,0.08)] text-primary-dark flex items-center justify-center">
                 {adv.icon}
               </div>
 
               {/* Title & Desc */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <h3
-                  style={{
-                    fontFamily: 'var(--font-space-grotesk)',
-                    fontSize: '20px',
-                    fontWeight: 700,
-                    color: 'var(--background-dark)',
-                  }}
-                >
+              <div className="flex flex-col gap-2">
+                <h3 className="font-[family-name:var(--font-space-grotesk)] text-xl font-bold text-background-dark">
                   {adv.title}
                 </h3>
-                <p
-                  style={{
-                    fontSize: '14px',
-                    lineHeight: 1.6,
-                    color: '#475467',
-                  }}
-                >
+                <p className="text-sm leading-[1.6] text-[#475467]">
                   {adv.desc}
                 </p>
               </div>
