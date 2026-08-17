@@ -596,130 +596,48 @@ export default function Globe() {
   }, []);
 
   return (
-    <div
-      style={{
-        backgroundColor: 'var(--background-black)',
-        color: 'var(--text-white)',
-        padding: '100px 0',
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        overflow: 'hidden',
-        borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-      }}
-    >
-      <div className="w-full max-w-[1280px] mx-auto px-5" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div className="w-full flex flex-col items-center overflow-hidden bg-background-black text-text-white py-[100px] border-t border-white/5">
+      <div className="w-full max-w-[1280px] mx-auto px-5 flex flex-col items-center">
         {/* Section title */}
-        <h2
-          style={{
-            fontFamily: 'var(--font-space-grotesk)',
-            fontSize: 'clamp(28px, 4vw, 54px)',
-            fontWeight: 800,
-            lineHeight: 1.2,
-            textAlign: 'center',
-            marginBottom: '16px',
-            maxWidth: '850px',
-          }}
-        >
+        <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(28px,4vw,54px)] font-extrabold leading-[1.2] text-center mb-4 max-w-[850px]">
           Red Global de{' '}
-          <span style={{ color: 'var(--primary-hover)', display: 'inline-block' }}>
+          <span className="text-primary-hover inline-block">
             Conexiones Marítimas
           </span>{' '}
           y Puertos Mundiales
         </h2>
-        
-        <p
-          style={{
-            fontSize: '15px',
-            color: 'var(--text-gray)',
-            textAlign: 'center',
-            maxWidth: '620px',
-            lineHeight: 1.6,
-            marginBottom: '40px',
-          }}
-        >
+
+        <p className="text-[15px] text-text-gray text-center max-w-[620px] leading-[1.6] mb-10">
           Sincronizamos rutas intercontinentales seguras y eficientes. Monitoreo constante de tránsitos marítimos comerciales para conectar su negocio con los mercados líderes.
         </p>
 
         {/* Click instructions badge */}
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: 'rgba(0, 163, 255, 0.08)',
-            border: '1px solid rgba(0, 163, 255, 0.25)',
-            borderRadius: '30px',
-            padding: '8px 18px',
-            fontSize: '13px',
-            fontWeight: 600,
-            color: '#00a3ff',
-            marginBottom: '32px',
-            boxShadow: '0 4px 12px rgba(0, 163, 255, 0.05)',
-          }}
-        >
-          <span style={{ animation: 'float 2s ease-in-out infinite' }}>💡</span>
+        <div className="inline-flex items-center gap-2 bg-[rgba(0,163,255,0.08)] border border-[rgba(0,163,255,0.25)] rounded-[30px] px-[18px] py-2 text-[13px] font-semibold text-[#00a3ff] mb-8 shadow-[0_4px_12px_rgba(0,163,255,0.05)]">
+          <span className="animate-float">💡</span>
           <span>¡Interactivo! Haz clic en cualquier parte del océano para trazar una nueva ruta y añadir tu puerto.</span>
         </div>
 
         {/* Outer container */}
         <div
           ref={containerRef}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
-            position: 'relative',
-          }}
+          className="flex flex-col items-center justify-center w-full relative"
         >
           {/* Flat World Map Canvas */}
           <canvas
             ref={canvasRef}
             onClick={handleCanvasClick}
-            style={{
-              maxWidth: '100%',
-              display: 'block',
-              filter: 'drop-shadow(0 15px 50px rgba(15, 76, 129, 0.08))',
-              cursor: 'crosshair', // Show crosshair cursor to suggest interactivity
-            }}
+            className="max-w-full block [filter:drop-shadow(0_15px_50px_rgba(15,76,129,0.08))] cursor-crosshair"
           />
 
           {/* Interactive Toast Notifications */}
           {showToast && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '20px',
-                backgroundColor: 'rgba(13, 17, 24, 0.95)',
-                border: '1.5px solid rgba(0, 163, 255, 0.3)',
-                borderRadius: '8px',
-                padding: '12px 20px',
-                color: '#ffffff',
-                fontSize: '13.5px',
-                fontWeight: 600,
-                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
-                backdropFilter: 'blur(10px)',
-                zIndex: 100,
-                animation: 'fadeInUp 0.3s ease forwards',
-              }}
-            >
+            <div className="absolute top-5 bg-[rgba(13,17,24,0.95)] border-[1.5px] border-[rgba(0,163,255,0.3)] rounded-lg px-5 py-3 text-white text-[13.5px] font-semibold shadow-[0_10px_25px_rgba(0,0,0,0.5)] backdrop-blur-[10px] z-[100] animate-fade-in-up">
               {toastMessage}
             </div>
           )}
 
           {/* Stats Cards Grid */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '24px',
-              width: '100%',
-              marginTop: '60px',
-            }}
-          >
+          <div className="grid [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] gap-6 w-full mt-[60px]">
             {[
               {
                 title: `${portsCount} Puertos Activos`,
@@ -740,45 +658,12 @@ export default function Globe() {
             ].map((stat, i) => (
               <div
                 key={i}
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.01)',
-                  borderRadius: '16px',
-                  padding: '28px',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                  transition: 'all 0.3s ease',
-                }}
-                className="relative rounded-[14px] overflow-hidden transition-all duration-300 before:content-[''] before:absolute before:inset-0 before:rounded-[14px] before:p-[1.5px] before:[background:linear-gradient(135deg,rgba(90,110,216,0.4)_0%,transparent_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[mask-composite:exclude] before:[-webkit-mask-composite:xor] before:pointer-events-none hover:before:[background:linear-gradient(135deg,var(--color-primary)_0%,var(--color-accent)_100%)]"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
-                  e.currentTarget.style.borderColor = 'rgba(15, 76, 129, 0.25)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.01)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
-                }}
+                className="relative rounded-[14px] overflow-hidden transition-all duration-300 bg-[rgba(255,255,255,0.01)] p-7 border border-white/5 flex flex-col gap-3 hover:-translate-y-1 hover:bg-[rgba(255,255,255,0.02)] hover:border-[rgba(15,76,129,0.25)] before:content-[''] before:absolute before:inset-0 before:rounded-[14px] before:p-[1.5px] before:[background:linear-gradient(135deg,rgba(90,110,216,0.4)_0%,transparent_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[mask-composite:exclude] before:[-webkit-mask-composite:xor] before:pointer-events-none hover:before:[background:linear-gradient(135deg,var(--color-primary)_0%,var(--color-accent)_100%)]"
               >
-                <h3
-                  style={{
-                    fontSize: '24px',
-                    fontWeight: 700,
-                    color: 'var(--primary-hover)',
-                    fontFamily: 'var(--font-space-grotesk)',
-                  }}
-                >
+                <h3 className="text-2xl font-bold text-primary-hover font-[family-name:var(--font-space-grotesk)]">
                   {stat.title}
                 </h3>
-                <p
-                  style={{
-                    fontSize: '13.5px',
-                    lineHeight: 1.5,
-                    color: 'var(--text-gray)',
-                  }}
-                >
+                <p className="text-[13.5px] leading-[1.5] text-text-gray">
                   {stat.desc}
                 </p>
               </div>
