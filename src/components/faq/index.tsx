@@ -23,7 +23,7 @@ export default function FAQ() {
   }, [activeCategory, searchQuery]);
 
   return (
-    <section id="preguntas-frecuentes" className="bg-background-dark py-[100px]">
+    <section id="preguntas-frecuentes" className="bg-background-dark py-[70px]">
       <div className="w-full max-w-[1280px] mx-auto px-5">
         <FaqHeader />
         <FaqSearch value={searchQuery} onChange={setSearchQuery} />

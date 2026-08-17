@@ -127,7 +127,7 @@ export default function Showcase() {
   const activeServiceCategory = SERVICES_CATEGORIES.find((cat) => cat.id === activeServiceTab) || SERVICES_CATEGORIES[0];
 
   return (
-    <section id="operaciones" className="bg-background-black py-[100px] relative overflow-hidden">
+    <section id="operaciones" className="bg-background-black relative overflow-hidden">
       {/* Background radial glow */}
       <div className="absolute right-0 top-0 bottom-0 w-1/2 z-0 pointer-events-none bg-[radial-gradient(ellipse_at_80%_50%,rgba(90,110,216,0.08)_0%,transparent_60%)]" />
 
@@ -160,7 +160,7 @@ export default function Showcase() {
         </div>
 
         {/* Core Grid: image / detail card / image */}
-        <div className="grid grid-cols-[1fr_1.3fr_1fr] gap-6 items-stretch mb-16 max-[991px]:grid-cols-1">
+        <div className="grid grid-cols-[1fr_1.3fr_1fr] gap-6 items-stretch mb-10 max-[991px]:grid-cols-1">
           {/* Left Image */}
           <div className="relative rounded-2xl overflow-hidden min-h-[300px] max-[991px]:min-h-[220px]">
             <img src="/modalities_container_1.png" alt="Buque portacontenedores en tránsito" className="absolute inset-0 w-full h-full object-cover" />
@@ -168,7 +168,7 @@ export default function Showcase() {
 
           {/* Active Details Card */}
           <div
-            className="relative rounded-[14px] overflow-hidden transition-colors duration-300 bg-[rgba(18,20,23,0.8)] border-[1.5px] border-[rgba(15,76,129,0.25)] hover:border-primary-hover/60 p-8 shadow-[0_15px_40px_rgba(15,76,129,0.06)] flex flex-col gap-5"
+            className="relative rounded-[14px] overflow-hidden transition-colors duration-300 bg-gray-900 border-[1.5px] border-[rgba(15,76,129,0.25)] hover:border-primary-hover/60 p-8 shadow-[0_15px_40px_rgba(15,76,129,0.06)] flex flex-col gap-1"
           >
             <div className="border-b border-[rgba(255,255,255,0.08)] pb-4">
               <div className="flex items-center justify-between gap-4">

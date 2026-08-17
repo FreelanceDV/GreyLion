@@ -378,16 +378,26 @@ export default function Globe() {
     const resizeCanvas = () => {
       const container = containerRef.current;
       if (container && canvas) {
-        const width = container.clientWidth;
-        const height = width / 2;
+        // Measure the container's own box (CSS aspect-ratio guarantees its
+        // height, so this is accurate regardless of JS/layout timing) and
+        // fill it exactly, rather than deriving height from width in JS.
+        const rect = container.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+        if (width === 0 || height === 0) return;
         canvas.width = width;
         canvas.height = height;
         dots = generateMapDots(width, height);
       }
     };
 
-    resizeCanvas();
+    // Defer the first measurement to the next frame so the container's
+    // grid track has finished laying out before we read its clientWidth.
+    const initialResizeFrame = requestAnimationFrame(resizeCanvas);
     window.addEventListener('resize', resizeCanvas);
+
+    const resizeObserver = new ResizeObserver(() => resizeCanvas());
+    if (containerRef.current) resizeObserver.observe(containerRef.current);
 
     const render = () => {
       const w = canvas.width;
@@ -591,85 +601,114 @@ export default function Globe() {
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      cancelAnimationFrame(initialResizeFrame);
       window.removeEventListener('resize', resizeCanvas);
+      resizeObserver.disconnect();
     };
   }, []);
 
   return (
-    <div className="w-full flex flex-col items-center overflow-hidden bg-background-black text-text-white py-[100px] border-t border-white/5">
-      <div className="w-full max-w-[1280px] mx-auto px-5 flex flex-col items-center">
-        {/* Section title */}
-        <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(28px,4vw,54px)] font-extrabold leading-[1.2] text-center mb-4 max-w-[850px]">
-          Red Global de{' '}
-          <span className="text-primary-hover inline-block">
-            Conexiones Marítimas
-          </span>{' '}
-          y Puertos Mundiales
-        </h2>
-
-        <p className="text-[15px] text-text-gray text-center max-w-[620px] leading-[1.6] mb-10">
-          Sincronizamos rutas intercontinentales seguras y eficientes. Monitoreo constante de tránsitos marítimos comerciales para conectar su negocio con los mercados líderes.
-        </p>
-
-        {/* Click instructions badge */}
-        <div className="inline-flex items-center gap-2 bg-[rgba(0,163,255,0.08)] border border-[rgba(0,163,255,0.25)] rounded-[30px] px-[18px] py-2 text-[13px] font-semibold text-[#00a3ff] mb-8 shadow-[0_4px_12px_rgba(0,163,255,0.05)]">
-          <span className="animate-float">💡</span>
-          <span>¡Interactivo! Haz clic en cualquier parte del océano para trazar una nueva ruta y añadir tu puerto.</span>
-        </div>
-
-        {/* Outer container */}
-        <div
-          ref={containerRef}
-          className="flex flex-col items-center justify-center w-full relative"
-        >
-          {/* Flat World Map Canvas */}
-          <canvas
-            ref={canvasRef}
-            onClick={handleCanvasClick}
-            className="max-w-full block [filter:drop-shadow(0_15px_50px_rgba(15,76,129,0.08))] cursor-crosshair"
-          />
-
-          {/* Interactive Toast Notifications */}
-          {showToast && (
-            <div className="absolute top-5 bg-[rgba(13,17,24,0.95)] border-[1.5px] border-[rgba(0,163,255,0.3)] rounded-lg px-5 py-3 text-white text-[13.5px] font-semibold shadow-[0_10px_25px_rgba(0,0,0,0.5)] backdrop-blur-[10px] z-[100] animate-fade-in-up">
-              {toastMessage}
+    <div className="w-full overflow-hidden bg-background-black text-text-white pt-[100px] border-t border-white/5">
+      <div className="w-full max-w-[1280px] mx-auto px-5">
+        <div className="grid grid-cols-2 gap-12 items-start max-[991px]:grid-cols-1">
+          {/* Left column: heading, copy, interactive badge, stats */}
+          <div className="flex flex-col gap-7">
+            <div className="flex flex-col gap-3">
+              <span className="text-xs font-extrabold text-primary-hover uppercase tracking-[0.14em]">Red Global</span>
+              <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(28px,3.2vw,42px)] font-extrabold leading-[1.15]">
+                <span className="text-primary-hover">Conexiones Marítimas</span><br />
+                y Puertos Mundiales
+              </h2>
+              <p className="text-[15px] text-text-gray leading-[1.6]">
+                Sincronizamos rutas intercontinentales seguras y eficientes. Monitoreo constante de tránsitos marítimos comerciales para conectar su negocio con los mercados líderes.
+              </p>
             </div>
-          )}
 
-          {/* Stats Cards Grid */}
-          <div className="grid [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] gap-6 w-full mt-[60px]">
-            {[
-              {
-                title: `${portsCount} Puertos Activos`,
-                desc: 'Operación y presencia aduanera activa ampliable en tiempo real.',
-              },
-              {
-                title: '50+ Navieras',
-                desc: 'Acuerdos comerciales directos con los operadores líderes del comercio internacional.',
-              },
-              {
-                title: 'Operación 24/7',
-                desc: 'Acompañamiento permanente de principio a fin, liberándolo de complejidades.',
-              },
-              {
-                title: 'Trazabilidad Total',
-                desc: 'Tecnología integrada para el seguimiento y verificación en tiempo real de su carga.',
-              },
-            ].map((stat, i) => (
-              <div
-                key={i}
-                className="relative rounded-[14px] overflow-hidden transition-all duration-300 bg-[rgba(255,255,255,0.01)] p-7 border border-white/5 flex flex-col gap-3 hover:-translate-y-1 hover:bg-[rgba(255,255,255,0.02)] hover:border-[rgba(15,76,129,0.25)] before:content-[''] before:absolute before:inset-0 before:rounded-[14px] before:p-[1.5px] before:[background:linear-gradient(135deg,rgba(90,110,216,0.4)_0%,transparent_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[mask-composite:exclude] before:[-webkit-mask-composite:xor] before:pointer-events-none hover:before:[background:linear-gradient(135deg,var(--color-primary)_0%,var(--color-accent)_100%)]"
-              >
-                <h3 className="text-2xl font-bold text-primary-hover font-[family-name:var(--font-space-grotesk)]">
-                  {stat.title}
-                </h3>
-                <p className="text-[13.5px] leading-[1.5] text-text-gray">
-                  {stat.desc}
-                </p>
+            {/* Click instructions badge */}
+            <div className="flex items-start gap-2 rounded-xl border border-[rgba(0,163,255,0.25)] bg-[rgba(0,163,255,0.06)] p-4">
+              <span className="shrink-0 mt-0.5 text-[#00a3ff] animate-float">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </span>
+              <p className="text-[13px] leading-[1.5] ">
+                <strong className="font-extrabold uppercase tracking-[0.04em]">Interactivo</strong> · Haz clic en cualquier parte del océano para trazar una nueva ruta y añadir tu puerto.
+              </p>
+            </div>
+
+            {/* Stats grid */}
+            <div className="grid grid-cols-4 gap-4 max-[560px]:grid-cols-2">
+              {[
+                {
+                  value: `${portsCount}`,
+                  label: 'Puertos Activos',
+                  desc: 'Operación y presencia aduanera activa ampliable en tiempo real.',
+                },
+                {
+                  value: '50+',
+                  label: 'Navieras',
+                  desc: 'Acuerdos comerciales directos con los operadores líderes del comercio internacional.',
+                },
+                {
+                  value: '24/7',
+                  label: 'Operación',
+                  desc: 'Acompañamiento permanente de principio a fin, liberándolo de complejidades.',
+                },
+                {
+                  value: '100%',
+                  label: 'Trazabilidad',
+                  desc: 'Tecnología integrada para el seguimiento y verificación en tiempo real de su carga.',
+                },
+              ].map((stat, i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border border-white/10 bg-[rgba(255,255,255,0.01)] p-5 transition-colors duration-300 hover:border-primary-hover/40"
+                >
+                  <div className="text-[30px] font-extrabold text-primary-hover font-[family-name:var(--font-space-grotesk)] leading-none">
+                    {stat.value}
+                  </div>
+                  <div className="text-xs font-bold text-text-white uppercase tracking-[0.05em] mt-2.5">
+                    {stat.label}
+                  </div>
+                  <p className="text-xs leading-[1.5] text-text-gray mt-1.5">
+                    {stat.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right column: interactive world map */}
+          <div
+            ref={containerRef}
+            className="relative w-full aspect-[1.35/1] max-[991px]:aspect-[1.5/1]"
+          >
+            {/* Flat World Map Canvas */}
+            <canvas
+              ref={canvasRef}
+              onClick={handleCanvasClick}
+              className="absolute inset-0 w-full h-full block [filter:drop-shadow(0_15px_50px_rgba(15,76,129,0.08))] cursor-crosshair"
+            />
+
+            {/* Interactive Toast Notifications */}
+            {showToast && (
+              <div className="absolute top-5 left-1/2 -translate-x-1/2 bg-[rgba(13,17,24,0.95)] border-[1.5px] border-[rgba(0,163,255,0.3)] rounded-lg px-5 py-3 text-white text-[13.5px] font-semibold shadow-[0_10px_25px_rgba(0,0,0,0.5)] backdrop-blur-[10px] z-[100] animate-fade-in-up whitespace-nowrap">
+                {toastMessage}
               </div>
-            ))}
+            )}
           </div>
         </div>
+      </div>
+
+      {/* Bottom banner photo: full-bleed, spans the entire viewport width */}
+      <div className="relative w-full min-h-[300px]">
+        <img
+          src="/red_global.png"
+          alt="Operación portuaria global de GreyLion Maritime"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,var(--color-background-black)_0%,transparent_35%)]" />
       </div>
     </div>
   );

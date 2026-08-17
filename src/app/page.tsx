@@ -29,7 +29,7 @@ export default function Home() {
       <MachineryCatalog />
       <Testimonials />
       <FAQ />
-      {/* <CTA /> */}
+      <CTA />
       <Footer />
       <WhatsAppButton />
     </main>
