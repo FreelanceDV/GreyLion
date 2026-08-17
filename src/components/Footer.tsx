@@ -27,7 +27,7 @@ export default function Footer() {
         className="absolute -top-[140px] left-1/2 w-[760px] h-[230px] rounded-[50%] bg-[radial-gradient(ellipse,rgba(7,92,168,.42),transparent_68%)] blur-[16px] pointer-events-none -translate-x-1/2"
         aria-hidden="true"
       />
-      <div className="container relative">
+      <div className="w-full max-w-[1280px] mx-auto px-5 relative">
         <section className="grid grid-cols-[1.45fr_.85fr_.9fr_1.1fr] gap-[42px] pb-[58px] max-[900px]:grid-cols-2 max-[560px]:grid-cols-1 max-[560px]:gap-[30px] max-[560px]:pb-[40px]">
           <div className="flex max-w-[330px] flex-col items-start gap-[18px] max-[560px]:max-w-none">
             <Link href="/" aria-label="GreyLion Maritime, inicio" className="no-underline">

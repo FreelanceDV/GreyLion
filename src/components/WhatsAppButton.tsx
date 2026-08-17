@@ -29,11 +29,11 @@ export default function WhatsAppButton() {
       if (event.key === 'Escape') setOpen(false);
     };
 
-    document.body.classList.add('overlay-open');
+    document.body.classList.add('overflow-hidden');
     window.addEventListener('keydown', closeOnEscape);
     return () => {
       window.clearTimeout(focusInput);
-      document.body.classList.remove('overlay-open');
+      document.body.classList.remove('overflow-hidden');
       window.removeEventListener('keydown', closeOnEscape);
     };
   }, [open]);

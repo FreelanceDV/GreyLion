@@ -42,7 +42,7 @@ export default function Hero() {
       <div className="absolute top-[10%] left-[5%] w-1/2 h-3/5 rounded-full bg-[radial-gradient(circle,rgba(27,108,168,0.15)_0%,transparent_70%)] blur-[100px] pointer-events-none z-[1]" />
 
       {/* Hero Main Content */}
-      <div className="container relative z-10 w-full grow flex items-center pt-[120px] pb-10 max-[768px]:px-6!">
+      <div className="w-full max-w-[1280px] mx-auto px-5 relative z-10 grow flex items-center pt-[120px] pb-10 max-[768px]:px-6!">
         <div className="max-w-[650px] flex flex-col gap-6 items-start text-left animate-copy-enter max-[768px]:max-w-[86%] motion-reduce:animate-none">
           {/* Badge / Kicker with thin horizontal line */}
           <div className="flex items-center gap-4 w-full">
@@ -91,7 +91,7 @@ export default function Hero() {
       <div className="relative w-full z-10 animate-stats-rise motion-reduce:animate-none">
         {/* Stats Glass Bar */}
         <div className="w-full border-t border-b border-[rgba(255,255,255,0.08)] bg-[rgba(7,11,18,0.65)] backdrop-blur-[20px] pt-6 pb-[54px]">
-          <div className="container flex justify-between items-center flex-wrap gap-6 max-[991px]:justify-center max-[991px]:gap-8 max-[768px]:px-6!">
+          <div className="w-full max-w-[1280px] mx-auto px-5 flex justify-between items-center flex-wrap gap-6 max-[991px]:justify-center max-[991px]:gap-8 max-[768px]:px-6!">
             {/* Stat 1 */}
             <div className={statItemClasses}>
               <span className={statIconClasses}>

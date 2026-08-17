@@ -23,8 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${inter.variable} ${spaceGrotesk.variable}`}>
-      <body>{children}</body>
+    <html lang="es" className={`${inter.variable} ${spaceGrotesk.variable} scroll-smooth`}>
+      <body className="max-w-[100vw] overflow-x-hidden bg-background-dark text-text-white font-inter antialiased">{children}</body>
     </html>
   );
 }

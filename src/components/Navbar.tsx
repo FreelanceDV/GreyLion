@@ -42,10 +42,10 @@ export default function Navbar() {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') closeMenu();
     };
-    document.body.classList.add('overlay-open');
+    document.body.classList.add('overflow-hidden');
     window.addEventListener('keydown', closeOnEscape);
     return () => {
-      document.body.classList.remove('overlay-open');
+      document.body.classList.remove('overflow-hidden');
       window.removeEventListener('keydown', closeOnEscape);
     };
   }, [mobileMenuOpen]);
@@ -60,7 +60,7 @@ export default function Navbar() {
         }`}
         aria-label="Navegación principal"
       >
-        <div className="container grid grid-cols-[1fr_auto_1fr] items-center max-[991px]:grid-cols-[1fr_auto]">
+        <div className="w-full max-w-[1280px] mx-auto px-5 grid grid-cols-[1fr_auto_1fr] items-center max-[991px]:grid-cols-[1fr_auto]">
           <Link className="inline-flex w-fit no-underline" href="/" aria-label="GreyLion Maritime, inicio"><Logo size={36} textSize="22px" /></Link>
 
           <div className="flex items-center gap-[25px] max-[991px]:hidden">
