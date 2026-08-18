@@ -13,7 +13,7 @@ import Testimonials from "@/components/Testimonials";
 import FAQ from "@/components/faq";
 import CTA from "@/components/CTA";
 import Footer from "@/components/footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import WhatsAppButton from "@/components/whatsapp-button";
 
 export default function Home() {
   return (

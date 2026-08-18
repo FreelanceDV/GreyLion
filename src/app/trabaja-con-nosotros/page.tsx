@@ -2,7 +2,7 @@ import React from 'react';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
 import WorkWithUs from '@/components/work-with-us';
-import WhatsAppButton from '@/components/WhatsAppButton';
+import WhatsAppButton from '@/components/whatsapp-button';
 
 export const metadata = {
   title: 'Trabaja con Nosotros | GreyLion Maritime',
