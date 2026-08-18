@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
         console.log('Loaded media_config.json from local filesystem');
       } catch (err) {
         config = {
-          hero_ship: '/hero_ship_oceanis.jpg',
+          hero_ship: '/hero_ship_oceanis.png',
           maritime_transport: '/maritime_transport_card.jpg',
           integral_logistics: '/integral_logistics_card.jpg',
           bg_about: '/charger_boat.mp4',

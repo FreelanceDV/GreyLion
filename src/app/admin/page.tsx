@@ -418,7 +418,7 @@ export default function AdminPage() {
     if (!selectedAsset) return;
     
     const defaultPaths: Record<string, string> = {
-      hero_ship: '/hero_ship_oceanis.jpg',
+      hero_ship: '/hero_ship_oceanis.png',
       maritime_transport: '/maritime_transport_card.jpg',
       integral_logistics: '/integral_logistics_card.jpg',
       bg_about: '/charger_boat.mp4',

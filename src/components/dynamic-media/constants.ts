@@ -1,6 +1,6 @@
 /** Default local fallback files per known assetId, used before any remote config has loaded. */
 export const DEFAULT_FALLBACKS: Record<string, string> = {
-  hero_ship: '/hero_ship_oceanis.jpg',
+  hero_ship: '/hero_ship_oceanis.png',
   maritime_transport: '/maritime_transport_card.jpg',
   integral_logistics: '/integral_logistics_card.jpg',
   bg_about: '/charger_boat.mp4',
@@ -14,7 +14,6 @@ export const DEFAULT_FALLBACKS: Record<string, string> = {
  */
 export const LEGACY_MAPPING: Record<string, string> = {
   '/hero_ship_oceanis.png': 'hero_ship',
-  '/hero_ship_oceanis.jpg': 'hero_ship',
   '/maritime_transport_card.jpg': 'maritime_transport',
   '/integral_logistics_card.jpg': 'integral_logistics',
   bg_about: 'background_video',
