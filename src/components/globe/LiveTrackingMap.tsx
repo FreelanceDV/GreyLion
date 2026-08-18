@@ -257,6 +257,35 @@ export default function LiveTrackingMap({ onPortsCountChange }: LiveTrackingMapP
     centerLngRef.current = centerLng;
   }, [zoom, centerLat, centerLng]);
 
+  const [iframeSrc, setIframeSrc] = useState<string>(
+    'https://www.marinetraffic.com/en/ais/embed/centerx:-78.0/centery:11.0/zoom:3/maptype:3/shownames:false/shownation:false/showmenu:false/fleet:0/fleet_id:0/trackvessel:0'
+  );
+
+  useEffect(() => {
+    let active = true;
+    const targetUrl = 'https://www.marinetraffic.com/en/ais/home/centerx:-31.2/centery:9.3/zoom:3';
+    const fallbackUrl = `https://www.marinetraffic.com/en/ais/embed/centerx:${centerLng}/centery:${centerLat}/zoom:${zoom}/maptype:3/shownames:false/shownation:false/showmenu:false/fleet:0/fleet_id:0/trackvessel:0`;
+
+    fetch(`/api/check-map?url=${encodeURIComponent(targetUrl)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!active) return;
+        if (data.canEmbed) {
+          setIframeSrc(targetUrl);
+        } else {
+          setIframeSrc(fallbackUrl);
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        setIframeSrc(fallbackUrl);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [centerLng, centerLat, zoom, iframeKey]);
+
   // Drag Panning variables
   const isDraggingRef = useRef(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -735,7 +764,7 @@ export default function LiveTrackingMap({ onPortsCountChange }: LiveTrackingMapP
       {/* Real-time MarineTraffic AIS Embed Map as dynamic background, centered on Barranquilla / Caribbean zone */}
       <iframe
         key={iframeKey}
-        src={`https://www.marinetraffic.com/en/ais/embed/centerx:${centerLng}/centery:${centerLat}/zoom:${zoom}/maptype:3/shownames:false/shownation:false/showmenu:false/fleet:0/fleet_id:0/trackvessel:0`}
+        src={iframeSrc}
         width="100%"
         height="100%"
         className="absolute inset-0 border-0 pointer-events-none"

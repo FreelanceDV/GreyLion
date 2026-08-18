@@ -15,6 +15,18 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   bg_cta: '/charger_boat.mp4',
 };
 
+const LEGACY_MAPPING: Record<string, string> = {
+  '/hero_ship_oceanis.png': 'hero_ship',
+  '/hero_ship_oceanis.jpg': 'hero_ship',
+  '/maritime_transport_card.jpg': 'maritime_transport',
+  '/integral_logistics_card.jpg': 'integral_logistics',
+  'bg_about': 'background_video',
+  'bg_comparison': 'background_video',
+  'bg_cta': 'bg_cta',
+  '/charger_boat.mp4': 'background_video',
+  '/ready_to_move_your_cargo.png': 'bg_cta',
+};
+
 const fetchConfig = (): Promise<Record<string, string>> => {
   if (globalConfig) return Promise.resolve(globalConfig);
   if (globalConfigPromise) return globalConfigPromise;
@@ -94,8 +106,9 @@ export default function DynamicMedia({
     const lookupSrc = directSrc || assetId || '';
     if (lookupSrc) {
       fetchConfig().then((config) => {
-        // Look up by assetId/directSrc first, fallback to fallbackSrc/defaults, then lookupSrc itself
-        const rawSrc = config[lookupSrc] || fallbackSrc || (assetId ? DEFAULT_FALLBACKS[assetId] : '') || lookupSrc;
+        // Look up by assetId/directSrc first, then check legacy mapping, fallback to fallbackSrc/defaults, then lookupSrc itself
+        const legacyKey = LEGACY_MAPPING[lookupSrc] || '';
+        const rawSrc = config[lookupSrc] || (legacyKey ? config[legacyKey] : '') || fallbackSrc || (assetId ? DEFAULT_FALLBACKS[assetId] : '') || lookupSrc;
         
         if (rawSrc && rawSrc.startsWith('http')) {
           // Add hourly cache-buster for cloud resources to ensure updates roll out while preserving CDN caching
