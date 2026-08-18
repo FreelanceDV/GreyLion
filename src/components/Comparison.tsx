@@ -45,7 +45,7 @@ export default function Comparison() {
     >
       {/* Background Video/Image */}
       {/* <div className="absolute inset-0 z-0 overflow-hidden">
-        <DynamicMedia assetId="background_video" fallbackSrc="/charger_boat.mp4" className="opacity-15" /> */}
+        <DynamicMedia assetId="bg_comparison" fallbackSrc="/charger_boat.mp4" className="opacity-15" /> */}
         {/* Sleek Dark Gradient Overlay */}
         {/* <div className="absolute inset-0 bg-[linear-gradient(180deg,#010c1c%,rgba(10,11,13,0.8)_50%,#0a0b0d_100%)]" />
       </div> */}

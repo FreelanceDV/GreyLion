@@ -11,7 +11,7 @@ export default function AboutCompany() {
     <section className="relative overflow-hidden bg-[#020d1c] text-white py-20">
       {/* Background Video */}
       {/* <div className="absolute inset-0 z-0 overflow-hidden">
-        <DynamicMedia assetId="background_video" fallbackSrc="/charger_boat.mp4" className="opacity-[0.12]" />
+        <DynamicMedia assetId="bg_about" fallbackSrc="/charger_boat.mp4" className="opacity-[0.12]" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,var(--color-background-dark)_0%,rgba(18,20,23,0.85)_50%,var(--color-background-dark)_100%)]" />
       </div> */}
 

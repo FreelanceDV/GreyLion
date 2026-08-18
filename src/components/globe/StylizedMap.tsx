@@ -6,9 +6,9 @@ import React, { useEffect, useRef, useState } from 'react';
 const LAND_POLYGONS: [number, number][][] = [
   // North America
   [
-    [40, 90], [70, 70], [100, 60], [130, 75], [160, 55], [210, 55], [240, 70], [250, 95], [275, 105], [250, 125], 
-    [240, 155], [265, 185], [275, 215], [250, 245], [240, 280], [215, 290], [195, 290], [180, 315], [175, 335], 
-    [165, 335], [160, 305], [170, 275], [150, 255], [135, 255], [120, 235], [105, 235], [85, 215], [75, 175], 
+    [40, 90], [70, 70], [100, 60], [130, 75], [160, 55], [210, 55], [240, 70], [250, 95], [275, 105], [250, 125],
+    [240, 155], [265, 185], [275, 215], [250, 245], [240, 280], [215, 290], [195, 290], [180, 315], [175, 335],
+    [165, 335], [160, 305], [170, 275], [150, 255], [135, 255], [120, 235], [105, 235], [85, 215], [75, 175],
     [55, 165], [45, 145]
   ],
   // Greenland
@@ -17,21 +17,21 @@ const LAND_POLYGONS: [number, number][][] = [
   ],
   // South America
   [
-    [175, 335], [200, 345], [230, 365], [260, 395], [275, 415], [255, 455], [230, 495], [205, 545], [195, 545], 
+    [175, 335], [200, 345], [230, 365], [260, 395], [275, 415], [255, 455], [230, 495], [205, 545], [195, 545],
     [195, 505], [180, 475], [165, 435], [155, 385], [160, 355]
   ],
   // Africa
   [
-    [360, 255], [415, 245], [465, 255], [480, 275], [510, 275], [525, 325], [515, 365], [490, 415], [465, 485], 
-    [455, 515], [445, 515], [435, 485], [415, 435], [405, 415], [365, 375], [345, 355], [320, 325], [315, 285], 
+    [360, 255], [415, 245], [465, 255], [480, 275], [510, 275], [525, 325], [515, 365], [490, 415], [465, 485],
+    [455, 515], [445, 515], [435, 485], [415, 435], [405, 415], [365, 375], [345, 355], [320, 325], [315, 285],
     [335, 265]
   ],
   // Eurasia (Europe & Asia)
   [
-    [360, 245], [375, 215], [365, 175], [355, 155], [370, 135], [380, 145], [385, 115], [400, 95], [425, 85], 
-    [455, 75], [505, 65], [555, 55], [605, 55], [655, 65], [705, 55], [755, 65], [805, 75], [855, 95], 
-    [875, 115], [845, 145], [865, 185], [835, 235], [805, 235], [785, 275], [755, 315], [715, 335], [685, 355], 
-    [675, 355], [665, 335], [645, 335], [625, 355], [595, 355], [575, 325], [555, 325], [515, 315], [485, 335], 
+    [360, 245], [375, 215], [365, 175], [355, 155], [370, 135], [380, 145], [385, 115], [400, 95], [425, 85],
+    [455, 75], [505, 65], [555, 55], [605, 55], [655, 65], [705, 55], [755, 65], [805, 75], [855, 95],
+    [875, 115], [845, 145], [865, 185], [835, 235], [805, 235], [785, 275], [755, 315], [715, 335], [685, 355],
+    [675, 355], [665, 335], [645, 335], [625, 355], [595, 355], [575, 325], [555, 325], [515, 315], [485, 335],
     [465, 335], [455, 275], [415, 265], [395, 265]
   ],
   // Australia
@@ -162,10 +162,13 @@ const getScaledH = (hVal: number, h: number) => {
   return (hVal / 530) * drawH;
 };
 
-export default function Globe() {
+interface StylizedMapProps {
+  onPortsCountChange: (count: number) => void;
+}
+
+export default function StylizedMap({ onPortsCountChange }: StylizedMapProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [portsCount, setPortsCount] = useState(6);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
@@ -234,9 +237,9 @@ export default function Globe() {
       progress: Math.random(),
       speed: 0.0004 + Math.random() * 0.0003,
     }));
-    
-    setPortsCount(portsRef.current.length);
-  }, []);
+
+    onPortsCountChange(portsRef.current.length);
+  }, [onPortsCountChange]);
 
   // Handle Canvas Click: Toggles custom port addition and auto route integration
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -338,7 +341,7 @@ export default function Globe() {
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
 
-    setPortsCount(portsRef.current.length);
+    onPortsCountChange(portsRef.current.length);
   };
 
   useEffect(() => {
@@ -447,7 +450,7 @@ export default function Globe() {
         const segments = routeSegmentsRef.current[routeIdx];
         const lengthsObj = routeLengthsRef.current[routeIdx];
         if (!segments || !lengthsObj) return { x: 0, y: 0 };
-        
+
         const { lengths, total } = lengthsObj;
         const targetLen = t * total;
 
@@ -482,7 +485,7 @@ export default function Globe() {
           ctx.beginPath();
           const dist = Math.sqrt((p1.x - p0.x)**2 + (p1.y - p0.y)**2);
           const drawSteps = Math.max(10, Math.floor(dist / 8));
-          
+
           for (let i = 0; i <= drawSteps; i++) {
             const t = i / drawSteps;
             const pt = getEllipsePoint(t, p0, p1, scaledH);
@@ -562,11 +565,11 @@ export default function Globe() {
         ctx.fillStyle = 'rgba(18, 20, 23, 0.85)';
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
         ctx.lineWidth = 1;
-        
+
         const textWidth = ctx.measureText(port.name).width;
         const paddingX = 6;
         const paddingY = 3;
-        
+
         ctx.beginPath();
         ctx.roundRect(px + 8, py - 9, textWidth + paddingX * 2, 16, 4);
         ctx.fill();
@@ -608,108 +611,23 @@ export default function Globe() {
   }, []);
 
   return (
-    <div className="w-full overflow-hidden bg-background-black text-text-white pt-[100px] border-t border-white/5">
-      <div className="relative z-10 w-full max-w-[1280px] mx-auto px-5">
-        <div className="grid grid-cols-2 gap-12 items-start max-[991px]:grid-cols-1">
-          {/* Left column: heading, copy, interactive badge, stats */}
-          <div className="flex flex-col gap-7">
-            <div className="flex flex-col gap-3">
-              <span className="text-xs font-extrabold text-primary-hover uppercase tracking-[0.14em]">Red Global</span>
-              <h2 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(28px,3.2vw,42px)] font-extrabold leading-[1.15]">
-                <span className="text-primary-hover">Conexiones Marítimas</span><br />
-                y Puertos Mundiales
-              </h2>
-              <p className="text-[15px] text-text-gray leading-[1.6]">
-                Sincronizamos rutas intercontinentales seguras y eficientes. Monitoreo constante de tránsitos marítimos comerciales para conectar su negocio con los mercados líderes.
-              </p>
-            </div>
+    <div
+      ref={containerRef}
+      className="relative w-full aspect-[1.35/1] max-[991px]:aspect-[1.5/1]"
+    >
+      {/* Flat World Map Canvas */}
+      <canvas
+        ref={canvasRef}
+        onClick={handleCanvasClick}
+        className="absolute inset-0 w-full h-full block [filter:drop-shadow(0_15px_50px_rgba(15,76,129,0.08))] cursor-crosshair"
+      />
 
-            {/* Click instructions badge */}
-            <div className="flex items-start gap-2 rounded-xl border border-[rgba(0,163,255,0.25)] bg-[rgba(0,163,255,0.06)] p-4">
-              <span className="shrink-0 mt-0.5 text-[#00a3ff] animate-float">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-              </span>
-              <p className="text-[13px] leading-[1.5] ">
-                <strong className="font-extrabold uppercase tracking-[0.04em]">Interactivo</strong> · Haz clic en cualquier parte del océano para trazar una nueva ruta y añadir tu puerto.
-              </p>
-            </div>
-
-            {/* Stats grid */}
-            <div className="grid grid-cols-4 gap-4 max-[560px]:grid-cols-2">
-              {[
-                {
-                  value: `${portsCount}`,
-                  label: 'Puertos Activos',
-                  desc: 'Operación y presencia aduanera activa ampliable en tiempo real.',
-                },
-                {
-                  value: '50+',
-                  label: 'Navieras',
-                  desc: 'Acuerdos comerciales directos con los operadores líderes del comercio internacional.',
-                },
-                {
-                  value: '24/7',
-                  label: 'Operación',
-                  desc: 'Acompañamiento permanente de principio a fin, liberándolo de complejidades.',
-                },
-                {
-                  value: '100%',
-                  label: 'Trazabilidad',
-                  desc: 'Tecnología integrada para el seguimiento y verificación en tiempo real de su carga.',
-                },
-              ].map((stat, i) => (
-                <div
-                  key={i}
-                  className="rounded-xl border border-white/10 bg-[rgba(255,255,255,0.01)] p-5 transition-colors duration-300 hover:border-primary-hover/40"
-                >
-                  <div className="text-[30px] font-extrabold text-primary-hover font-[family-name:var(--font-space-grotesk)] leading-none">
-                    {stat.value}
-                  </div>
-                  <div className="text-xs font-bold text-text-white uppercase tracking-[0.05em] mt-2.5">
-                    {stat.label}
-                  </div>
-                  <p className="text-xs leading-[1.5] text-text-gray mt-1.5">
-                    {stat.desc}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right column: interactive world map */}
-          <div
-            ref={containerRef}
-            className="relative w-full aspect-[1.35/1] max-[991px]:aspect-[1.5/1]"
-          >
-            {/* Flat World Map Canvas */}
-            <canvas
-              ref={canvasRef}
-              onClick={handleCanvasClick}
-              className="absolute inset-0 w-full h-full block [filter:drop-shadow(0_15px_50px_rgba(15,76,129,0.08))] cursor-crosshair"
-            />
-
-            {/* Interactive Toast Notifications */}
-            {showToast && (
-              <div className="absolute top-5 left-1/2 -translate-x-1/2 bg-[rgba(13,17,24,0.95)] border-[1.5px] border-[rgba(0,163,255,0.3)] rounded-lg px-5 py-3 text-white text-[13.5px] font-semibold shadow-[0_10px_25px_rgba(0,0,0,0.5)] backdrop-blur-[10px] z-[100] animate-fade-in-up whitespace-nowrap">
-                {toastMessage}
-              </div>
-            )}
-          </div>
+      {/* Interactive Toast Notifications */}
+      {showToast && (
+        <div className="absolute top-5 left-1/2 -translate-x-1/2 bg-[rgba(13,17,24,0.95)] border-[1.5px] border-[rgba(0,163,255,0.3)] rounded-lg px-5 py-3 text-white text-[13.5px] font-semibold shadow-[0_10px_25px_rgba(0,0,0,0.5)] backdrop-blur-[10px] z-[100] animate-fade-in-up whitespace-nowrap">
+          {toastMessage}
         </div>
-      </div>
-
-      {/* Bottom banner photo: full-bleed, spans the entire viewport width */}
-      <div className="relative w-full min-h-[300px] -mt-36">
-        <img
-          src="/red_global.png"
-          alt="Operación portuaria global de GreyLion Maritime"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,var(--color-background-black)_0%,transparent_35%)]" />
-      </div>
+      )}
     </div>
   );
 }

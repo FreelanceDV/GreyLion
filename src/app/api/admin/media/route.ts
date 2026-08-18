@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { put, del, list } from '@vercel/blob';
 
 const execPromise = promisify(exec);
 
@@ -10,7 +11,9 @@ const BASE_NAMES: Record<string, string> = {
   hero_ship: 'hero_ship_oceanis',
   maritime_transport: 'maritime_transport_card',
   integral_logistics: 'integral_logistics_card',
-  background_video: 'charger_boat',
+  bg_about: 'bg_about',
+  bg_comparison: 'bg_comparison',
+  bg_cta: 'bg_cta',
 };
 
 const MIME_MAP: Record<string, string> = {
@@ -55,16 +58,41 @@ export async function POST(req: NextRequest) {
 
     // Load existing config
     let config: Record<string, string> = {};
-    try {
-      const configData = await fs.promises.readFile(configPath, 'utf8');
-      config = JSON.parse(configData);
-    } catch (err) {
-      config = {
-        hero_ship: '/hero_ship_oceanis.jpg',
-        maritime_transport: '/maritime_transport_card.jpg',
-        integral_logistics: '/integral_logistics_card.jpg',
-        background_video: '/charger_boat.mp4',
-      };
+    let configLoaded = false;
+
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        const { blobs } = await list();
+        const configBlob = blobs.find(b => b.pathname === 'media_config.json');
+        if (configBlob) {
+          const res = await fetch(`${configBlob.url}?t=${Date.now()}`, { cache: 'no-store' });
+          if (res.ok) {
+            config = await res.json();
+            configLoaded = true;
+            console.log('Loaded media_config.json from Vercel Blob');
+          }
+        }
+      } catch (blobErr: any) {
+        console.error('Failed to load media_config.json from Vercel Blob:', blobErr.message);
+      }
+    }
+
+    if (!configLoaded) {
+      try {
+        const configData = await fs.promises.readFile(configPath, 'utf8');
+        config = JSON.parse(configData);
+        console.log('Loaded media_config.json from local filesystem');
+      } catch (err) {
+        config = {
+          hero_ship: '/hero_ship_oceanis.jpg',
+          maritime_transport: '/maritime_transport_card.jpg',
+          integral_logistics: '/integral_logistics_card.jpg',
+          bg_about: '/charger_boat.mp4',
+          bg_comparison: '/charger_boat.mp4',
+          bg_cta: '/charger_boat.mp4',
+        };
+        console.log('Using default media config fallbacks');
+      }
     }
 
     const oldUrl = config[assetId];
@@ -134,15 +162,45 @@ export async function POST(req: NextRequest) {
       console.error('Failed to write config locally:', err.message);
     }
 
-    // 5. Git Synchronization
+    // 5. Git/Vercel Blob Synchronization
     const isDev = process.env.NODE_ENV === 'development';
+    const isBlobActive = !!process.env.BLOB_READ_WRITE_TOKEN;
     const ghToken = process.env.GITHUB_TOKEN;
     const ghRepo = process.env.GITHUB_REPOSITORY; // owner/repo
     const ghBranch = process.env.GITHUB_BRANCH || 'master';
 
-    let syncStatus = 'No git sync triggered';
+    let syncStatus = 'No sync triggered';
 
-    if (isDev) {
+    if (isBlobActive) {
+      // Vercel Blob Instant Sync (No Git commits, no Vercel rebuilds!)
+      try {
+        // A. Delete the old Vercel Blob file if it has changed (e.g. extension changed or overwritten)
+        if (oldUrl && oldUrl.startsWith('http') && oldUrl !== finalPathValue) {
+          if (oldUrl.includes('public.blob.vercel-storage.com')) {
+            try {
+              const oldUrlClean = oldUrl.split('?')[0];
+              await del(oldUrlClean);
+              console.log(`Deleted old Vercel Blob file: ${oldUrlClean}`);
+            } catch (delErr: any) {
+              console.error('Failed to delete old Vercel Blob file:', delErr.message);
+            }
+          }
+        }
+
+        // B. Upload updated media_config.json
+        await put('media_config.json', updatedConfigContent, {
+          access: 'public',
+          addRandomSuffix: false,
+          allowOverwrite: true, // Allow updating the config file
+          contentType: 'application/json',
+          cacheControlMaxAge: 0,
+        });
+        syncStatus = 'Actualizado instantáneamente en la nube Vercel Blob (sin redespliegue).';
+      } catch (blobErr: any) {
+        console.error('Vercel Blob config upload failed:', blobErr.message);
+        syncStatus = `Error al guardar configuración en Vercel Blob: ${blobErr.message}`;
+      }
+    } else if (isDev) {
       // Local Git Flow
       try {
         const gitStatus = await execPromise('git rev-parse --is-inside-work-tree');
