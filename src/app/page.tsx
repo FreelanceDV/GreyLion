@@ -4,6 +4,7 @@ import SectionIndicator from "@/components/SectionIndicator";
 import Globe from "@/components/Globe";
 import AboutCompany from "@/components/AboutCompany";
 import Showcase from "@/components/Showcase";
+import Services from "@/components/services";
 import CargoTypes from "@/components/CargoTypes";
 import Process from "@/components/Process";
 import Comparison from "@/components/Comparison";
@@ -23,6 +24,7 @@ export default function Home() {
       <Globe />
       <AboutCompany />
       <Showcase />
+      <Services />
       <CargoTypes />
       <Process />
       <Comparison />

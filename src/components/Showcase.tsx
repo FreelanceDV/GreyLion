@@ -60,78 +60,15 @@ const EQUIPMENT_LIST_ITEMS = [
   { name: 'Equipos Auxiliares', detail: 'Generadores, compresores, más' },
 ];
 
-const SERVICES_CATEGORIES = [
-  {
-    id: 'fletamento',
-    title: '1. Fletamento Marítimo (Chartering)',
-    subtitle: 'Conectamos sus grandes volúmenes de carga con la flota global adecuada. Encontramos el buque óptimo bajo las mejores condiciones del mercado internacional.',
-    items: [
-      {
-        title: 'Fletamento por Viaje (Voyage Charter)',
-        desc: 'Conseguimos el buque ideal para trasladar un lote específico de mercancía en rutas exclusivas.',
-      },
-      {
-        title: 'Fletamento por Tiempo (Time Charter)',
-        desc: 'Arrendamiento de naves por periodos determinados para empresas con flujos constantes de importación o exportación.',
-      },
-      {
-        title: 'Carga Proyecto y Sobredimensionada',
-        desc: 'Logística y fletamento especializado para maquinaria pesada, estructuras industriales y equipos energéticos.',
-      },
-    ],
-  },
-  {
-    id: 'logistica',
-    title: '2. Logística de Comercio Exterior',
-    subtitle: 'Optimizamos su cadena de suministro global, asegurando espacios y reduciendo los tiempos de tránsito de sus mercancías.',
-    items: [
-      {
-        title: 'Reserva de Espacios (Booking de Carga)',
-        desc: 'Gestión de contratos de volumen para garantizar cupos prioritarios en las principales líneas navieras.',
-      },
-      {
-        title: 'Consolidación de Carga Industrial',
-        desc: 'Coordinación logística para el envío eficiente de lotes de carga suelta (acero, tuberías, sacos) sin requerir un buque completo.',
-      },
-      {
-        title: 'Ingeniería Logística Internacional',
-        desc: 'Diseño integral de rutas puerta a puerta y puerto a puerta, sincronizando el transporte terrestre con el marítimo.',
-      },
-    ],
-  },
-  {
-    id: 'agenciamiento',
-    title: '3. Agenciamiento y Operaciones Portuarias',
-    subtitle: 'Protegemos sus intereses comerciales y legales en el puerto, garantizando que su carga se manipule con los más altos estándares.',
-    items: [
-      {
-        title: 'Supervisión de Estiba y Desestiba',
-        desc: 'Control físico y operativo en el muelle para optimizar los ritmos de carga y descarga del buque.',
-      },
-      {
-        title: 'Inspecciones y Peritajes',
-        desc: 'Certificación del estado, peso y calidad de la mercancía antes del embarque y al momento del desembarque.',
-      },
-      {
-        title: 'Gestión de Terminales y Ventanas de Atraque',
-        desc: 'Coordinación directa con las autoridades portuarias para agilizar las operaciones y evitar costosas demoras.',
-      },
-    ],
-  },
-];
-
 export default function Showcase() {
   const [activeModalityIndex, setActiveModalityIndex] = useState(0);
-  const [activeServiceTab, setActiveServiceTab] = useState('fletamento');
-
-  const activeServiceCategory = SERVICES_CATEGORIES.find((cat) => cat.id === activeServiceTab) || SERVICES_CATEGORIES[0];
 
   return (
-    <section id="operaciones" className="bg-[#010c1c] relative overflow-hidden">
+    <section id="operaciones" className="bg-[#010c1c] relative overflow-hidden pb-20">
       {/* Background radial glow */}
       <div className="absolute right-0 top-0 bottom-0 w-1/2 z-0 pointer-events-none bg-[radial-gradient(ellipse_at_80%_50%,rgba(90,110,216,0.08)_0%,transparent_60%)]" />
 
-      <div className="w-full max-w-[1280px] mx-auto px-5 mt-20  relative z-10">
+      <div className="w-full max-w-[1280px] mx-auto px-5  relative z-10">
         {/* Header */}
         <div className="flex flex-col items-center text-center gap-3 mb-8">
           <span className="text-[11px] font-extrabold text-primary uppercase tracking-[0.2em]">
@@ -298,62 +235,6 @@ export default function Showcase() {
                 Rastrear ahora <span aria-hidden="true">→</span>
               </a>
             </div>
-          </div>
-        </div>
-
-        {/* Dynamic Industrial Supply Switcher Section */}
-        <div id="servicios" className="mt-[100px] border-t border-[rgba(255,255,255,0.08)] py-20 scroll-mt-[100px]">
-          <div className="flex flex-col items-center text-center gap-5 mb-12">
-            <span className="text-[13px] font-semibold text-accent uppercase tracking-[0.08em]">
-              Soluciones Integrales
-            </span>
-            <h3 className="font-[family-name:var(--font-space-grotesk)] text-[clamp(28px,3.5vw,44px)] font-extrabold text-text-white">
-              Nuestros <span className="text-primary-hover">Servicios</span>
-            </h3>
-
-            {/* Category Select Buttons */}
-            <div className="flex gap-3 flex-wrap justify-center">
-              {SERVICES_CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveServiceTab(cat.id)}
-                  className={`rounded-[30px] px-6 py-2.5 text-sm font-semibold cursor-pointer transition-all duration-300 ease-[ease] border ${
-                    activeServiceTab === cat.id
-                      ? 'bg-[rgba(15,76,129,0.15)] border-primary text-primary-hover'
-                      : 'bg-[rgba(255,255,255,0.02)] border-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.6)]'
-                  }`}
-                >
-                  {cat.title.split('. ')[1]}
-                </button>
-              ))}
-            </div>
-
-            {/* Category Subtitle */}
-            <p className="text-[15px] leading-[1.6] text-text-gray max-w-[750px] mt-2">
-              {activeServiceCategory.subtitle}
-            </p>
-          </div>
-
-          {/* Supply items grid */}
-          <div className="grid [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))] gap-8">
-            {activeServiceCategory.items.map((benefit, i) => (
-              <div
-                key={i}
-                className="relative rounded-[14px] overflow-hidden transition-all duration-300 before:content-[''] before:absolute before:inset-0 before:rounded-[14px] before:p-[1.5px] before:[background:linear-gradient(135deg,rgba(90,110,216,0.4)_0%,transparent_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[mask-composite:exclude] before:[-webkit-mask-composite:xor] before:pointer-events-none hover:before:[background:linear-gradient(135deg,var(--color-primary)_0%,var(--color-accent)_100%)] flex flex-col gap-4 bg-[rgba(255,255,255,0.01)] border border-[rgba(255,255,255,0.04)] p-8 hover:-translate-y-1 hover:bg-[rgba(255,255,255,0.03)]"
-              >
-                <div className="w-10 h-10 rounded-xl bg-[rgba(15,76,129,0.08)] flex items-center justify-center text-primary-hover">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                </div>
-                <h3 className="font-[family-name:var(--font-space-grotesk)] text-lg font-bold text-text-white">
-                  {benefit.title}
-                </h3>
-                <p className="text-[13.5px] leading-[1.6] text-[rgba(255,255,255,0.65)]">
-                  {benefit.desc}
-                </p>
-              </div>
-            ))}
           </div>
         </div>
       </div>
