@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import DynamicMedia from './DynamicMedia';
 
 const STEPS = [
   {
@@ -146,7 +147,7 @@ export default function Process() {
 
       {/* Bottom banner photo: full-bleed, pulled up to overlap the content above so it blends into the section instead of sitting as a separate block */}
       <div className="relative z-0 w-full min-h-[340px] -mt-45">
-        <img
+        <DynamicMedia
           src="/comprehensive_operations_management.png"
           alt="Operación portuaria de GreyLion Maritime"
           className="absolute inset-0 w-full h-full object-cover"

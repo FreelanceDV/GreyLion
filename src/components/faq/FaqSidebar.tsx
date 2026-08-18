@@ -1,4 +1,5 @@
 import React from 'react';
+import DynamicMedia from '../DynamicMedia';
 import FaqIcon from './FaqIcon';
 
 export default function FaqSidebar() {
@@ -58,7 +59,7 @@ export default function FaqSidebar() {
       </div>
 
       <div className="relative rounded-xl overflow-hidden min-h-[180px]">
-        <img
+        <DynamicMedia
           src="/Cant_find_what_youre_looking_for.png"
           alt="Cobertura global de rutas marítimas GreyLion Maritime"
           className="absolute inset-0 w-full h-full object-cover"

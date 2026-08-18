@@ -59,6 +59,9 @@ interface DynamicMediaProps {
   loop?: boolean;
   muted?: boolean;
   playsInline?: boolean;
+  preload?: 'auto' | 'metadata' | 'none';
+  loading?: 'lazy' | 'eager';
+  [key: string]: any; // Allow any extra props like alt, width, height, etc.
 }
 
 export default function DynamicMedia({
@@ -71,6 +74,8 @@ export default function DynamicMedia({
   loop = true,
   muted = true,
   playsInline = true,
+  preload = 'none', // Lazy-load videos by default to save bandwidth
+  loading = 'lazy', // Lazy-load images by default
   ...props
 }: DynamicMediaProps) {
   const [resolvedSrc, setResolvedSrc] = useState<string>('');
@@ -79,14 +84,11 @@ export default function DynamicMedia({
   useEffect(() => {
     setIsCloudLoaded(false); // Reset loaded flag when source changes
 
-    if (directSrc) {
-      setResolvedSrc(directSrc);
-      return;
-    }
-
-    if (assetId) {
+    const lookupSrc = directSrc || assetId || '';
+    if (lookupSrc) {
       fetchConfig().then((config) => {
-        const rawSrc = config[assetId] || fallbackSrc || DEFAULT_FALLBACKS[assetId] || '';
+        // Look up by assetId/directSrc first, fallback to fallbackSrc/defaults, then lookupSrc itself
+        const rawSrc = config[lookupSrc] || fallbackSrc || (assetId ? DEFAULT_FALLBACKS[assetId] : '') || lookupSrc;
         
         if (rawSrc && rawSrc.startsWith('http')) {
           // Add hourly cache-buster for cloud resources to ensure updates roll out while preserving CDN caching
@@ -100,7 +102,10 @@ export default function DynamicMedia({
     }
   }, [assetId, directSrc, fallbackSrc]);
 
-  const defaultLocalSrc = assetId ? (fallbackSrc || DEFAULT_FALLBACKS[assetId] || '') : '';
+  const defaultLocalSrc = assetId
+    ? (fallbackSrc || DEFAULT_FALLBACKS[assetId] || '')
+    : (directSrc || fallbackSrc || '');
+  
   const isUsingCloud = resolvedSrc && resolvedSrc.startsWith('http');
 
   if (!resolvedSrc) {
@@ -143,7 +148,7 @@ export default function DynamicMedia({
           loop={loop}
           muted={muted}
           playsInline={playsInline}
-          preload="auto"
+          preload={preload}
           {...props}
         />
       );
@@ -154,7 +159,7 @@ export default function DynamicMedia({
         alt=""
         className={`w-full h-full object-cover object-center block ${className || ''}`}
         style={style}
-        loading="eager"
+        loading={loading}
         {...props}
       />
     );
@@ -178,14 +183,14 @@ export default function DynamicMedia({
               loop={loop}
               muted={muted}
               playsInline={playsInline}
-              preload="auto"
+              preload={preload}
             />
           ) : (
             <img
               src={defaultLocalSrc}
               alt=""
               className="w-full h-full object-cover object-center block"
-              loading="eager"
+              loading={loading}
             />
           )}
         </div>
@@ -203,7 +208,7 @@ export default function DynamicMedia({
             loop={loop}
             muted={muted}
             playsInline={playsInline}
-            preload="auto"
+            preload={preload}
             onLoadedData={() => setIsCloudLoaded(true)}
             onCanPlay={() => setIsCloudLoaded(true)}
             {...props}
@@ -213,6 +218,7 @@ export default function DynamicMedia({
             src={resolvedSrc}
             alt=""
             className="w-full h-full object-cover object-center block"
+            loading={loading}
             onLoad={() => setIsCloudLoaded(true)}
             {...props}
           />

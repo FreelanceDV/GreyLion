@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import StylizedMap from './StylizedMap';
 import LiveTrackingMap from './LiveTrackingMap';
 import MapModeToggle, { GlobeMapMode } from './MapModeToggle';
+import DynamicMedia from '../DynamicMedia';
 
 export default function Globe() {
   const [mapMode, setMapMode] = useState<GlobeMapMode>('stylized');
@@ -100,7 +101,7 @@ export default function Globe() {
 
       {/* Bottom banner photo: full-bleed, spans the entire viewport width */}
       <div className="relative w-full min-h-[300px] -mt-36">
-        <img
+        <DynamicMedia
           src="/red_global.png"
           alt="Operación portuaria global de GreyLion Maritime"
           className="absolute inset-0 w-full h-full object-cover"

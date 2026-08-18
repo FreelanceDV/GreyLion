@@ -1,5 +1,7 @@
 'use client';
 
+import DynamicMedia from './DynamicMedia';
+
 const statItemClasses = 'flex items-center gap-4';
 const statIconClasses = 'flex items-center text-[#00a3ff]';
 const statTextClasses = 'flex flex-col';
@@ -27,7 +29,7 @@ export default function Hero() {
 
       {/* Background Image Container */}
       <div className="absolute right-0 top-0 bottom-0 w-full z-0 opacity-95 overflow-hidden animate-visual-reveal max-[768px]:opacity-[0.54] motion-reduce:animate-none">
-        <img
+        <DynamicMedia
           className="w-full h-full block object-cover object-center [filter:saturate(1.08)_contrast(1.04)_drop-shadow(-24px_35px_36px_rgba(0,0,0,.57))] origin-[72%_75%] animate-[var(--animate-ship-arrival),var(--animate-ship-drift)] motion-reduce:animate-none"
           src="/hero_ship_oceanis.png"
           alt=""

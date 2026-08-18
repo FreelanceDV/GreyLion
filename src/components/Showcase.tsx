@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import DynamicMedia from './DynamicMedia';
 
 const MODALITIES = [
   {
@@ -100,7 +101,7 @@ export default function Showcase() {
         <div className="grid grid-cols-[1fr_1.3fr_1fr] gap-6 items-stretch mb-10 max-[991px]:grid-cols-1">
           {/* Left Image */}
           <div className="relative rounded-2xl overflow-hidden min-h-[300px] max-[991px]:min-h-[220px]">
-            <img src="/modalities_container_1.png" alt="Buque portacontenedores en tránsito" className="absolute inset-0 w-full h-full object-cover" />
+            <DynamicMedia src="/modalities_container_1.png" alt="Buque portacontenedores en tránsito" className="absolute inset-0 w-full h-full object-cover" />
           </div>
 
           {/* Active Details Card */}
@@ -162,7 +163,7 @@ export default function Showcase() {
 
           {/* Right Image */}
           <div className="relative rounded-2xl overflow-hidden min-h-[300px] max-[991px]:min-h-[220px]">
-            <img src="/modalities_container_2.png" alt="Contenedores apilados en puerto" className="absolute inset-0 w-full h-full object-cover" />
+            <DynamicMedia src="/modalities_container_2.png" alt="Contenedores apilados en puerto" className="absolute inset-0 w-full h-full object-cover" />
           </div>
         </div>
 
@@ -170,7 +171,7 @@ export default function Showcase() {
         <div className="grid grid-cols-5 gap-4 max-[991px]:grid-cols-2 max-[560px]:grid-cols-1">
           {/* Panel 1: Tipos de Carga Especializada */}
           <div className="relative rounded-2xl overflow-hidden min-h-[220px] flex flex-col justify-end p-5">
-            <img src="/types_of_cargo.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <DynamicMedia src="/types_of_cargo.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,13,28,0.35)_0%,rgba(6,13,28,0.92)_100%)]" />
             <div className="relative z-10 flex flex-col gap-2">
               <h4 className="font-[family-name:var(--font-space-grotesk)] text-[15px] font-extrabold text-white leading-[1.2] uppercase">Tipos de Carga Especializada</h4>
@@ -198,7 +199,7 @@ export default function Showcase() {
 
           {/* Panel 2: Soluciones y Equipos Especializados */}
           <div className="relative rounded-2xl overflow-hidden min-h-[220px] flex flex-col justify-end p-5">
-            <img src="/customized_solutions_equipment.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <DynamicMedia src="/customized_solutions_equipment.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,13,28,0.35)_0%,rgba(6,13,28,0.92)_100%)]" />
             <div className="relative z-10 flex flex-col gap-2">
               <h4 className="font-[family-name:var(--font-space-grotesk)] text-[15px] font-extrabold text-white leading-[1.2] uppercase">Soluciones y Equipos Especializados</h4>
@@ -226,7 +227,7 @@ export default function Showcase() {
 
           {/* Panel 3: Seguimiento Inteligente */}
           <div className="relative rounded-2xl overflow-hidden min-h-[220px] flex flex-col justify-end p-5">
-            <img src="/intelligent_tracking.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <DynamicMedia src="/intelligent_tracking.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,13,28,0.35)_0%,rgba(6,13,28,0.92)_100%)]" />
             <div className="relative z-10 flex flex-col gap-2">
               <h4 className="font-[family-name:var(--font-space-grotesk)] text-[15px] font-extrabold text-white leading-[1.2] uppercase">Seguimiento Inteligente</h4>

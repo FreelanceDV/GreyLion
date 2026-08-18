@@ -2,6 +2,7 @@ import React from 'react';
 import ServicesIcon from './ServicesIcon';
 import ServicesCategoryTabs from './ServicesCategoryTabs';
 import { ServiceCategory } from './data';
+import DynamicMedia from '../DynamicMedia';
 
 interface ServicesHeaderProps {
   activeCategory: ServiceCategory;
@@ -41,7 +42,7 @@ export default function ServicesHeader({ activeCategory, onSelect }: ServicesHea
 
       {/* Hero photo: bleeds from the right column all the way to the true viewport edge */}
       <div className="absolute inset-y-0 right-0 w-[46%] max-[991px]:hidden">
-        <img
+        <DynamicMedia
           src="/our-services-main-image.png"
           alt="Operación portuaria y logística de GreyLion Maritime"
           className="absolute inset-0 w-full h-full object-cover"

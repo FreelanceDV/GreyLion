@@ -43,10 +43,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Contraseña incorrecta' }, { status: 401 });
     }
 
-    // 2. Validate assetId
-    const baseName = BASE_NAMES[assetId];
+    // 2. Validate/Sanitize assetId
+    let baseName = BASE_NAMES[assetId];
     if (!baseName) {
-      return NextResponse.json({ error: 'ID de recurso no válido' }, { status: 400 });
+      baseName = assetId
+        .replace(/[^a-zA-Z0-9]/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .toLowerCase();
+      
+      if (!baseName) {
+        return NextResponse.json({ error: 'ID de recurso no válido' }, { status: 400 });
+      }
     }
 
     if (!file && !urlInput) {

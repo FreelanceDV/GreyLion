@@ -3,6 +3,7 @@
 import React from 'react';
 import MachineryIcon from './MachineryIcon';
 import { MachineryCategory } from './data';
+import DynamicMedia from '../DynamicMedia';
 
 interface MachineryEquipmentGridProps {
   category: MachineryCategory;
@@ -33,7 +34,7 @@ export default function MachineryEquipmentGrid({ category, phone }: MachineryEqu
         >
           {/* Background photo: representative photo for the active category */}
           <div className="absolute inset-0 z-0">
-            <img src={cardImage} alt="" aria-hidden="true" className="w-full h-full object-cover" />
+            <DynamicMedia src={cardImage} alt="" aria-hidden="true" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,#0a0b0d_0%,rgba(10,11,13,0.78)_42%,rgba(10,11,13,0.3)_100%)]" />
           </div>
 

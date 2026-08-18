@@ -3,6 +3,7 @@
 import React from 'react';
 import ServicesIcon from './ServicesIcon';
 import { ServiceCategory } from './data';
+import DynamicMedia from '../DynamicMedia';
 
 interface ServicesCardGridProps {
   category: ServiceCategory;
@@ -20,7 +21,7 @@ export default function ServicesCardGrid({ category, phone }: ServicesCardGridPr
         >
           {/* Background photo for this service */}
           <div className="absolute inset-0 z-0">
-            <img src={item.image} alt="" aria-hidden="true" className="w-full h-full object-cover" />
+            <DynamicMedia src={item.image} alt="" aria-hidden="true" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,#0a0e16_18%,rgba(10,14,22,0.35)_55%,rgba(10,14,22,0.96)_100%)]" />
           </div>
 

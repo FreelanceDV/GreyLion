@@ -1,4 +1,5 @@
 import React from 'react';
+import DynamicMedia from '../DynamicMedia';
 import FaqIcon, { FaqIconName } from './FaqIcon';
 import { QUICK_HELP_ITEMS } from './data';
 
@@ -32,7 +33,7 @@ export default function FaqQuickHelp() {
     <div className="relative mt-8 rounded-2xl border border-[rgba(255,255,255,0.08)] overflow-hidden p-7">
       {/* Background photo, fused into the card via a dark gradient */}
       <div className="absolute inset-0 z-0">
-        <img
+        <DynamicMedia
           src="/do_you_need_help.png"
           alt="Operación portuaria de GreyLion Maritime"
           className="w-full h-full object-cover"

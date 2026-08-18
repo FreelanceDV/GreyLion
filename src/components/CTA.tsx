@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import DynamicMedia from './DynamicMedia';
 
 export default function CTA() {
   const phone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE || '573000000000';
@@ -10,7 +11,7 @@ export default function CTA() {
     <section className="relative overflow-hidden">
       {/* Background photo + brand-blue gradient */}
       <div className="absolute inset-0 z-0">
-        <img
+        <DynamicMedia
           src="/ready_to_move_your_cargo.png"
           alt=""
           aria-hidden="true"

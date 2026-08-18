@@ -1,11 +1,12 @@
 import React from 'react';
+import DynamicMedia from '../DynamicMedia';
 
 export default function FaqHeader() {
   return (
     <div className="relative overflow-hidden rounded-2xl min-h-[360px] mb-4 max-[850px]:min-h-[420px]">
       {/* Background ship photo, blended into the section background */}
       <div className="absolute inset-0 z-0">
-        <img
+        <DynamicMedia
           src="/main_image_faq.png"
           alt="Buque portacontenedores de GreyLion Maritime"
           className="w-full h-full object-cover object-right"

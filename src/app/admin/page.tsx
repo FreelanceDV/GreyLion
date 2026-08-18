@@ -11,6 +11,9 @@ interface MediaAsset {
   path: string;
   type: 'image' | 'video';
   recommendedSize: string;
+  isScanned?: boolean;
+  relativePath?: string;
+  line?: number;
 }
 
 const MEDIA_ASSETS: MediaAsset[] = [
@@ -64,11 +67,77 @@ const MEDIA_ASSETS: MediaAsset[] = [
   }
 ];
 
+// Client-side image compressor using HTML5 Canvas
+const compressImage = (file: File, quality = 0.75): Promise<File> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Downscale if extremely large (e.g. 4K) to optimize bandwidth/storage
+        const MAX_WIDTH = 2560;
+        const MAX_HEIGHT = 1440;
+        if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+          if (width / height > MAX_WIDTH / MAX_HEIGHT) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          } else {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(file);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
+            // Preserve the original name but replace extension with .webp
+            const originalName = file.name.substring(0, file.name.lastIndexOf('.'));
+            const compressedFile = new File([blob], `${originalName}.webp`, {
+              type: 'image/webp',
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          },
+          'image/webp',
+          quality
+        );
+      };
+      img.onerror = () => resolve(file);
+    };
+    reader.onerror = () => resolve(file);
+  });
+};
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [selectedAsset, setSelectedAsset] = useState<MediaAsset | null>(null);
+
+  // Scanning states
+  const [scannedAssets, setScannedAssets] = useState<any[]>([]);
+  const [isScanning, setIsScanning] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'image' | 'video'>('all');
+  const [activeTab, setActiveTab] = useState<'scanned' | 'system'>('scanned');
 
   // Uploading states
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -105,6 +174,23 @@ export default function AdminPage() {
     }
   };
 
+  const handleScan = async (silent = false) => {
+    if (!silent) setIsScanning(true);
+    try {
+      const res = await fetch('/api/admin/scan');
+      const data = await res.json();
+      if (data.success) {
+        setScannedAssets(data.assets);
+      } else {
+        console.error('Failed to scan landing page assets:', data.error);
+      }
+    } catch (err) {
+      console.error('Failed to scan landing page assets:', err);
+    } finally {
+      if (!silent) setIsScanning(false);
+    }
+  };
+
   // Authenticate locally using sessionStorage
   useEffect(() => {
     const token = sessionStorage.getItem('greylion_admin_token');
@@ -113,6 +199,7 @@ export default function AdminPage() {
       setIsAuthenticated(true);
       if (pass) setPassword(pass);
       loadConfig();
+      handleScan(true);
     }
   }, []);
 
@@ -134,6 +221,7 @@ export default function AdminPage() {
         setIsAuthenticated(true);
         setLoginError('');
         loadConfig();
+        handleScan(false);
       } else {
         setLoginError(data.error || 'Contraseña incorrecta. Por favor, intente de nuevo.');
       }
@@ -165,7 +253,7 @@ export default function AdminPage() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -182,9 +270,42 @@ export default function AdminPage() {
       return;
     }
 
-    setUploadFile(file);
-    const objectUrl = URL.createObjectURL(file);
-    setPreviewUrl(objectUrl);
+    // Handle Client-Side Image Compression if file exceeds 5MB
+    if (file.type.startsWith('image/') && file.size > 5 * 1024 * 1024) {
+      setLogMessages([
+        `⚙️ Compresión Automática: El archivo pesa ${(file.size / 1024 / 1024).toFixed(2)} MB (> 5MB).`,
+        `Comprimiendo imagen a WebP para ahorrar espacio en la nube...`
+      ]);
+      try {
+        const compressed = await compressImage(file, 0.75);
+        setLogMessages(prev => [
+          ...prev,
+          `✅ Compresión completada exitosamente.`,
+          `Tamaño original: ${(file.size / 1024 / 1024).toFixed(2)} MB`,
+          `Nuevo tamaño: ${(compressed.size / 1024 / 1024).toFixed(2)} MB (Ahorro: ${((1 - compressed.size / file.size) * 100).toFixed(0)}%)`
+        ]);
+        setUploadFile(compressed);
+        const objectUrl = URL.createObjectURL(compressed);
+        setPreviewUrl(objectUrl);
+      } catch (err) {
+        console.error('Compression failed:', err);
+        setUploadFile(file);
+        const objectUrl = URL.createObjectURL(file);
+        setPreviewUrl(objectUrl);
+      }
+    } else {
+      // Suggest video optimization if video is larger than 5MB
+      if (file.type.startsWith('video/') && file.size > 5 * 1024 * 1024) {
+        setLogMessages([
+          `⚠️ Nota: El video pesa ${(file.size / 1024 / 1024).toFixed(2)} MB (> 5MB).`,
+          `Los videos no se pueden comprimir directamente en el navegador.`,
+          `Se recomienda optimizar/comprimir el video localmente antes de subirlo para ahorrar espacio en el blob.`
+        ]);
+      }
+      setUploadFile(file);
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewUrl(objectUrl);
+    }
   };
 
   const handleSave = async () => {
@@ -196,9 +317,10 @@ export default function AdminPage() {
     setUploadSuccess(false);
 
     if (uploadMode === 'file' && uploadFile) {
-      setLogMessages([
+      setLogMessages(prev => [
+        ...prev,
         '[1/3] Preparando el archivo para subir...', 
-        `Sección: ${selectedAsset.name}`, 
+        `Sección/Recurso: ${selectedAsset.name}`, 
         `Nombre del archivo: ${uploadFile.name}`,
         `Tamaño: ${(uploadFile.size / 1024 / 1024).toFixed(2)} MB`
       ]);
@@ -214,7 +336,9 @@ export default function AdminPage() {
         setLogMessages(prev => [...prev, '[2/3] El archivo es grande. Subiendo directamente a internet...']);
         try {
           const fileExtension = uploadFile.name.substring(uploadFile.name.lastIndexOf('.'));
-          const fixedFileName = `${selectedAsset.id}${fileExtension}`;
+          // Create safe unique ID for Vercel Blob
+          const sanitizedId = selectedAsset.id.replace(/[^a-zA-Z0-9]/g, '_').replace(/^_+|_+$/g, '').toLowerCase();
+          const fixedFileName = `${sanitizedId}${fileExtension}`;
 
           const blob = await upload(fixedFileName, uploadFile, {
             access: 'public',
@@ -274,6 +398,7 @@ export default function AdminPage() {
       ]);
       setUploadSuccess(true);
       loadConfig();
+      handleScan(true);
       
     } catch (err: any) {
       setLogMessages(prev => [...prev, `❌ ERROR: ${err.message || 'Error de conexión'}`]);
@@ -301,7 +426,7 @@ export default function AdminPage() {
       bg_cta: '/charger_boat.mp4',
     };
     
-    const defaultPath = defaultPaths[selectedAsset.id];
+    const defaultPath = defaultPaths[selectedAsset.id] || selectedAsset.path;
     if (!defaultPath) return;
     
     const confirmReset = window.confirm(`¿Está seguro de que desea restablecer el recurso "${selectedAsset.name}" a su archivo por defecto?`);
@@ -344,6 +469,7 @@ export default function AdminPage() {
       ]);
       setUploadSuccess(true);
       loadConfig();
+      handleScan(true);
 
     } catch (err: any) {
       setLogMessages(prev => [...prev, `❌ ERROR: ${err.message || 'Error de conexión'}`]);
@@ -395,12 +521,37 @@ export default function AdminPage() {
       ]);
       setUploadSuccess(true);
       loadConfig();
+      handleScan(true);
 
     } catch (err: any) {
       setLogMessages(prev => [...prev, `❌ ERROR: ${err.message || 'Error de conexión'}`]);
     } finally {
       setIsUploading(false);
     }
+  };
+
+  // Group scanned assets by their component/file relative path
+  const getGroupedScannedAssets = () => {
+    const filtered = scannedAssets.filter(asset => {
+      // 1. Search Query filter
+      const matchesSearch = asset.originalPath.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            asset.relativePath.toLowerCase().includes(searchQuery.toLowerCase());
+      // 2. Type filter
+      const matchesType = typeFilter === 'all' || asset.type === typeFilter;
+      
+      return matchesSearch && matchesType;
+    });
+
+    // Group by relativePath
+    const groups: Record<string, typeof scannedAssets> = {};
+    filtered.forEach(asset => {
+      if (!groups[asset.relativePath]) {
+        groups[asset.relativePath] = [];
+      }
+      groups[asset.relativePath].push(asset);
+    });
+
+    return groups;
   };
 
   // ---------------- RENDER LOGIN SCREEN ----------------
@@ -440,6 +591,8 @@ export default function AdminPage() {
     );
   }
 
+  const groupedScanned = getGroupedScannedAssets();
+
   // ---------------- RENDER MAIN ADMIN DASHBOARD ----------------
   return (
     <main className="min-h-screen bg-[#070b12] text-white font-[family-name:var(--font-inter)] pb-20">
@@ -459,35 +612,182 @@ export default function AdminPage() {
 
       {/* Main Grid Content */}
       <div className="w-full max-w-[1280px] mx-auto px-5 mt-10">
-        <div className="grid grid-cols-[1.1fr_1.5fr] gap-10 max-[991px]:grid-cols-1 max-[991px]:gap-8">
+        <div className="grid grid-cols-[1.2fr_1.4fr] gap-10 max-[991px]:grid-cols-1 max-[991px]:gap-8">
 
           {/* Left Panel: List of Assets */}
-          <div className="bg-[rgba(13,17,24,0.6)] border border-[rgba(255,255,255,0.05)] rounded-2xl p-8">
-            <h2 className="font-[family-name:var(--font-space-grotesk)] text-xl font-extrabold mb-1">Recursos de la Landing</h2>
-            <p className="text-[13px] text-white/40 mb-6">Seleccione el recurso que desea actualizar:</p>
+          <div className="bg-[rgba(13,17,24,0.6)] border border-[rgba(255,255,255,0.05)] rounded-2xl p-6 flex flex-col gap-5">
+            
+            {/* Panel Header */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="font-[family-name:var(--font-space-grotesk)] text-xl font-extrabold">Recursos de la Landing</h2>
+                <button 
+                  onClick={() => handleScan(false)} 
+                  disabled={isScanning}
+                  className="text-xs bg-[#0070f3] text-white py-1.5 px-3 rounded-lg border-0 cursor-pointer font-bold transition-all hover:bg-[#005ccb] disabled:opacity-50"
+                >
+                  {isScanning ? 'Escaneando...' : '🔍 Escanear Código'}
+                </button>
+              </div>
+              <p className="text-[13px] text-white/40">Gestiona imágenes y videos detectados en el código de la landing page.</p>
+            </div>
 
-            <div className="flex flex-col gap-4">
-              {MEDIA_ASSETS.map((asset) => {
-                const isSelected = selectedAsset?.id === asset.id;
-                return (
-                  <button
-                    key={asset.id}
-                    className={`w-full text-left rounded-xl p-4 cursor-pointer transition-all duration-300 ease-[ease] flex flex-col gap-1.5 outline-none border ${
-                      isSelected
-                        ? 'bg-[rgba(0,163,255,0.05)] border-[#00a3ff]'
-                        : 'bg-[rgba(255,255,255,0.02)] border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.15)]'
+            {/* Tabs Selector */}
+            <div className="flex border-b border-[rgba(255,255,255,0.08)]">
+              <button 
+                onClick={() => { setActiveTab('scanned'); setSelectedAsset(null); }}
+                className={`py-2 px-4 font-bold text-sm border-b-2 cursor-pointer transition-all ${
+                  activeTab === 'scanned' ? 'border-[#00a3ff] text-white' : 'border-transparent text-white/40 hover:text-white'
+                }`}
+              >
+                Escáner Landing ({scannedAssets.length})
+              </button>
+              <button 
+                onClick={() => { setActiveTab('system'); setSelectedAsset(null); }}
+                className={`py-2 px-4 font-bold text-sm border-b-2 cursor-pointer transition-all ${
+                  activeTab === 'system' ? 'border-[#00a3ff] text-white' : 'border-transparent text-white/40 hover:text-white'
+                }`}
+              >
+                Secciones Clave ({MEDIA_ASSETS.length})
+              </button>
+            </div>
+
+            {/* Filter and Search Bar for Scanned Assets */}
+            {activeTab === 'scanned' && (
+              <div className="flex flex-col gap-3">
+                <input 
+                  type="text" 
+                  placeholder="Buscar recursos por ruta o componente..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-lg p-2.5 text-white text-xs outline-none focus:border-[#00a3ff]"
+                />
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setTypeFilter('all')}
+                    className={`py-1 px-3 rounded-md text-[11px] font-bold border cursor-pointer ${
+                      typeFilter === 'all' ? 'bg-[rgba(0,163,255,0.08)] border-[#00a3ff] text-[#00a3ff]' : 'border-[rgba(255,255,255,0.08)] text-white/50'
                     }`}
-                    onClick={() => selectAsset(asset)}
                   >
-                    <div className="text-[9px] font-extrabold text-[#00a3ff] tracking-[0.1em] bg-[rgba(0,163,255,0.1)] py-1 px-2 rounded w-fit">{asset.type.toUpperCase()}</div>
-                    <h3 className="text-[15px] font-bold text-white">{asset.name}</h3>
-                    <p className="text-xs text-white/50 leading-[1.4]">{asset.description}</p>
-                    <div className="text-[11px] text-white/30 mt-1">
-                      <span>Ruta: <code className="bg-black/20 py-0.5 px-1.5 rounded">{asset.path}</code></span>
-                    </div>
+                    Todos
                   </button>
-                );
-              })}
+                  <button 
+                    onClick={() => setTypeFilter('image')}
+                    className={`py-1 px-3 rounded-md text-[11px] font-bold border cursor-pointer ${
+                      typeFilter === 'image' ? 'bg-[rgba(0,163,255,0.08)] border-[#00a3ff] text-[#00a3ff]' : 'border-[rgba(255,255,255,0.08)] text-white/50'
+                    }`}
+                  >
+                    🖼️ Imágenes
+                  </button>
+                  <button 
+                    onClick={() => setTypeFilter('video')}
+                    className={`py-1 px-3 rounded-md text-[11px] font-bold border cursor-pointer ${
+                      typeFilter === 'video' ? 'bg-[rgba(0,163,255,0.08)] border-[#00a3ff] text-[#00a3ff]' : 'border-[rgba(255,255,255,0.08)] text-white/50'
+                    }`}
+                  >
+                    🎥 Videos
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* List Content */}
+            <div className="flex flex-col gap-4 overflow-y-auto max-h-[600px] pr-1">
+              {activeTab === 'system' ? (
+                // SYSTEM ASSETS LIST
+                MEDIA_ASSETS.map((asset) => {
+                  const isSelected = selectedAsset?.id === asset.id;
+                  const currentOverride = config[asset.id];
+                  const hasOverride = currentOverride && currentOverride !== 'none' && currentOverride !== asset.path;
+                  return (
+                    <button
+                      key={asset.id}
+                      className={`w-full text-left rounded-xl p-4 cursor-pointer transition-all duration-300 ease-[ease] flex flex-col gap-1.5 outline-none border ${
+                        isSelected
+                          ? 'bg-[rgba(0,163,255,0.05)] border-[#00a3ff]'
+                          : 'bg-[rgba(255,255,255,0.02)] border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.15)]'
+                      }`}
+                      onClick={() => selectAsset(asset)}
+                    >
+                      <div className="flex justify-between items-center w-full">
+                        <div className="text-[9px] font-extrabold text-[#00a3ff] tracking-[0.1em] bg-[rgba(0,163,255,0.1)] py-0.5 px-1.5 rounded">{asset.type.toUpperCase()}</div>
+                        {hasOverride && <span className="text-[9px] text-[#f59e0b] font-bold">☁️ Modificado (Nube)</span>}
+                      </div>
+                      <h3 className="text-[14px] font-bold text-white">{asset.name}</h3>
+                      <p className="text-xs text-white/50 leading-[1.4]">{asset.description}</p>
+                      <div className="text-[10px] text-white/30 mt-1">
+                        <span>Por defecto: <code className="bg-black/20 py-0.5 px-1.5 rounded">{asset.path}</code></span>
+                      </div>
+                    </button>
+                  );
+                })
+              ) : (
+                // SCANNED ASSETS LIST
+                Object.keys(groupedScanned).length === 0 ? (
+                  <p className="text-xs text-white/40 text-center py-10">No se encontraron elementos multimedia que coincidan con la búsqueda.</p>
+                ) : (
+                  Object.keys(groupedScanned).map((filePath) => (
+                    <div key={filePath} className="flex flex-col gap-2">
+                      <div className="text-xs font-extrabold text-white/60 tracking-[0.05em] border-b border-[rgba(255,255,255,0.05)] pb-1 mt-2">
+                        📄 {filePath.split('/').pop()} <span className="text-[10px] font-normal text-white/35">({filePath})</span>
+                      </div>
+                      <div className="flex flex-col gap-2 pl-2">
+                        {groupedScanned[filePath].map((asset: any, idx: number) => {
+                          const assetKey = asset.originalPath;
+                          const isSelected = selectedAsset?.id === assetKey;
+                          
+                          const currentOverride = config[assetKey];
+                          const isOverwritten = currentOverride && currentOverride !== 'none' && currentOverride !== assetKey;
+                          const isOculto = currentOverride === 'none';
+
+                          const displayTitle = asset.isAssetId 
+                            ? `DynamicMedia Key: "${asset.originalPath}"`
+                            : asset.originalPath;
+
+                          const mediaAsset: MediaAsset = {
+                            id: assetKey,
+                            name: displayTitle,
+                            description: `Detectado en el código: ${filePath} (Línea ${asset.line})`,
+                            path: assetKey,
+                            type: asset.type,
+                            recommendedSize: asset.type === 'video' ? 'Cualquier Video MP4' : 'Cualquier Foto o WebP',
+                            isScanned: true,
+                            relativePath: asset.relativePath,
+                            line: asset.line,
+                          };
+
+                          return (
+                            <button
+                              key={idx}
+                              className={`w-full text-left rounded-lg p-3 cursor-pointer transition-all duration-200 flex flex-col gap-1 outline-none border ${
+                                isSelected
+                                  ? 'bg-[rgba(0,163,255,0.05)] border-[#00a3ff]'
+                                  : 'bg-[rgba(255,255,255,0.01)] border-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.1)]'
+                              }`}
+                              onClick={() => selectAsset(mediaAsset)}
+                            >
+                              <div className="flex justify-between items-center w-full">
+                                <span className="text-[8px] font-extrabold uppercase bg-white/10 px-1.5 py-0.5 rounded text-white/70">
+                                  {asset.type === 'video' ? '🎥 VIDEO' : '🖼️ IMAGEN'}
+                                </span>
+                                {isOculto ? (
+                                  <span className="text-[9px] text-[#ef4444] font-bold">🚫 Oculto</span>
+                                ) : isOverwritten ? (
+                                  <span className="text-[9px] text-[#00a3ff] font-bold">☁️ Editado</span>
+                                ) : (
+                                  <span className="text-[9px] text-white/30 font-bold">Original</span>
+                                )}
+                              </div>
+                              <code className="text-xs text-white break-all bg-black/10 p-1 rounded font-mono leading-tight">{displayTitle}</code>
+                              <span className="text-[10px] text-white/40">Línea {asset.line} &bull; <span className="font-mono text-[9px]">{asset.context.length > 50 ? asset.context.substring(0, 50) + '...' : asset.context}</span></span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))
+                )
+              )}
             </div>
           </div>
 
@@ -497,9 +797,11 @@ export default function AdminPage() {
               <div className="bg-[#0d1118] border border-[rgba(255,255,255,0.08)] rounded-2xl p-8 flex flex-col gap-6">
                 <div className="flex justify-between items-start gap-5">
                   <div className="flex-1">
-                    <span className="text-[11px] font-extrabold text-[#00a3ff] uppercase tracking-[0.1em]">Editor de Recurso</span>
-                    <h2 className="font-[family-name:var(--font-space-grotesk)] text-2xl font-extrabold mt-1">{selectedAsset.name}</h2>
-                    <p className="text-sm text-white/50 leading-[1.5] mt-2">{selectedAsset.description}</p>
+                    <span className="text-[11px] font-extrabold text-[#00a3ff] uppercase tracking-[0.1em]">
+                      {selectedAsset.isScanned ? 'Recurso Escaneado' : 'Editor de Recurso'}
+                    </span>
+                    <h2 className="font-[family-name:var(--font-space-grotesk)] text-lg font-extrabold mt-1 break-all font-mono bg-black/10 p-1.5 rounded">{selectedAsset.name}</h2>
+                    <p className="text-xs text-white/50 leading-[1.5] mt-2">{selectedAsset.description}</p>
                     <p className="text-[13px] text-[#ffb800] mt-1.5 bg-[rgba(255,184,0,0.08)] border border-[rgba(255,184,0,0.2)] py-2.5 px-3.5 rounded-lg">
                       <strong>Recomendación:</strong> {selectedAsset.recommendedSize}
                     </p>
@@ -515,7 +817,7 @@ export default function AdminPage() {
                     <button
                       onClick={handleDisableAsset}
                       disabled={isUploading}
-                      className="flex items-center gap-1.5 py-2 px-3.5 rounded-lg border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.03)] text-text-gray text-xs font-semibold cursor-pointer transition-all duration-300 ease-[ease] hover:not-disabled:bg-[rgba(255,255,255,0.08)] disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center gap-1.5 py-2 px-3.5 rounded-lg border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.03)] text-[#ffc107] text-xs font-semibold cursor-pointer transition-all duration-300 ease-[ease] hover:not-disabled:bg-[rgba(255,255,255,0.08)] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       🚫 Ocultar / Apagar
                     </button>
@@ -524,18 +826,18 @@ export default function AdminPage() {
 
                 {/* Preview of Currently Active Resource */}
                 <div className="bg-[rgba(255,255,255,0.015)] border border-[rgba(255,255,255,0.06)] rounded-xl p-4 mb-1">
-                  <h4 className="text-xs text-text-gray m-0 mb-3 uppercase tracking-[0.05em] font-bold">
+                  <h4 className="text-xs text-white/50 m-0 mb-3 uppercase tracking-[0.05em] font-bold">
                     🔍 Recurso Actual en Uso (Página Web)
                   </h4>
                   {(() => {
                     const currentUrl = config[selectedAsset.id] || '';
                     const isDisabled = currentUrl === 'none';
-                    const isDefault = !currentUrl || currentUrl.startsWith('/');
+                    const isDefault = !currentUrl || currentUrl === selectedAsset.path || currentUrl === selectedAsset.id;
                     const displayUrl = currentUrl || selectedAsset.path.replace('[ext]', selectedAsset.type === 'video' ? 'mp4' : 'jpg');
 
                     // Simple check if it is a video file
                     const cleanUrl = displayUrl.split('?')[0].toLowerCase();
-                    const isVideo = !isDisabled && (cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.mov') || cleanUrl.endsWith('.webm'));
+                    const isVideo = !isDisabled && (cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.mov') || cleanUrl.endsWith('.webm') || cleanUrl.endsWith('.ogg'));
 
                     return (
                       <div className="flex flex-col gap-2.5">
@@ -553,10 +855,10 @@ export default function AdminPage() {
                           )}
                         </div>
                         <div className="flex justify-between items-center text-[11.5px]">
-                          <span className="text-text-gray">
+                          <span className="text-white/50">
                             Origen:{' '}
                             <strong className={isDisabled ? 'text-[#ef4444]' : isDefault ? 'text-[#f59e0b]' : 'text-[#3b82f6]'}>
-                              {isDisabled ? 'Apagado / Oculto' : isDefault ? 'Por defecto' : 'Nube (Blob Store)'}
+                              {isDisabled ? 'Apagado / Oculto' : isDefault ? 'Por defecto (Local)' : 'Nube (Blob Store)'}
                             </strong>
                           </span>
                           {!isDefault && !isDisabled && (
@@ -581,20 +883,20 @@ export default function AdminPage() {
                   <div className="flex gap-3 mb-5">
                     <button
                       onClick={() => { setUploadMode('file'); resetUpload(); }}
-                      className={`py-2.5 px-[18px] rounded-lg border font-semibold cursor-pointer transition-all duration-300 ease-[ease] ${
+                      className={`py-2 px-4 rounded-lg border font-semibold cursor-pointer transition-all duration-300 ease-[ease] ${
                         uploadMode === 'file'
-                          ? 'border-primary-hover bg-[rgba(0,163,255,0.08)] text-[#00a3ff]'
-                          : 'border-[rgba(255,255,255,0.08)] bg-transparent text-text-gray'
+                          ? 'border-[#00a3ff] bg-[rgba(0,163,255,0.08)] text-[#00a3ff]'
+                          : 'border-[rgba(255,255,255,0.08)] bg-transparent text-white/50'
                       }`}
                     >
                       📁 Archivo Local
                     </button>
                     <button
                       onClick={() => { setUploadMode('url'); resetUpload(); }}
-                      className={`py-2.5 px-[18px] rounded-lg border font-semibold cursor-pointer transition-all duration-300 ease-[ease] ${
+                      className={`py-2 px-4 rounded-lg border font-semibold cursor-pointer transition-all duration-300 ease-[ease] ${
                         uploadMode === 'url'
-                          ? 'border-primary-hover bg-[rgba(0,163,255,0.08)] text-[#00a3ff]'
-                          : 'border-[rgba(255,255,255,0.08)] bg-transparent text-text-gray'
+                          ? 'border-[#00a3ff] bg-[rgba(0,163,255,0.08)] text-[#00a3ff]'
+                          : 'border-[rgba(255,255,255,0.08)] bg-transparent text-white/50'
                       }`}
                     >
                       🔗 Enlace / URL
@@ -625,7 +927,7 @@ export default function AdminPage() {
                           <span className="text-[32px] text-white/30">⬆</span>
                           <p className="text-[15px] font-bold">Haga clic para subir un archivo nuevo</p>
                           <p className="text-xs text-white/40">
-                            Cualquier imagen, GIF o video (.jpg, .png, .webp, .gif, .mp4)
+                            Cualquier imagen, GIF o video (.jpg, .png, .webp, .gif, .mp4, .mov)
                           </p>
                         </div>
                       )}
@@ -645,7 +947,7 @@ export default function AdminPage() {
                         </div>
                       ) : (
                         <div className="bg-[rgba(255,255,255,0.01)] border border-dashed border-[rgba(255,255,255,0.15)] rounded-2xl p-10 flex flex-col gap-4 w-full">
-                          <label className="text-sm font-semibold text-text-white">
+                          <label className="text-sm font-semibold text-white/80">
                             Pegue el enlace directo de la imagen, gif o video:
                           </label>
                           <input
@@ -659,7 +961,7 @@ export default function AdminPage() {
                             }}
                             className="w-full py-3.5 px-4 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[#0a0b0d] text-white text-sm outline-none"
                           />
-                          <p className="text-xs text-text-gray m-0">
+                          <p className="text-xs text-white/40 m-0">
                             Nota: Asegúrese de usar enlaces directos que terminen en la extensión correspondiente para que la página los procese correctamente.
                           </p>
                         </div>
@@ -705,12 +1007,12 @@ export default function AdminPage() {
                             hasError ? 'bg-[#ef4444] text-white py-0.5 px-2 rounded' : 'text-[#00a3ff]'
                           }`}
                         >
-                          {isUploading ? 'PROCESANDO' : uploadSuccess ? 'COMPLETADO' : 'ERROR'}
+                          {isUploading ? 'PROCESANDO' : uploadSuccess ? 'COMPLETADO' : 'INFO'}
                         </span>
                       </div>
                       <div className="p-4 text-xs leading-[1.5] flex flex-col gap-1.5 max-h-[180px] overflow-y-auto">
                         {logMessages.map((msg, idx) => (
-                          <div key={idx} className={msg.includes('❌') ? 'text-[#f87171] font-semibold' : 'text-white/85'}>
+                          <div key={idx} className={msg.includes('❌') ? 'text-[#f87171] font-semibold' : msg.includes('✅') || msg.includes('⚙️') ? 'text-[#10b981] font-semibold' : 'text-white/85'}>
                             {msg}
                           </div>
                         ))}
@@ -721,17 +1023,12 @@ export default function AdminPage() {
                         <div className="flex flex-col gap-2 border-t border-dashed border-[rgba(239,68,68,0.2)] pt-4 px-4 pb-4">
                           <button
                             onClick={handleCopyError}
-                            className={`w-full py-4 px-5 text-white border-2 border-white rounded-xl text-[15px] font-bold cursor-pointer flex items-center justify-center gap-2.5 transition-all duration-300 ease-[ease] shadow-[0_4px_15px_rgba(239,68,68,0.3)] animate-pulse-error ${
+                            className={`w-full py-4 px-5 text-white border-2 border-white rounded-xl text-[15px] font-bold cursor-pointer flex items-center justify-center gap-2.5 transition-all duration-300 ease-[ease] shadow-[0_4px_15px_rgba(239,68,68,0.3)] ${
                               copiedError ? 'bg-[#10b981]' : 'bg-[#ef4444]'
                             }`}
                           >
                             <span>{copiedError ? '✅ ¡Copiado con éxito!' : '📋 Haz clic aquí para copiar el error y pedir soporte'}</span>
                           </button>
-                          <p className={`text-[12.5px] text-center mt-1 font-semibold leading-[1.4] ${copiedError ? 'text-[#6ee7b7]' : 'text-[#f87171]'}`}>
-                            {copiedError
-                              ? '¡El texto del error ya se guardó! Ahora puedes ir al chat de soporte, presionar pegar (o Ctrl+V) y enviárnoslo.'
-                              : 'Presiona el botón rojo grande de arriba para copiar el reporte de error y enviárselo a soporte.'}
-                          </p>
                         </div>
                       )}
                     </div>
@@ -742,7 +1039,7 @@ export default function AdminPage() {
               <div className="border border-dashed border-[rgba(255,255,255,0.08)] rounded-2xl h-full flex flex-col items-center justify-center text-center p-10 gap-4">
                 <span className="text-5xl text-white/10">⚓</span>
                 <h3 className="text-lg font-bold">Sin selección</h3>
-                <p className="text-[13px] text-white/40 max-w-[320px] leading-[1.5]">Seleccione un recurso multimedia del panel izquierdo para comenzar el proceso de actualización.</p>
+                <p className="text-[13px] text-white/40 max-w-[320px] leading-[1.5]">Seleccione un recurso de la lista o escanee la landing page desde el panel izquierdo para actualizar el contenido.</p>
               </div>
             )}
           </div>

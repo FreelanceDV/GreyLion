@@ -6,6 +6,7 @@ import MachineryCategoryTabs from './MachineryCategoryTabs';
 import MachineryEquipmentGrid from './MachineryEquipmentGrid';
 import MachineryAdvisoryBanner from './MachineryAdvisoryBanner';
 import { CATEGORIES } from './data';
+import DynamicMedia from '../DynamicMedia';
 
 export default function MachineryCatalog() {
   const [activeTab, setActiveTab] = useState('excavacion');
@@ -24,7 +25,7 @@ export default function MachineryCatalog() {
 
       {/* Bottom banner photo: full-bleed, pulled up to overlap the content above so it blends into the section */}
       <div className="relative z-0 w-full min-h-[370px] -mt-64">
-        <img
+        <DynamicMedia
           src="/specialized_solutions_equipment.png"
           alt="Maquinaria pesada especializada de GreyLion Maritime"
           className="absolute inset-0 w-full h-full object-cover"
