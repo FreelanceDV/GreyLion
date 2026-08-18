@@ -7,7 +7,7 @@ import Showcase from "@/components/showcase";
 import Services from "@/components/services";
 import CargoTypes from "@/components/cargo-types";
 import Process from "@/components/Process";
-import Comparison from "@/components/Comparison";
+import Comparison from "@/components/comparison";
 import MachineryCatalog from "@/components/machinery";
 import Testimonials from "@/components/Testimonials";
 import FAQ from "@/components/faq";
