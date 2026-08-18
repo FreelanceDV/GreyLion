@@ -115,7 +115,7 @@ export default function DynamicMedia({
   
   const isUsingCloud = resolvedSrc && resolvedSrc.startsWith('http');
 
-  // IntersectionObserver to detect when component is visible on screen for 30s before downloading
+  // IntersectionObserver to detect when component is visible on screen before downloading
   useEffect(() => {
     if (!isUsingCloud || shouldLoadCloud) return;
 
@@ -124,13 +124,17 @@ export default function DynamicMedia({
 
     let timer: NodeJS.Timeout | null = null;
 
+    const envDelay = process.env.NEXT_PUBLIC_MEDIA_DELAY_SECONDS;
+    const delaySeconds = envDelay ? parseInt(envDelay, 10) : 30;
+    const delayMs = isNaN(delaySeconds) || delaySeconds < 0 ? 30000 : delaySeconds * 1000;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          // Component is visible: start 30s timer
+          // Component is visible: start delay timer
           timer = setTimeout(() => {
             setShouldLoadCloud(true);
-          }, 30000); // 30,000 milliseconds = 30 seconds
+          }, delayMs);
         } else {
           // Component is off screen: reset/cancel timer to save bandwidth
           if (timer) {
