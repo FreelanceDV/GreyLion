@@ -5,7 +5,7 @@ import Globe from "@/components/globe";
 import AboutCompany from "@/components/about-company";
 import Showcase from "@/components/showcase";
 import Services from "@/components/services";
-import CargoTypes from "@/components/CargoTypes";
+import CargoTypes from "@/components/cargo-types";
 import Process from "@/components/Process";
 import Comparison from "@/components/Comparison";
 import MachineryCatalog from "@/components/machinery";
