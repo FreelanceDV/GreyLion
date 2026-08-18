@@ -1,4 +1,4 @@
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/navbar";
 import Hero from "@/components/hero";
 import SectionIndicator from "@/components/SectionIndicator";
 import Globe from "@/components/globe";
