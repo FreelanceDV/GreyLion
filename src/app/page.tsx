@@ -9,7 +9,7 @@ import CargoTypes from "@/components/cargo-types";
 import Process from "@/components/process";
 import Comparison from "@/components/comparison";
 import MachineryCatalog from "@/components/machinery";
-import Testimonials from "@/components/Testimonials";
+import Testimonials from "@/components/testimonials";
 import FAQ from "@/components/faq";
 import CTA from "@/components/CTA";
 import Footer from "@/components/footer";
