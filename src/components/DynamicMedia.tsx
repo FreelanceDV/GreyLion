@@ -80,9 +80,11 @@ export default function DynamicMedia({
 }: DynamicMediaProps) {
   const [resolvedSrc, setResolvedSrc] = useState<string>('');
   const [isCloudLoaded, setIsCloudLoaded] = useState(false);
+  const [isCloudFailed, setIsCloudFailed] = useState(false);
 
   useEffect(() => {
     setIsCloudLoaded(false); // Reset loaded flag when source changes
+    setIsCloudFailed(false); // Reset failed flag when source changes
 
     const lookupSrc = directSrc || assetId || '';
     if (lookupSrc) {
@@ -198,7 +200,8 @@ export default function DynamicMedia({
 
       {/* Layer 2: Cloud Blob asset (loads in background, transitions to visible opacity smoothly) */}
       <div
-        className={`absolute inset-0 z-[2] transition-opacity duration-[800ms] ease-in-out ${isCloudLoaded ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute inset-0 z-[2] transition-opacity duration-[800ms] ease-in-out ${isCloudLoaded && !isCloudFailed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        style={isCloudFailed ? { display: 'none' } : undefined}
       >
         {isVideo ? (
           <video
@@ -211,6 +214,10 @@ export default function DynamicMedia({
             preload={preload}
             onLoadedData={() => setIsCloudLoaded(true)}
             onCanPlay={() => setIsCloudLoaded(true)}
+            onError={() => {
+              console.warn(`Cloud video failed to load, falling back to local asset: ${resolvedSrc}`);
+              setIsCloudFailed(true);
+            }}
             {...props}
           />
         ) : (
@@ -220,6 +227,10 @@ export default function DynamicMedia({
             className="w-full h-full object-cover object-center block"
             loading={loading}
             onLoad={() => setIsCloudLoaded(true)}
+            onError={() => {
+              console.warn(`Cloud image failed to load, falling back to local asset: ${resolvedSrc}`);
+              setIsCloudFailed(true);
+            }}
             {...props}
           />
         )}
