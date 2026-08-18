@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 // Shared module-level cache to prevent multiple fetches of the config file
 let globalConfig: Record<string, string> | null = null;
@@ -61,6 +61,7 @@ interface DynamicMediaProps {
   playsInline?: boolean;
   preload?: 'auto' | 'metadata' | 'none';
   loading?: 'lazy' | 'eager';
+  skipDelay?: boolean; // Skip the 30-second delay (useful for previews or immediate loading)
   [key: string]: any; // Allow any extra props like alt, width, height, etc.
 }
 
@@ -76,15 +77,19 @@ export default function DynamicMedia({
   playsInline = true,
   preload = 'none', // Lazy-load videos by default to save bandwidth
   loading = 'lazy', // Lazy-load images by default
+  skipDelay = false,
   ...props
 }: DynamicMediaProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [resolvedSrc, setResolvedSrc] = useState<string>('');
   const [isCloudLoaded, setIsCloudLoaded] = useState(false);
   const [isCloudFailed, setIsCloudFailed] = useState(false);
+  const [shouldLoadCloud, setShouldLoadCloud] = useState(skipDelay);
 
   useEffect(() => {
     setIsCloudLoaded(false); // Reset loaded flag when source changes
     setIsCloudFailed(false); // Reset failed flag when source changes
+    setShouldLoadCloud(skipDelay); // Reset delay trigger with skipDelay state
 
     const lookupSrc = directSrc || assetId || '';
     if (lookupSrc) {
@@ -102,7 +107,7 @@ export default function DynamicMedia({
         }
       });
     }
-  }, [assetId, directSrc, fallbackSrc]);
+  }, [assetId, directSrc, fallbackSrc, skipDelay]);
 
   const defaultLocalSrc = assetId
     ? (fallbackSrc || DEFAULT_FALLBACKS[assetId] || '')
@@ -110,9 +115,47 @@ export default function DynamicMedia({
   
   const isUsingCloud = resolvedSrc && resolvedSrc.startsWith('http');
 
+  // IntersectionObserver to detect when component is visible on screen for 30s before downloading
+  useEffect(() => {
+    if (!isUsingCloud || shouldLoadCloud) return;
+
+    const element = containerRef.current;
+    if (!element) return;
+
+    let timer: NodeJS.Timeout | null = null;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // Component is visible: start 30s timer
+          timer = setTimeout(() => {
+            setShouldLoadCloud(true);
+          }, 30000); // 30,000 milliseconds = 30 seconds
+        } else {
+          // Component is off screen: reset/cancel timer to save bandwidth
+          if (timer) {
+            clearTimeout(timer);
+            timer = null;
+          }
+        }
+      },
+      { threshold: 0.05 } // Trigger when at least 5% is visible
+    );
+
+    observer.observe(element);
+
+    return () => {
+      observer.unobserve(element);
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [isUsingCloud, resolvedSrc, shouldLoadCloud]);
+
   if (!resolvedSrc) {
     return (
       <div
+        ref={containerRef}
         className={`w-full h-full bg-[#070b12] ${className || ''}`}
         style={style}
       />
@@ -171,6 +214,7 @@ export default function DynamicMedia({
   // the local default stays visible until the cloud asset finishes loading, then crossfades in.
   return (
     <div
+      ref={containerRef}
       className={`relative w-full h-full overflow-hidden bg-[#070b12] ${className || ''}`}
       style={style}
     >
@@ -199,42 +243,45 @@ export default function DynamicMedia({
       )}
 
       {/* Layer 2: Cloud Blob asset (loads in background, transitions to visible opacity smoothly) */}
-      <div
-        className={`absolute inset-0 z-[2] transition-opacity duration-[800ms] ease-in-out ${isCloudLoaded && !isCloudFailed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        style={isCloudFailed ? { display: 'none' } : undefined}
-      >
-        {isVideo ? (
-          <video
-            src={resolvedSrc}
-            className="w-full h-full object-cover object-center block"
-            autoPlay={autoPlay}
-            loop={loop}
-            muted={muted}
-            playsInline={playsInline}
-            preload={preload}
-            onLoadedData={() => setIsCloudLoaded(true)}
-            onCanPlay={() => setIsCloudLoaded(true)}
-            onError={() => {
-              console.warn(`Cloud video failed to load, falling back to local asset: ${resolvedSrc}`);
-              setIsCloudFailed(true);
-            }}
-            {...props}
-          />
-        ) : (
-          <img
-            src={resolvedSrc}
-            alt=""
-            className="w-full h-full object-cover object-center block"
-            loading={loading}
-            onLoad={() => setIsCloudLoaded(true)}
-            onError={() => {
-              console.warn(`Cloud image failed to load, falling back to local asset: ${resolvedSrc}`);
-              setIsCloudFailed(true);
-            }}
-            {...props}
-          />
-        )}
-      </div>
+      {/* ONLY rendered/downloaded if shouldLoadCloud is true (30 seconds on-screen threshold or skipDelay is true) */}
+      {shouldLoadCloud && (
+        <div
+          className={`absolute inset-0 z-[2] transition-opacity duration-[800ms] ease-in-out ${isCloudLoaded && !isCloudFailed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          style={isCloudFailed ? { display: 'none' } : undefined}
+        >
+          {isVideo ? (
+            <video
+              src={resolvedSrc}
+              className="w-full h-full object-cover object-center block"
+              autoPlay={autoPlay}
+              loop={loop}
+              muted={muted}
+              playsInline={playsInline}
+              preload={preload}
+              onLoadedData={() => setIsCloudLoaded(true)}
+              onCanPlay={() => setIsCloudLoaded(true)}
+              onError={() => {
+                console.warn(`Cloud video failed to load, falling back to local asset: ${resolvedSrc}`);
+                setIsCloudFailed(true);
+              }}
+              {...props}
+            />
+          ) : (
+            <img
+              src={resolvedSrc}
+              alt=""
+              className="w-full h-full object-cover object-center block"
+              loading={loading}
+              onLoad={() => setIsCloudLoaded(true)}
+              onError={() => {
+                console.warn(`Cloud image failed to load, falling back to local asset: ${resolvedSrc}`);
+                setIsCloudFailed(true);
+              }}
+              {...props}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
