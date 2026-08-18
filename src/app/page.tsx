@@ -3,7 +3,7 @@ import Hero from "@/components/Hero";
 import SectionIndicator from "@/components/SectionIndicator";
 import Globe from "@/components/globe";
 import AboutCompany from "@/components/AboutCompany";
-import Showcase from "@/components/Showcase";
+import Showcase from "@/components/showcase";
 import Services from "@/components/services";
 import CargoTypes from "@/components/CargoTypes";
 import Process from "@/components/Process";
