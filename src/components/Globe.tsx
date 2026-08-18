@@ -609,7 +609,7 @@ export default function Globe() {
 
   return (
     <div className="w-full overflow-hidden bg-background-black text-text-white pt-[100px] border-t border-white/5">
-      <div className="w-full max-w-[1280px] mx-auto px-5">
+      <div className="relative z-10 w-full max-w-[1280px] mx-auto px-5">
         <div className="grid grid-cols-2 gap-12 items-start max-[991px]:grid-cols-1">
           {/* Left column: heading, copy, interactive badge, stats */}
           <div className="flex flex-col gap-7">
@@ -702,7 +702,7 @@ export default function Globe() {
       </div>
 
       {/* Bottom banner photo: full-bleed, spans the entire viewport width */}
-      <div className="relative w-full min-h-[300px]">
+      <div className="relative w-full min-h-[300px] -mt-36">
         <img
           src="/red_global.png"
           alt="Operación portuaria global de GreyLion Maritime"

@@ -8,12 +8,12 @@ export default function AboutCompany() {
   const whatsappUrl = `https://wa.me/${phone}?text=Hola%20GreyLion,%20quiero%20cotizar%20el%20envio%20de%20`;
 
   return (
-    <section className="relative overflow-hidden bg-background-dark text-white py-20">
+    <section className="relative overflow-hidden bg-[#020d1c] text-white py-20">
       {/* Background Video */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
+      {/* <div className="absolute inset-0 z-0 overflow-hidden">
         <DynamicMedia assetId="background_video" fallbackSrc="/charger_boat.mp4" className="opacity-[0.12]" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,var(--color-background-dark)_0%,rgba(18,20,23,0.85)_50%,var(--color-background-dark)_100%)]" />
-      </div>
+      </div> */}
 
       {/* Decorative Radial Glow */}
       <div className="absolute top-[20%] left-[-10%] w-1/2 h-2/5 rounded-full bg-[radial-gradient(circle,rgba(15,76,129,0.08)_0%,transparent_70%)] blur-[100px] pointer-events-none z-[1]" />
@@ -166,7 +166,7 @@ export default function AboutCompany() {
       </div>
 
       {/* ================= SECTION 3: WHY CHOOSE US (full-bleed, breaks out of the max-w container) ================= */}
-      <div id="porque-elegirnos" className="relative z-10 scroll-mt-[100px] mt-[100px] border-t border-[rgba(255,255,255,0.06)]">
+      <div id="porque-elegirnos" className="relative z-10 scroll-mt-[100px] mt-[100px] border-t border-[rgba(255,255,255,0.06)] bg-background-black py-10">
         <div className="grid grid-cols-[0.85fr_1.15fr_0.8fr] w-full max-[991px]:grid-cols-1">
           {/* Left Content Column */}
           <div className="flex flex-col gap-6 justify-center py-10 pl-[clamp(20px,6vw,96px)] pr-8 max-[991px]:p-8">

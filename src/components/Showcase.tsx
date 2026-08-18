@@ -127,11 +127,11 @@ export default function Showcase() {
   const activeServiceCategory = SERVICES_CATEGORIES.find((cat) => cat.id === activeServiceTab) || SERVICES_CATEGORIES[0];
 
   return (
-    <section id="operaciones" className="bg-background-black relative overflow-hidden">
+    <section id="operaciones" className="bg-[#010c1c] relative overflow-hidden">
       {/* Background radial glow */}
       <div className="absolute right-0 top-0 bottom-0 w-1/2 z-0 pointer-events-none bg-[radial-gradient(ellipse_at_80%_50%,rgba(90,110,216,0.08)_0%,transparent_60%)]" />
 
-      <div className="w-full max-w-[1280px] mx-auto px-5 relative z-10">
+      <div className="w-full max-w-[1280px] mx-auto px-5 mt-20  relative z-10">
         {/* Header */}
         <div className="flex flex-col items-center text-center gap-3 mb-8">
           <span className="text-[11px] font-extrabold text-primary uppercase tracking-[0.2em]">
@@ -302,7 +302,7 @@ export default function Showcase() {
         </div>
 
         {/* Dynamic Industrial Supply Switcher Section */}
-        <div id="servicios" className="mt-[100px] border-t border-[rgba(255,255,255,0.08)] pt-20 scroll-mt-[100px]">
+        <div id="servicios" className="mt-[100px] border-t border-[rgba(255,255,255,0.08)] py-20 scroll-mt-[100px]">
           <div className="flex flex-col items-center text-center gap-5 mb-12">
             <span className="text-[13px] font-semibold text-accent uppercase tracking-[0.08em]">
               Soluciones Integrales
