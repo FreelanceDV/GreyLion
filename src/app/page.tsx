@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
+import Hero from "@/components/hero";
 import SectionIndicator from "@/components/SectionIndicator";
 import Globe from "@/components/globe";
 import AboutCompany from "@/components/about-company";
