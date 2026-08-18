@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import SectionIndicator from "@/components/SectionIndicator";
 import Globe from "@/components/globe";
-import AboutCompany from "@/components/AboutCompany";
+import AboutCompany from "@/components/about-company";
 import Showcase from "@/components/showcase";
 import Services from "@/components/services";
 import CargoTypes from "@/components/CargoTypes";
