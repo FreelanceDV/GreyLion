@@ -1,5 +1,5 @@
 import React from 'react';
-import DynamicMedia from '../DynamicMedia';
+import DynamicMedia from '../dynamic-media';
 import FaqIcon, { FaqIconName } from './FaqIcon';
 import { QUICK_HELP_ITEMS } from './data';
 

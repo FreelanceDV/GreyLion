@@ -2,7 +2,7 @@ import React from 'react';
 import ServicesIcon from './ServicesIcon';
 import ServicesCategoryTabs from './ServicesCategoryTabs';
 import { ServiceCategory } from './data';
-import DynamicMedia from '../DynamicMedia';
+import DynamicMedia from '../dynamic-media';
 
 interface ServicesHeaderProps {
   activeCategory: ServiceCategory;

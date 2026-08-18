@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import StylizedMap from './StylizedMap';
 import LiveTrackingMap from './LiveTrackingMap';
 import MapModeToggle, { GlobeMapMode } from './MapModeToggle';
-import DynamicMedia from '../DynamicMedia';
+import DynamicMedia from '../dynamic-media';
 
 export default function Globe() {
   const [mapMode, setMapMode] = useState<GlobeMapMode>('stylized');

@@ -3,7 +3,7 @@
 import React from 'react';
 import ServicesIcon from './ServicesIcon';
 import { ServiceCategory } from './data';
-import DynamicMedia from '../DynamicMedia';
+import DynamicMedia from '../dynamic-media';
 
 interface ServicesCardGridProps {
   category: ServiceCategory;

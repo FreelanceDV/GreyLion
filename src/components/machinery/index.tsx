@@ -6,7 +6,7 @@ import MachineryCategoryTabs from './MachineryCategoryTabs';
 import MachineryEquipmentGrid from './MachineryEquipmentGrid';
 import MachineryAdvisoryBanner from './MachineryAdvisoryBanner';
 import { CATEGORIES } from './data';
-import DynamicMedia from '../DynamicMedia';
+import DynamicMedia from '../dynamic-media';
 
 export default function MachineryCatalog() {
   const [activeTab, setActiveTab] = useState('excavacion');

@@ -3,7 +3,7 @@
 import React from 'react';
 import MachineryIcon from './MachineryIcon';
 import { MachineryCategory } from './data';
-import DynamicMedia from '../DynamicMedia';
+import DynamicMedia from '../dynamic-media';
 
 interface MachineryEquipmentGridProps {
   category: MachineryCategory;

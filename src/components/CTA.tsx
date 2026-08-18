@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import DynamicMedia from './DynamicMedia';
+import DynamicMedia from './dynamic-media';
 
 export default function CTA() {
   const phone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE || '573000000000';

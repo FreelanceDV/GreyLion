@@ -1,5 +1,5 @@
 import React from 'react';
-import DynamicMedia from '../DynamicMedia';
+import DynamicMedia from '../dynamic-media';
 
 /** Bottom banner photo: full-bleed, pulled up to overlap the content above so it blends into the section instead of sitting as a separate block. */
 export default function ProcessBanner() {
