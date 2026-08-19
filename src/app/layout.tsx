@@ -52,16 +52,16 @@ export const metadata: Metadata = {
     siteName: "GreyLion",
     images: [
       {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "GreyLion - Transporte Marítimo y Logística",
+      },
+      {
         url: "/logo.jpg",
         width: 800,
         height: 800,
         alt: "GreyLion Logo",
-      },
-      {
-        url: "/hero_ship_oceanis.png",
-        width: 1200,
-        height: 630,
-        alt: "GreyLion - Logística Marítima Global",
       }
     ],
     locale: "es_ES",
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "GreyLion | Transporte Marítimo y Logística",
     description: "Transporte marítimo global, fletamento de buques, aduanas, logística integral y maquinaria pesada.",
-    images: ["/hero_ship_oceanis.png"],
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,
