@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           authenticated: false,
-          error: 'Clave incorrecta. Recuerda que la clave es día/mes/año (ej. 31082026).',
+          error: 'Clave de acceso incorrecta.',
         },
         { status: 401 }
       );

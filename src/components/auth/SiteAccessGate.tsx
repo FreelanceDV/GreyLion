@@ -150,7 +150,7 @@ export default function SiteAccessGate({ children }: SiteAccessGateProps) {
             Ingreso Seguro
           </h1>
           <p className="text-[14px] text-text-muted mt-2 leading-relaxed">
-            Ingresa la clave de acceso del día para ver el sitio web.
+            Ingresa la clave de acceso para continuar.
           </p>
         </div>
 
@@ -161,7 +161,7 @@ export default function SiteAccessGate({ children }: SiteAccessGateProps) {
               htmlFor="access-key"
               className="block text-[12px] font-medium text-text-gray mb-1.5"
             >
-              Clave de Acceso (día/mes/año)
+              Clave de Acceso
             </label>
             <div className="relative">
               <input
@@ -169,10 +169,10 @@ export default function SiteAccessGate({ children }: SiteAccessGateProps) {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Ejemplo: 31082026"
+                placeholder="••••••••"
                 autoFocus
                 disabled={isLoading}
-                maxLength={10}
+                maxLength={20}
                 className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.12)] focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none rounded-xl px-4 py-3 text-text-white text-[16px] tracking-wider placeholder:text-text-muted/50 placeholder:tracking-normal transition-all"
               />
               <button
@@ -219,9 +219,6 @@ export default function SiteAccessGate({ children }: SiteAccessGateProps) {
                 )}
               </button>
             </div>
-            <span className="block text-[11px] text-text-muted/80 mt-1">
-              Formato: 8 dígitos continuos (ej. 31082026)
-            </span>
           </div>
 
           {errorMessage && (
