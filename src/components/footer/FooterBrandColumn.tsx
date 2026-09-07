@@ -9,8 +9,8 @@ interface FooterBrandColumnProps {
 export default function FooterBrandColumn({ proposalUrl }: FooterBrandColumnProps) {
   return (
     <div className="flex max-w-[330px] flex-col items-start gap-[18px] max-[560px]:max-w-none">
-      <Link href="/" aria-label="GreyLion Maritime, inicio" className="no-underline">
-        <Logo size={38} textSize="22px" />
+      <Link href="/" aria-label="GreyLion Maritime, inicio" className="group no-underline">
+        <Logo size={56} textSize="23px" />
       </Link>
       <p className="text-[13px] leading-[1.7] text-[#a4c8ed]">
         Operaciones marítimas, logística industrial y maquinaria especializada con respaldo de punta a punta.

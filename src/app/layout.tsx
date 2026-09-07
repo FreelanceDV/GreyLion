@@ -58,7 +58,7 @@ export const metadata: Metadata = {
         alt: "GreyLion - Transporte Marítimo y Logística",
       },
       {
-        url: "/logo.jpg",
+        url: "/logo.png",
         width: 800,
         height: 800,
         alt: "GreyLion Logo",
@@ -104,7 +104,7 @@ export default function RootLayout({
     "name": "GreyLion",
     "alternateName": "GreyLion Maritime",
     "url": baseUrl,
-    "logo": `${baseUrl}/logo.jpg`,
+    "logo": `${baseUrl}/logo.png`,
     "description": "Operador logístico global especializado en transporte marítimo, fletamento de buques, aduanas, logística integral y suministro de maquinaria pesada.",
     "contactPoint": {
       "@type": "ContactPoint",

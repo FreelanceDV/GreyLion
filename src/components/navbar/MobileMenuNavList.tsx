@@ -1,5 +1,5 @@
 import MobileMenuNavItem from './MobileMenuNavItem';
-import { NAV_ITEMS } from './data';
+import { MOBILE_NAV_ITEMS } from './data';
 
 interface MobileMenuNavListProps {
   onItemClick: () => void;
@@ -12,7 +12,7 @@ export default function MobileMenuNavList({ onItemClick }: MobileMenuNavListProp
         NAVEGACIÓN
       </p>
       <div className="grid gap-2">
-        {NAV_ITEMS.map((item, index) => (
+        {MOBILE_NAV_ITEMS.map((item, index) => (
           <MobileMenuNavItem key={item.label} item={item} index={index} onClick={onItemClick} />
         ))}
       </div>

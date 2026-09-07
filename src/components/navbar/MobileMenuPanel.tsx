@@ -17,9 +17,11 @@ export default function MobileMenuPanel({ trackingUrl, quoteUrl, onClose }: Mobi
         onClick={onClose}
         aria-label="Cerrar menú"
       />
-      <section className="relative flex min-h-full w-[min(480px,100%)] flex-col px-[14px] pb-[28px] border-r border-[rgba(34,47,63,.72)] bg-[#030507] shadow-[28px_0_80px_rgba(0,0,0,.62)] animate-panel-in motion-reduce:animate-none max-[991px]:w-full">
+      <section className="relative flex h-full w-[min(480px,100%)] flex-col px-[14px] pb-[28px] border-r border-[rgba(34,47,63,.72)] bg-[#030507] shadow-[28px_0_80px_rgba(0,0,0,.62)] animate-panel-in motion-reduce:animate-none max-[991px]:w-full">
         <MobileMenuHeader onClose={onClose} />
-        <MobileMenuNavList onItemClick={onClose} />
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <MobileMenuNavList onItemClick={onClose} />
+        </div>
         <MobileMenuActions trackingUrl={trackingUrl} quoteUrl={quoteUrl} />
       </section>
     </div>

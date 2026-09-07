@@ -1,45 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import {
-  Anchor,
-  Globe2,
-  Compass,
-  Flag,
-  ShieldCheck,
-  Layers,
-  Briefcase,
-  Package,
-  Workflow,
-  SlidersHorizontal,
-  Cog,
-  Quote,
-  HelpCircle,
-  Ship,
-  LucideIcon,
-} from 'lucide-react';
-
-interface SectionDef {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-}
-
-const SECTIONS: SectionDef[] = [
-  { id: 'inicio', label: 'Inicio', icon: Anchor },
-  { id: 'red-global', label: 'Red Global', icon: Globe2 },
-  { id: 'mision-vision', label: 'Misión & Visión', icon: Compass },
-  { id: 'objetivos', label: 'Objetivos', icon: Flag },
-  { id: 'porque-elegirnos', label: 'Por Qué Elegirnos', icon: ShieldCheck },
-  { id: 'operaciones', label: 'Modalidades', icon: Layers },
-  { id: 'servicios', label: 'Servicios', icon: Briefcase },
-  { id: 'tipos-carga', label: 'Tipos de Carga', icon: Package },
-  { id: 'proceso', label: 'Proceso', icon: Workflow },
-  { id: 'servicios-medida', label: 'A la Medida', icon: SlidersHorizontal },
-  { id: 'maquinaria', label: 'Maquinaria', icon: Cog },
-  { id: 'opiniones', label: 'Opiniones', icon: Quote },
-  { id: 'preguntas-frecuentes', label: 'FAQ', icon: HelpCircle },
-];
+import { Ship } from 'lucide-react';
+import { PAGE_SECTIONS as SECTIONS } from './pageSections';
 
 const LAST_INDEX = SECTIONS.length - 1;
 

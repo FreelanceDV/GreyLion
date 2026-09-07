@@ -28,8 +28,8 @@ export default function Navbar() {
         aria-label="Navegación principal"
       >
         <div className="w-full max-w-[1280px] mx-auto px-5 grid grid-cols-[1fr_auto_1fr] items-center max-[991px]:grid-cols-[1fr_auto]">
-          <Link className="inline-flex w-fit no-underline" href="/" aria-label="GreyLion Maritime, inicio">
-            <Logo size={36} textSize="22px" />
+          <Link className="group inline-flex w-fit no-underline" href="/" aria-label="GreyLion Maritime, inicio">
+            <Logo size={50} textSize="23px" />
           </Link>
 
           <DesktopNavLinks />
