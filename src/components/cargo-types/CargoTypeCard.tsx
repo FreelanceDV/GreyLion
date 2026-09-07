@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowUpRight } from 'lucide-react';
 import CargoTypeIcon from './CargoTypeIcon';
 import { CargoType } from './data';
 
@@ -21,7 +22,7 @@ export default function CargoTypeCard({ cargo, index }: CargoTypeCardProps) {
       <p className="m-0 text-text-gray text-[13px] leading-[1.6]">{cargo.desc}</p>
       <footer className="flex justify-between items-center mt-auto pt-[18px] border-t border-[rgba(140,150,158,0.12)] text-[#8aa3b8] text-[10px] font-extrabold tracking-[0.09em] uppercase">
         <span>Gestión especializada</span>
-        <span aria-hidden="true" className="text-[#8ed0ff] text-[17px]">↗</span>
+        <ArrowUpRight aria-hidden="true" className="text-[#8ed0ff] h-4 w-4" strokeWidth={2.5} />
       </footer>
     </article>
   );

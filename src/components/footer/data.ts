@@ -1,3 +1,5 @@
+import { Camera, LucideIcon } from 'lucide-react';
+
 export interface FooterLink {
   label: string;
   href: string;
@@ -26,13 +28,16 @@ export const LEGAL_LINKS: FooterLink[] = [
 
 export interface SocialLink {
   label: string;
-  icon: string;
+  /** Lucide icon — only used where a generic (non-brand) icon reads as the platform. */
+  icon?: LucideIcon;
+  /** Text glyph fallback — Lucide dropped all brand/logo icons, so most platforms use their letter mark instead. */
+  textIcon?: string;
   href: string;
 }
 
 export const SOCIAL_LINKS: SocialLink[] = [
-  { label: 'Facebook', icon: 'f', href: '#' },
-  { label: 'X', icon: '𝕏', href: '#' },
-  { label: 'Instagram', icon: '◎', href: '#' },
-  { label: 'LinkedIn', icon: 'in', href: '#' },
+  { label: 'Facebook', textIcon: 'f', href: '#' },
+  { label: 'X', textIcon: '𝕏', href: '#' },
+  { label: 'Instagram', icon: Camera, href: '#' },
+  { label: 'LinkedIn', textIcon: 'in', href: '#' },
 ];

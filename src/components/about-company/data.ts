@@ -12,7 +12,7 @@ export const MISSION_VISION_CARDS: MissionVisionCard[] = [
   {
     kicker: '01 / PROPÓSITO',
     title: 'Nuestra Misión',
-    quote: '"Simplificamos el comercio internacional para que su carga avance con seguridad, puntualidad y eficiencia."',
+    quote: '"Garantizar un nivel elevado de seguridad marítima, proteger el medio ambiente y prevenir la contaminación por buques; así como facilitar el tráfico marítimo eficiente y que nuestros clientes estén satisfechos de nuestro servicio."',
     items: [
       'Procesos logísticos y aduaneros simplificados',
       'Coordinación portuaria de principio a fin',
@@ -23,7 +23,7 @@ export const MISSION_VISION_CARDS: MissionVisionCard[] = [
   {
     kicker: '02 / RUMBO 2030',
     title: 'Nuestra Visión',
-    quote: '"Conectamos empresas y mercados con operaciones marítimas más inteligentes, visibles y confiables."',
+    quote: '"Ser un centro de excelencia en la seguridad marítima y la protección del medio ambiente, contribuyendo al desarrollo sostenible del sector marítimo."',
     items: [
       'Tecnología avanzada para rastreo de carga',
       'Red global de puertos y aliados estratégicos',

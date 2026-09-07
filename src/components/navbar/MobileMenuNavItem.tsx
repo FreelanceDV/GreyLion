@@ -16,8 +16,8 @@ export default function MobileMenuNavItem({ item, index, onClick }: MobileMenuNa
     >
       <span className="text-[11px] font-extrabold text-[#516176]">{String(index + 1).padStart(2, '0')}</span>
       <span className="self-stretch bg-[rgba(86,104,128,.36)]" />
-      <span className="grid h-[33px] w-[33px] place-items-center rounded-[10px] border border-[rgba(15,76,129,.68)] bg-[rgba(15,76,129,.2)] text-[16px] text-[#9ed2fc]" aria-hidden="true">
-        {item.icon}
+      <span className="grid h-[33px] w-[33px] place-items-center rounded-[10px] border border-[rgba(15,76,129,.68)] bg-[rgba(15,76,129,.2)] text-[#9ed2fc]" aria-hidden="true">
+        <item.icon className="h-4 w-4" strokeWidth={2} />
       </span>
       <span className="text-[14px] font-[750]">{item.label}</span>
       <span className="justify-self-end text-[24px] font-light text-[#59687a]" aria-hidden="true">›</span>

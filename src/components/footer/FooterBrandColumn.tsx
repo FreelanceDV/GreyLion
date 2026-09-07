@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ArrowUpRight } from 'lucide-react';
 import Logo from '../Logo';
 
 interface FooterBrandColumnProps {
@@ -20,7 +21,7 @@ export default function FooterBrandColumn({ proposalUrl }: FooterBrandColumnProp
         target="_blank"
         rel="noopener noreferrer"
       >
-        Solicitar propuesta <span aria-hidden="true">↗</span>
+        Solicitar propuesta <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden="true" />
       </a>
     </div>
   );

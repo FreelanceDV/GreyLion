@@ -1,4 +1,5 @@
 import React from 'react';
+import { Map, Radar } from 'lucide-react';
 
 export type GlobeMapMode = 'stylized' | 'live';
 
@@ -16,7 +17,7 @@ export default function MapModeToggle({ mode, onChange }: MapModeToggleProps) {
           mode === 'stylized' ? 'bg-primary text-white' : 'bg-transparent text-text-gray hover:text-white'
         }`}
       >
-        🗺️ Mapa Interactivo
+        <span className="inline-flex items-center gap-1.5"><Map className="h-3.5 w-3.5" strokeWidth={2} />Mapa Interactivo</span>
       </button>
       <button
         onClick={() => onChange('live')}
@@ -24,7 +25,7 @@ export default function MapModeToggle({ mode, onChange }: MapModeToggleProps) {
           mode === 'live' ? 'bg-primary text-white' : 'bg-transparent text-text-gray hover:text-white'
         }`}
       >
-        📡 Tracking AIS en Vivo
+        <span className="inline-flex items-center gap-1.5"><Radar className="h-3.5 w-3.5" strokeWidth={2} />Tracking AIS en Vivo</span>
       </button>
     </div>
   );

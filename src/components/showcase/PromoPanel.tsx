@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowRight } from 'lucide-react';
 import DynamicMedia from '../dynamic-media';
 import { PromoPanelData } from './data';
 
@@ -15,7 +16,7 @@ export default function PromoPanel({ panel }: PromoPanelProps) {
         <h4 className="font-[family-name:var(--font-space-grotesk)] text-[15px] font-extrabold text-white leading-[1.2] uppercase">{panel.title}</h4>
         <p className="text-[11.5px] leading-[1.5] text-white/70">{panel.desc}</p>
         <a href={panel.linkHref} className="inline-flex items-center gap-1.5 text-[11px] font-bold text-primary-hover no-underline mt-1">
-          {panel.linkLabel} <span aria-hidden="true">→</span>
+          {panel.linkLabel} <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden="true" />
         </a>
       </div>
     </div>

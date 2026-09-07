@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowRight } from 'lucide-react';
 import AboutIcon from './AboutIcon';
 import { OBJECTIVES } from './data';
 
@@ -31,7 +32,7 @@ export default function ObjectivesSection() {
             </div>
             <h4 className="max-w-[185px] m-0 mb-3 text-white font-[family-name:var(--font-space-grotesk)] text-[19px] leading-[1.18]">{obj.title}</h4>
             <p className="m-0 text-text-gray text-[13px] leading-[1.6]">{obj.desc}</p>
-            <footer className="flex justify-between items-center mt-auto pt-[18px] text-[#8ed0ff] text-[10px] font-extrabold tracking-[0.07em] uppercase [&>span]:text-[17px] [&>span]:leading-[0.5]">{obj.label}<span aria-hidden="true">→</span></footer>
+            <footer className="flex justify-between items-center mt-auto pt-[18px] text-[#8ed0ff] text-[10px] font-extrabold tracking-[0.07em] uppercase">{obj.label}<ArrowRight className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" /></footer>
           </article>
         ))}
       </div>

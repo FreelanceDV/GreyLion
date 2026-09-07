@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowRight } from 'lucide-react';
 
 interface WhyChooseContentProps {
   whatsappUrl: string;
@@ -29,7 +30,7 @@ export default function WhyChooseContent({ whatsappUrl }: WhyChooseContentProps)
       <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="no-underline w-fit">
         <button className="flex items-center gap-2 bg-primary text-white border-0 rounded-lg py-3.5 px-6 text-[12px] font-bold uppercase tracking-[0.04em] cursor-pointer transition-all duration-300 ease-[ease] shadow-[0_8px_20px_rgba(15,76,129,0.25)] hover:bg-primary-hover hover:-translate-y-0.5">
           Recibir Propuesta Personalizada
-          <span aria-hidden="true">→</span>
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden="true" />
         </button>
       </a>
     </div>

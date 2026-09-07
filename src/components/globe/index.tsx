@@ -11,7 +11,7 @@ export default function Globe() {
   const [portsCount, setPortsCount] = useState(6);
 
   return (
-    <div className="w-full overflow-hidden bg-background-black text-text-white pt-[100px] border-t border-white/5">
+    <div id="red-global" className="w-full overflow-hidden bg-background-black text-text-white pt-[100px] border-t border-white/5 scroll-mt-[100px]">
       <div className="relative z-10 w-full max-w-[1280px] mx-auto px-5">
         <div className="grid grid-cols-2 gap-12 items-start max-[991px]:grid-cols-1">
           {/* Left column: heading, copy, interactive badge, stats */}

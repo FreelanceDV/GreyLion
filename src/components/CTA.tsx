@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { ArrowRight } from 'lucide-react';
 import DynamicMedia from './dynamic-media';
 
 export default function CTA() {
@@ -22,18 +23,18 @@ export default function CTA() {
 
       <div className="relative z-10 w-full max-w-[1280px] mx-auto px-5 py-8 flex items-center justify-between gap-8 flex-wrap max-[850px]:flex-col max-[850px]:items-start max-[850px]:py-10">
         <h2 className="font-[family-name:var(--font-space-grotesk)] text-white text-[clamp(19px,2.2vw,26px)] font-extrabold leading-[1.25]">
-          ¿Listo para mover tu carga <br className="max-[550px]:hidden" />
-          con confianza?
+          Conectamos sus operaciones <br className="max-[550px]:hidden" />
+          con el mundo.
         </h2>
 
-        <p className="text-white/80 text-base leading-[1.6] max-w-[360px]">
-          Obtén una cotización personalizada y descubre por qué somos tu mejor aliado en logística marítima.
+        <p className="text-white/80 text-sm leading-[1.6] max-w-[480px]">
+          En GreyLion Maritime hacemos que el comercio internacional sea simple y eficiente. Combinamos décadas de experiencia en el sector marítimo con soluciones logísticas integrales que se adaptan exactamente a lo que su empresa necesita para crecer.
         </p>
 
         <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="no-underline shrink-0">
           <button className="inline-flex items-center gap-2 border-2 text-white hover:text-primary border-0 rounded-full py-3 px-6 text-[13px] font-extrabold uppercase tracking-[0.03em] cursor-pointer transition-all duration-300 ease-[ease] hover:bg-white/90 hover:-translate-y-0.5">
             Cotizar Ahora
-            <span aria-hidden="true">→</span>
+            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden="true" />
           </button>
         </a>
       </div>

@@ -12,7 +12,7 @@ export default function Process() {
   const whatsappUrl = `https://wa.me/${phone}?text=Hola%20GreyLion,%20quiero%20cotizar%20el%20envio%20de%20`;
 
   return (
-    <section className="bg-background-dark text-text-white pt-[100px] relative overflow-hidden">
+    <section id="proceso" className="bg-background-dark text-text-white pt-[100px] relative overflow-hidden scroll-mt-[100px]">
       <div className="relative z-10 w-full max-w-[1280px] mx-auto px-5">
         <div className="grid grid-cols-[400px_1fr] gap-[80px] items-start max-[991px]:grid-cols-1 max-[991px]:gap-[60px]">
           {/* Left Column: copy, feature card, CTA */}

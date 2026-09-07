@@ -4,7 +4,7 @@ import { CARGO_TYPES } from './data';
 
 export default function CargoTypes() {
   return (
-    <section className="relative bg-background-dark text-white py-[100px] border-t border-[rgba(255,255,255,0.05)]">
+    <section id="tipos-carga" className="relative bg-background-dark text-white py-[100px] border-t border-[rgba(255,255,255,0.05)] scroll-mt-[100px]">
       <div className="w-full max-w-[1280px] mx-auto px-5">
         {/* Section Header */}
         <div className="flex flex-col items-center text-center gap-5 mb-16">

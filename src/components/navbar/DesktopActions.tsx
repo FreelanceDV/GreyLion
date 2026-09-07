@@ -1,3 +1,4 @@
+import { Search, ArrowUpRight } from 'lucide-react';
 import { actionLinkBaseClasses } from './styles';
 
 interface DesktopActionsProps {
@@ -14,7 +15,7 @@ export default function DesktopActions({ trackingUrl, quoteUrl }: DesktopActions
         target="_blank"
         rel="noopener noreferrer"
       >
-        <span aria-hidden="true">⌁</span> Seguimiento
+        <Search className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" /> Seguimiento
       </a>
       <a
         className={`${actionLinkBaseClasses} px-[15px] py-[10px] bg-primary text-text-white shadow-[0_8px_20px_rgba(15,76,129,.28)] hover:bg-primary-hover`}
@@ -22,7 +23,7 @@ export default function DesktopActions({ trackingUrl, quoteUrl }: DesktopActions
         target="_blank"
         rel="noopener noreferrer"
       >
-        Cotizar envío <span aria-hidden="true">↗</span>
+        Cotizar envío <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden="true" />
       </a>
     </div>
   );

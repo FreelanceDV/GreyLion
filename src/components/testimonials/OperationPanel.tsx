@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowRight } from 'lucide-react';
 import OperationStatCard from './OperationStatCard';
 import { OPERATION_STATS } from './data';
 
@@ -19,7 +20,7 @@ export default function OperationPanel() {
         className="inline-flex gap-3 items-center mt-[17px] text-[#d3edff] text-xs font-extrabold tracking-[0.02em] uppercase no-underline transition-[color,transform] duration-200 ease-[ease] hover:text-[#54b8ff] focus-visible:text-[#54b8ff] focus-visible:outline-none hover:translate-x-[3px] focus-visible:translate-x-[3px] motion-reduce:transition-none"
         href="#servicios"
       >
-        Conocer nuestros servicios <span className="grid w-[29px] h-[29px] place-items-center border border-[rgba(147,213,255,0.62)] rounded-full text-white text-[17px]" aria-hidden="true">→</span>
+        Conocer nuestros servicios <span className="grid w-[29px] h-[29px] place-items-center border border-[rgba(147,213,255,0.62)] rounded-full text-white" aria-hidden="true"><ArrowRight className="h-4 w-4" strokeWidth={2.5} /></span>
       </a>
     </aside>
   );

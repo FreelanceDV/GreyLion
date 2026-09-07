@@ -1,4 +1,5 @@
 import React from 'react';
+import { Send } from 'lucide-react';
 import { controlClasses, sendBaseClasses } from './styles';
 
 interface ChatInputBarProps {
@@ -35,11 +36,11 @@ export default function ChatInputBar({ customMessage, onChangeMessage, whatsappU
             rel="noopener noreferrer"
             aria-label="Enviar mensaje a WhatsApp"
           >
-            ↗
+            <Send className="h-4 w-4" strokeWidth={2.25} />
           </a>
         ) : (
           <button className={sendBaseClasses} type="button" disabled aria-label="Escriba o seleccione un mensaje para enviar">
-            ↗
+            <Send className="h-4 w-4" strokeWidth={2.25} />
           </button>
         )}
       </div>

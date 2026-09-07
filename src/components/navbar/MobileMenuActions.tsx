@@ -1,3 +1,4 @@
+import { ArrowUpRight } from 'lucide-react';
 import { mobileActionBaseClasses } from './styles';
 
 interface MobileMenuActionsProps {
@@ -22,7 +23,7 @@ export default function MobileMenuActions({ trackingUrl, quoteUrl }: MobileMenuA
         target="_blank"
         rel="noopener noreferrer"
       >
-        Cotizar envío <span aria-hidden="true">↗</span>
+        Cotizar envío <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden="true" />
       </a>
     </div>
   );

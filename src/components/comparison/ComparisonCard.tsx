@@ -1,4 +1,5 @@
 import React from 'react';
+import { Check, ArrowUpRight } from 'lucide-react';
 import DynamicMedia from '../dynamic-media';
 import { ComparisonService } from './data';
 
@@ -54,7 +55,7 @@ export default function ComparisonCard({ service, isExpanded, onHover, whatsappU
           <div className="grid grid-cols-2 gap-5 mb-8 max-[991px]:grid-cols-1 max-[991px]:gap-4">
             {service.features.map((feat, fIdx) => (
               <div key={fIdx} className="flex gap-3 items-start">
-                <div className="text-[#00a3ff] font-bold text-base shrink-0 mt-0.5">✓</div>
+                <Check className="text-[#00a3ff] shrink-0 mt-0.5 h-4 w-4" strokeWidth={3} />
                 <div>
                   <h4 className="text-sm font-bold text-white mb-1">{feat.name}</h4>
                   <p className="text-xs text-white/50 leading-[1.4]">{feat.detail}</p>
@@ -69,7 +70,7 @@ export default function ComparisonCard({ service, isExpanded, onHover, whatsappU
             rel="noopener noreferrer"
             className="bg-[#0070f3] text-white border-0 rounded-md py-3.5 px-7 text-sm font-bold cursor-pointer w-fit no-underline transition-all duration-300 ease-[ease] shadow-[0_8px_20px_rgba(0,112,243,0.2)] hover:bg-[#005ccb] hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(0,112,243,0.35)]"
           >
-            Cotizar Servicio ↗
+            <span className="inline-flex items-center gap-1.5">Cotizar Servicio<ArrowUpRight className="h-4 w-4" strokeWidth={2.5} /></span>
           </a>
         </div>
 

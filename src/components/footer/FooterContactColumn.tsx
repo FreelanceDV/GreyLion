@@ -1,3 +1,4 @@
+import { Mail, MessageCircle } from 'lucide-react';
 import { footerColumnLinkClasses } from './styles';
 
 interface FooterContactColumnProps {
@@ -15,7 +16,7 @@ export default function FooterContactColumn({ email, phone }: FooterContactColum
         href={`mailto:${email}`}
         className={`flex items-center gap-[8px] [overflow-wrap:anywhere] ${footerColumnLinkClasses}`}
       >
-        <span aria-hidden="true" className="text-[#61b8ff] text-[14px]">✉</span>
+        <Mail aria-hidden="true" className="text-[#61b8ff] h-3.5 w-3.5" strokeWidth={2} />
         {email}
       </a>
       <a
@@ -24,7 +25,7 @@ export default function FooterContactColumn({ email, phone }: FooterContactColum
         rel="noopener noreferrer"
         className={`flex items-center gap-[8px] [overflow-wrap:anywhere] ${footerColumnLinkClasses}`}
       >
-        <span aria-hidden="true" className="text-[#61b8ff] text-[14px]">⌕</span>
+        <MessageCircle aria-hidden="true" className="text-[#61b8ff] h-3.5 w-3.5" strokeWidth={2} />
         +{phone}
       </a>
       <p className="flex items-start gap-[7px] mt-[6px] text-[#87add4] text-[11px] leading-[1.45]">
